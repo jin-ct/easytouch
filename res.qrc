@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icon/arrow.png</file>
+        <file>icon/move.png</file>
+        <file>icon/close.png</file>
+        <file>icon/volume.png</file>
+        <file>icon/rmudisk.png</file>
+        <file>icon/UDisk.png</file>
+    </qresource>
+</RCC>
