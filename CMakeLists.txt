@@ -11,7 +11,7 @@ find_package(Qt6 REQUIRED COMPONENTS Quick)
 qt_standard_project_setup(REQUIRES 6.5)
 
 qt_add_executable(appeasytouch
-    main.cpp res.qrc
+    main.cpp res.qrc app.rc
 )
 
 qt_add_qml_module(appeasytouch
@@ -21,7 +21,7 @@ qt_add_qml_module(appeasytouch
         Main.qml
         QML_FILES components/FoldBtn.qml components/FunBtn.qml components/MoveBtn.qml components/WindowContent.qml
         SOURCES functions/functions.cpp functions/functions.h
-        RESOURCES res.qrc
+        RESOURCES res.qrc app.rc
         QML_FILES components/DialogWindow.qml
 )
 
