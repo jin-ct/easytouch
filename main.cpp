@@ -1,11 +1,13 @@
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
-#include "functions/functions.h"
 #include <QSettings>
 #include <QCoreApplication>
 #include <QFileInfo>
 #include <QDir>
 #include <QDebug>
+#include "functions/functions.h"
+#include "functions/fullscreenwatcher.h"
+#include "functions/notificationhelper.h"
 
 bool setAutoStart(bool enable)
 {
@@ -29,13 +31,15 @@ bool setAutoStart(bool enable)
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     setAutoStart(true);
 
     QQmlApplicationEngine engine;
 
     qmlRegisterType<Functions>("Functions", 1, 0, "Functions");
+    qmlRegisterType<FullscreenWatcher>("Functions", 1, 0, "FullscreenWatcher");
+    qmlRegisterType<NotificationHelper>("Functions", 1, 0, "NotificationHelper");
 
     QObject::connect(
         &engine,

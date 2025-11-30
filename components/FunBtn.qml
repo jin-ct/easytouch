@@ -1,11 +1,12 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 
 // 功能按钮
 Rectangle {
     id: btnFun
     width: parent.width
-    height: 30
+    height: 36
     color: "transparent"
     anchors.left: parent.left
     anchors.leftMargin: 1
@@ -15,6 +16,9 @@ Rectangle {
     property string text: ""
     property string icon: ""
     property bool btnVisible: true
+    property string iconColor: "#303133"
+    property string iconColorClicked: "#FFFFFF"
+    property string curIconColor: "#303133"
 
     signal clicked()
 
@@ -33,7 +37,6 @@ Rectangle {
                 target: btnFun
                 property: "opacity"
                 duration: 50
-                easing.type: Easing.InOutQuad
             }
         }
     }
@@ -47,23 +50,30 @@ Rectangle {
     }
 
     Item {
-        height: btnFun.width * 0.40 + 10
+        height: btnFun.width * 0.42 + 13
         width: parent.width
         anchors.verticalCenter: parent.verticalCenter
 
         Image {
             id: iconFun
             source: btnFun.icon
-            width: btnFun.width * 0.40
-            height: btnFun.width * 0.40
+            width: btnFun.width * 0.42
+            height: btnFun.width * 0.42
             anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+        MultiEffect {
+            anchors.fill: iconFun
+            source: iconFun
+            colorization: 1.0
+            colorizationColor: curIconColor
         }
 
         Text {
             height: 10
             text: btnFun.text
-            font.pixelSize: 7
-            color: Qt.rgba(1, 1, 1, 1)
+            font.pixelSize: 8
+            color: curIconColor
             anchors.top: iconFun.bottom
             anchors.topMargin: 1
             anchors.horizontalCenter: parent.horizontalCenter
@@ -71,9 +81,16 @@ Rectangle {
     }
 
     MouseArea {
+        id: clickArea
         anchors.fill: parent
         onClicked: btnFun.clicked()
-        onPressed: btnFun.color = "#409EFF"
-        onReleased: btnFun.color = "transparent"
+        onPressed: {
+            curIconColor = iconColorClicked
+            btnFun.color = "#409EFF"
+        }
+        onReleased: {
+            curIconColor = iconColor
+            btnFun.color = "transparent"
+        }
     }
 }

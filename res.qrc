@@ -1,10 +1,12 @@
 <RCC>
     <qresource prefix="/">
-        <file>icon/arrow.png</file>
-        <file>icon/move.png</file>
-        <file>icon/close.png</file>
-        <file>icon/volume.png</file>
-        <file>icon/rmudisk.png</file>
-        <file>icon/UDisk.png</file>
+        <file>icon/chevron.svg</file>
+        <file>icon/close.svg</file>
+        <file>icon/move.svg</file>
+        <file>icon/rmudisk.svg</file>
+        <file>icon/UDisk.svg</file>
+        <file>icon/volume.svg</file>
+        <file>components/VolumeDialog.qml</file>
+        <file>icon/icon.ico</file>
     </qresource>
 </RCC>

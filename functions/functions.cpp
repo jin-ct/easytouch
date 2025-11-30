@@ -8,6 +8,7 @@
 #include <mmdeviceapi.h>
 #include <endpointvolume.h>
 #include <comdef.h>
+#include <QTimer>
 
 //=== 用于全局安装 nativeEventFilter ===
 class UsbEventFilter : public QAbstractNativeEventFilter {
@@ -85,8 +86,14 @@ bool Functions::ejectDrive()
         CloseHandle(hVolume);
     }
 
-    if (success)
-        emit usbRemoved();
+    if (success) {
+        if (!isSignalsEmit) emit usbRemoved();
+        isSignalsEmit = true;
+        QTimer::singleShot(500, this, [=](){
+            isSignalsEmit = false;
+        });
+        isUsbInserted = false;
+    }
     return success;
 }
 
@@ -160,18 +167,28 @@ void Functions::checkUsbDrives(bool inserted)
                 UINT type = GetDriveTypeW(reinterpret_cast<LPCWSTR>(usbDrivePath.utf16()));
                 if (type == DRIVE_REMOVABLE) {
                     usbDrivePaths.append(usbDrivePath);
-                    emit usbInserted();
+                    if (!isSignalsEmit) emit usbInserted();
+                    isUsbInserted = true;
+                    isSignalsEmit = true;
+                    QTimer::singleShot(500, this, [=](){
+                        isSignalsEmit = false;
+                    });
                 }
             }
         }
-    } else {
+    } else if (isUsbInserted) {
         for (int i = 0; i < usbDrivePaths.length(); i++) {
             if (!QFile::exists(usbDrivePaths[i])) {
                 usbDrivePaths.removeAt(i);
             }
         }
         if (usbDrivePaths.empty()) {
-            emit usbRemoved();
+            if (!isSignalsEmit) emit usbRemoved();
+            isSignalsEmit = true;
+            QTimer::singleShot(500, this, [=](){
+                isSignalsEmit = false;
+            });
+            isUsbInserted = false;
         }
     }
 }

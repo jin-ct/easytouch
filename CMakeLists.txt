@@ -7,6 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -23,6 +27,9 @@ qt_add_qml_module(appeasytouch
         SOURCES functions/functions.cpp functions/functions.h
         RESOURCES res.qrc app.rc
         QML_FILES components/DialogWindow.qml
+        QML_FILES components/VolumeDialog.qml
+        SOURCES functions/fullscreenwatcher.h functions/fullscreenwatcher.cpp
+        SOURCES functions/notificationhelper.h functions/notificationhelper.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -39,6 +46,11 @@ set_target_properties(appeasytouch PROPERTIES
 target_link_libraries(appeasytouch
     PRIVATE Qt6::Quick
 )
+target_link_libraries(appeasytouch PRIVATE Qt6::Core)
+target_link_libraries(appeasytouch PRIVATE Qt6::Concurrent)
+target_link_libraries(appeasytouch PRIVATE dwmapi)
+target_link_libraries(appeasytouch PRIVATE Qt6::Core)
+target_link_libraries(appeasytouch PRIVATE Qt6::Widgets)
 
 include(GNUInstallDirs)
 install(TARGETS appeasytouch

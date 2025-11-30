@@ -3,10 +3,9 @@ import QtQuick.Controls
 
 Window {
     id: dialog
-    visible: true
     color: "transparent"
     flags:  Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
-    opacity: 1
+    opacity: 0
     title: "易触控工具栏"
     width: Screen.desktopAvailableWidth
     height: Screen.desktopAvailableHeight
@@ -32,17 +31,22 @@ Window {
     }
     function delayColse(delayTime) {
         setTimeout(() => {
-            dialog.visible = false
+            hideOrShow()
         }, delayTime)
+    }
+    function hideOrShow() {
+        if (!dialog.visible)
+            dialog.visible = true
+        windowAnimation.start()
     }
 
     MouseArea {
         anchors.fill: parent
-        onClicked: (e) => {
+        onPressed: (e) => {
             if (e.x < background.x || e.x > background.x + dialog.dialogWidth ||
                 e.y < background.y || e.y > background.y + dialog.dialogHeight)
             {
-                dialog.visible = false
+                hideOrShow()
             }
         }
     }
@@ -51,12 +55,27 @@ Window {
         id: background
         width: dialog.dialogWidth
         height: dialog.dialogHeight
-        x: heartPointX < (Screen.desktopAvailableWidth/2) ? (heartPointX + 22) : (heartPointX - width - 22)
+        x: heartPointX < (Screen.desktopAvailableWidth/2) ? (heartPointX + 24) : (heartPointX - width - 24)
         y: heartPointY - height/2
         radius: 6
-        color: '#62000000'
-        border.color: "#40FAFCFF"
+        color: "#96FFFFFF"
+        border.color: "#70909399"
         border.width: 1
+    }
+
+
+    PropertyAnimation {
+        id: windowAnimation
+        target: dialog
+        property: "opacity"
+        duration: 90
+        to: dialog.opacity === 0 ? 1 : 0
+        easing.type: Easing.OutInQuad
+
+        onStopped: {
+            if (dialog.opacity === 0)
+                dialog.visible = false
+        }
     }
 
 }

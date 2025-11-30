@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QWindow>
 #include <windows.h>
+#include <winioctl.h>
 
 class Functions : public QObject
 {
@@ -27,6 +28,8 @@ signals:
 private:
     void checkUsbDrives(bool inserted);
     QStringList usbDrivePaths;
+    bool isUsbInserted = false;
+    bool isSignalsEmit = false;
 };
 
 #endif // FUNCTIONS_H

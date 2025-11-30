@@ -8,10 +8,12 @@ Rectangle {
     height: windowBaseHeight
     radius: parent.width * 0.5
     anchors.bottom: parent.bottom
-    color: '#62000000'
+    color: "#96FFFFFF"
     clip: true
-    border.color: "#40FAFCFF"
+    border.color: "#70909399"
     border.width: 1
+
+    signal btnClicked()
 
     property var window
     property int funBtnCount: 0
@@ -46,7 +48,7 @@ Rectangle {
 
     Column {
         anchors.fill: parent
-        anchors.topMargin: 4
+        anchors.topMargin: 6
 
         MoveBtn {
             id: btnMove
@@ -54,56 +56,43 @@ Rectangle {
         }
         FunBtn {
             id: funCloseWindow
-            icon: "qrc:/icon/close.png"
+            icon: "qrc:/icon/close.svg"
             text: "关闭窗口"
             onClicked: {
                 funsObject.closeTopWindow()
+                btnClicked()
             }
         }
         FunBtn {
             id: funVolume
-            icon: "qrc:/icon/volume.png"
+            icon: "qrc:/icon/volume.svg"
             text: "系统音量"
 
-            DialogWindow {
+            VolumeDialog {
                 id: volumeDialog
-                dialogWidth: 126
-                dialogHeight: 30
-                visible: false
                 funsObject: items.funsObject
-                Slider {
-                    id: volumeSlider
-                    width: 110
-                    height: parent.height
-                    anchors.centerIn: parent
-                    from: 0
-                    to: 1
-                    value: funsObject.getVolume()
-                    onValueChanged: {
-                        console.log("当前值:", value)
-                        funsObject.setVolume(value)
-                    }
-                }
             }
 
             onClicked: {
                 volumeDialog.heartPointX = funVolume.mapToGlobal(0, 0).x + funVolume.width/2
                 volumeDialog.heartPointY = funVolume.mapToGlobal(0, 0).y + funVolume.height/2
-                volumeDialog.visible = !volumeDialog.visible
+                volumeDialog.hideOrShow()
+                btnClicked()
             }
         }
         FunBtn {
             id: funOpenUDisk
-            icon: "qrc:/icon/UDisk.png"
+            icon: "qrc:/icon/UDisk.svg"
             text: "打开U盘"
             btnVisible: false
             onClicked: {
                 funsObject.openDrive()
+                btnClicked()
             }
         }
         FunBtn {
             id: funRmUDisk
-            icon: "qrc:/icon/rmudisk.png"
+            icon: "qrc:/icon/rmudisk.svg"
             text: "弹出U盘"
             btnVisible: false
 
@@ -114,22 +103,24 @@ Rectangle {
                 visible: false
                 funsObject: items.funsObject
 
-                property bool success: false
+                property string tipsText: "弹出失败"
 
                 Text {
-                    text: rmUDiskDialog.success ? "弹出成功" : "弹出失败"
-                    color: "#fff"
+                    text: rmUDiskDialog.tipsText
+                    color: "#303133"
                     font.pixelSize: 10
                     anchors.centerIn: parent
                 }
             }
 
             onClicked: {
-                rmUDiskDialog.success = funsObject.ejectDrive()
+                let isSuccess = funsObject.ejectDrive()
+                rmUDiskDialog.tipsText =  isSuccess ? "弹出成功" : "弹出失败"
                 rmUDiskDialog.heartPointX = items.mapToGlobal(0, 0).x + items.width/2
                 rmUDiskDialog.heartPointY = items.mapToGlobal(0, 0).y + items.height/2
-                rmUDiskDialog.visible = true
+                rmUDiskDialog.hideOrShow()
                 rmUDiskDialog.delayColse(2000)
+                btnClicked()
             }
         }
     }
@@ -142,6 +133,7 @@ Rectangle {
             funOpenUDisk.btnVisible = isFunOpenUDiskEnable ? !funOpenUDisk.btnVisible : isFunOpenUDiskEnable
             funRmUDisk.btnVisible = isFunRmUDiskEnable ? !funRmUDisk.btnVisible : isFunRmUDiskEnable
             items.isFolded = !isFolded
+            btnClicked()
         }
     }
 }
