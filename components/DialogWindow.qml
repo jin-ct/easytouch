@@ -55,7 +55,7 @@ Window {
         id: background
         width: dialog.dialogWidth
         height: dialog.dialogHeight
-        x: heartPointX < (Screen.desktopAvailableWidth/2) ? (heartPointX + 24) : (heartPointX - width - 24)
+        x: heartPointX < (Screen.desktopAvailableWidth/2) ? (heartPointX + 27) : (heartPointX - width - 27)
         y: heartPointY - height/2
         radius: 6
         color: "#96FFFFFF"

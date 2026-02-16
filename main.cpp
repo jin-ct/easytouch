@@ -5,9 +5,13 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QDebug>
+
 #include "functions/functions.h"
 #include "functions/fullscreenwatcher.h"
 #include "functions/notificationhelper.h"
+#include "functions/whiteboarditem.h"
+
+#include "QtLogger.h"
 
 bool setAutoStart(bool enable)
 {
@@ -33,6 +37,8 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    LOG_INIT(LogConfig());
+
     setAutoStart(true);
 
     QQmlApplicationEngine engine;
@@ -40,6 +46,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<Functions>("Functions", 1, 0, "Functions");
     qmlRegisterType<FullscreenWatcher>("Functions", 1, 0, "FullscreenWatcher");
     qmlRegisterType<NotificationHelper>("Functions", 1, 0, "NotificationHelper");
+    qmlRegisterType<WhiteboardItem>("Functions", 1, 0, "WhiteboardItem");
 
     QObject::connect(
         &engine,

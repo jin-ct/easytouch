@@ -23,13 +23,16 @@ qt_add_qml_module(appeasytouch
     VERSION 1.0
     QML_FILES
         Main.qml
-        QML_FILES components/FoldBtn.qml components/FunBtn.qml components/MoveBtn.qml components/WindowContent.qml
+        QML_FILES    components/WindowContent.qml
         SOURCES functions/functions.cpp functions/functions.h
         RESOURCES res.qrc app.rc
         QML_FILES components/DialogWindow.qml
         QML_FILES components/VolumeDialog.qml
         SOURCES functions/fullscreenwatcher.h functions/fullscreenwatcher.cpp
         SOURCES functions/notificationhelper.h functions/notificationhelper.cpp
+        SOURCES functions/whiteboarditem.h functions/whiteboarditem.cpp
+        QML_FILES views/Whileboard.qml
+        SOURCES QtLogger.cpp QtLogger.h
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

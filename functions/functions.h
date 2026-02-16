@@ -11,7 +11,10 @@ class Functions : public QObject
     Q_OBJECT
 public:
     explicit Functions(QObject *parent = nullptr);
+    ~Functions();
     Q_INVOKABLE void setWindowNoActivate(QWindow* window);
+    Q_INVOKABLE void setOwner(QWindow *child, QWindow *owner);
+    Q_INVOKABLE void disableTouchFeedback(QWindow* window);
 
     Q_INVOKABLE void closeTopWindow();
     Q_INVOKABLE void openDrive();
@@ -30,6 +33,11 @@ private:
     QStringList usbDrivePaths;
     bool isUsbInserted = false;
     bool isSignalsEmit = false;
+
+    // 仅用于恢复系统触摸反馈设置（HKCU）
+    bool touchFeedbackSaved = false;
+    QString prevContactVisualization;
+    QString prevGestureVisualization;
 };
 
 #endif // FUNCTIONS_H

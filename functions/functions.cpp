@@ -9,6 +9,9 @@
 #include <endpointvolume.h>
 #include <comdef.h>
 #include <QTimer>
+#include <QSettings>
+#include <QDebug>
+#include <WinUser.h>
 
 //=== 用于全局安装 nativeEventFilter ===
 class UsbEventFilter : public QAbstractNativeEventFilter {
@@ -27,11 +30,80 @@ Functions::Functions(QObject *parent)
     qApp->installNativeEventFilter(new UsbEventFilter(this));
 }
 
+Functions::~Functions()
+{
+}
+
 void Functions::setWindowNoActivate(QWindow *window)
 {
     HWND hwnd = (HWND)window->winId();
     SetWindowLongPtr(hwnd, GWL_EXSTYLE,
                      GetWindowLongPtr(hwnd, GWL_EXSTYLE) | WS_EX_NOACTIVATE);
+}
+
+void Functions::setOwner(QWindow *child, QWindow *owner)
+{
+    if (!child || !owner) return;
+
+    HWND childHwnd = (HWND)child->winId();
+    HWND ownerHwnd = (HWND)owner->winId();
+
+    SetWindowLongPtr(
+        childHwnd,
+        GWLP_HWNDPARENT,
+        (LONG_PTR)ownerHwnd
+        );
+}
+
+void Functions::disableTouchFeedback(QWindow *window)
+{
+    if (!window) return;
+
+    HWND hwnd = (HWND)window->winId();
+    if (!hwnd) return;
+
+    // Windows 8+ 方法：使用 SetWindowFeedbackSetting
+    // FEEDBACK_TOUCH_CONTACTVISUALIZATION = 1
+    // FEEDBACK_GESTURE_END = 2
+    // FEEDBACK_PEN_BARRELVISUALIZATION = 3
+    // FEEDBACK_PEN_TAP = 4
+    // FEEDBACK_PEN_DOUBLETAP = 5
+    // FEEDBACK_PEN_PRESSANDHOLD = 6
+    // FEEDBACK_PEN_RIGHTTAP = 7
+    // FEEDBACK_TOUCH_TAP = 9
+    // FEEDBACK_TOUCH_DOUBLETAP = 10
+    // FEEDBACK_TOUCH_PRESSANDHOLD = 11
+    // FEEDBACK_TOUCH_RIGHTTAP = 12
+    // FEEDBACK_GESTURE_PRESSANDTAP = 13
+    // FEEDBACK_MAX = 0xFFFFFFFF
+
+    // BOOL SetWindowFeedbackSetting(HWND, FEEDBACK_TYPE, DWORD, UINT32, const VOID*)
+    typedef BOOL (WINAPI *SetWindowFeedbackSettingFunc)(HWND, UINT32, DWORD, UINT32, const VOID*);
+    HMODULE hUser32 = LoadLibraryW(L"user32.dll");
+    if (hUser32) {
+        SetWindowFeedbackSettingFunc pSetWindowFeedbackSetting = 
+            (SetWindowFeedbackSettingFunc)GetProcAddress(hUser32, "SetWindowFeedbackSetting");
+        
+        if (pSetWindowFeedbackSetting) {
+            // 通过传入 BOOL(false) 关闭指定反馈（经验做法，Windows 8+ 有效）
+            const BOOL off = FALSE;
+            const UINT32 sz = sizeof(off);
+
+            pSetWindowFeedbackSetting(hwnd, 1, 0, sz, &off);
+            pSetWindowFeedbackSetting(hwnd, 2, 0, sz, &off);
+            pSetWindowFeedbackSetting(hwnd, 3, 0, sz, &off);
+            pSetWindowFeedbackSetting(hwnd, 4, 0, sz, &off);
+            pSetWindowFeedbackSetting(hwnd, 5, 0, sz, &off);
+            pSetWindowFeedbackSetting(hwnd, 6, 0, sz, &off);
+            pSetWindowFeedbackSetting(hwnd, 7, 0, sz, &off);
+            pSetWindowFeedbackSetting(hwnd, 9, 0, sz, &off);
+            pSetWindowFeedbackSetting(hwnd, 10, 0, sz, &off);
+            // pSetWindowFeedbackSetting(hwnd, 11, 0, sz, &off);
+            pSetWindowFeedbackSetting(hwnd, 12, 0, sz, &off);
+            pSetWindowFeedbackSetting(hwnd, 13, 0, sz, &off);
+        }
+        FreeLibrary(hUser32);
+    }
 }
 
 void Functions::closeTopWindow()

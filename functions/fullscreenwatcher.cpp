@@ -41,7 +41,8 @@ FullscreenWorker::FullscreenWorker(QObject *parent)
 }
 
 void FullscreenWorker::process() {
-    while (true) {
+    running = true;
+    while (running) {
         HWND hwnd = GetForegroundWindow();
 
         if (!hwnd) {
@@ -78,6 +79,7 @@ void FullscreenWorker::process() {
 
         QThread::msleep(150);
     }
+    running = false;
 }
 
 // ---------------- Watcher ----------------
@@ -85,6 +87,20 @@ void FullscreenWorker::process() {
 FullscreenWatcher::FullscreenWatcher(QObject *parent)
     : QObject(parent)
 {
+    start();
+}
+
+FullscreenWatcher::~FullscreenWatcher() {
+    stop();
+}
+
+void FullscreenWatcher::start()
+{
+    // 如果已经在运行，先停止
+    if (workerThread.isRunning()) {
+        stop();
+    }
+
     worker = new FullscreenWorker(nullptr);
     worker->moveToThread(&workerThread);
 
@@ -96,8 +112,19 @@ FullscreenWatcher::FullscreenWatcher(QObject *parent)
     workerThread.start();
 }
 
-FullscreenWatcher::~FullscreenWatcher() {
+void FullscreenWatcher::stop()
+{
+    if (!workerThread.isRunning()) {
+        return;
+    }
+
+    if (worker) {
+        worker->running = false;
+    }
     workerThread.quit();
     workerThread.wait();
-    delete worker;
+    if (worker) {
+        worker->deleteLater();
+        worker = nullptr;
+    }
 }

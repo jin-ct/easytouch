@@ -1,139 +1,216 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import "./"
 
-Rectangle {
-    id: items
-    width: parent.width
-    height: windowBaseHeight
-    radius: parent.width * 0.5
-    anchors.bottom: parent.bottom
-    color: "#96FFFFFF"
-    clip: true
-    border.color: "#70909399"
-    border.width: 1
-
-    signal btnClicked()
+Item {
+    id: root
+    width: 48
+    height: parent.height
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.top: parent.top
 
     property var window
-    property int funBtnCount: 0
-    property int windowBaseHeight: 0
-    property bool isFolded: false
-
     property var funsObject
+    property alias model: listView.model
+    property bool isFolded: false
+    property double backgroundOpacity: 1
 
-    property bool isFunCloseWindowEnable: true
-    onIsFunCloseWindowEnableChanged: {
-        funBtnCount += isFunCloseWindowEnable ? 1 : -1
-        funCloseWindow.btnVisible = isFunCloseWindowEnable
-    }
-    property bool isFunVolumeEnable: true
-    onIsFunVolumeEnableChanged: {
-        funBtnCount += isFunCloseWindowEnable ? 1 : -1
-        funVolume.btnVisible = isFunVolumeEnable
-    }
-    property bool isFunOpenUDiskEnable: false
-    onIsFunOpenUDiskEnableChanged: {
-        funBtnCount += (isFunOpenUDiskEnable ? 2 : -2)
-        funOpenUDisk.btnVisible = isFunOpenUDiskEnable
-    }
-    property bool isFunRmUDiskEnable: false
-    onIsFunRmUDiskEnableChanged: {
-        funRmUDisk.btnVisible = isFunRmUDiskEnable
-    }
+    signal buttonTriggered(string idStr, bool checked, int pointX, int pointY)
 
-    Component.onCompleted: {
-        funBtnCount = 2
-    }
-
-    Column {
+    // 背景
+    Rectangle {
+        opacity: backgroundOpacity
         anchors.fill: parent
-        anchors.topMargin: 6
+        anchors.topMargin: 18
+        radius: 8
+        color: "#f2f2f2"
+        border.color: "#cfcfcf"
+    }
 
-        MoveBtn {
-            id: btnMove
-            window: items.window
+    // 主图标
+    Rectangle {
+        id: dragHandle
+        width: 52
+        height: 52
+        radius: width / 2
+        color: "#eaeaea"
+        border.color: "#c8c8c8"
+        z: 99
+
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
+
+        Image {
+            source: "qrc:/icon/icon.svg"
+            width: 36; height: 36
+            anchors.centerIn: parent
         }
-        FunBtn {
-            id: funCloseWindow
-            icon: "qrc:/icon/close.svg"
-            text: "关闭窗口"
+
+        MouseArea {
+            anchors.fill: parent
+            property point lastMousePos: Qt.point(0, 0)
+            property bool isMoved: false
+            onPressed: lastMousePos = Qt.point(mouseX, mouseY)
+            onPositionChanged: {
+                if (pressed) {
+                    var delta = Qt.point(mouseX - lastMousePos.x, mouseY - lastMousePos.y)
+                    root.window.x += delta.x
+                    root.window.y += delta.y
+                    isMoved = true;
+                }
+            }
             onClicked: {
-                funsObject.closeTopWindow()
-                btnClicked()
+                if (isMoved) {
+                    isMoved = false
+                    return
+                }
+                buttonTriggered("mainIconClick", false, parent.mapToGlobal(0, 0).x + parent.width/2, parent.mapToGlobal(0, 0).y + parent.height/2)
             }
         }
-        FunBtn {
-            id: funVolume
-            icon: "qrc:/icon/volume.svg"
-            text: "系统音量"
+    }
 
-            VolumeDialog {
-                id: volumeDialog
-                funsObject: items.funsObject
-            }
+    // 按钮列表
+    ListView {
+        id: listView
+        opacity: backgroundOpacity
 
-            onClicked: {
-                volumeDialog.heartPointX = funVolume.mapToGlobal(0, 0).x + funVolume.width/2
-                volumeDialog.heartPointY = funVolume.mapToGlobal(0, 0).y + funVolume.height/2
-                volumeDialog.hideOrShow()
-                btnClicked()
-            }
+        anchors {
+            top: parent.top; topMargin: 18
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom; bottomMargin: 6
         }
-        FunBtn {
-            id: funOpenUDisk
-            icon: "qrc:/icon/UDisk.svg"
-            text: "打开U盘"
-            btnVisible: false
-            onClicked: {
-                funsObject.openDrive()
-                btnClicked()
-            }
-        }
-        FunBtn {
-            id: funRmUDisk
-            icon: "qrc:/icon/rmudisk.svg"
-            text: "弹出U盘"
-            btnVisible: false
 
-            DialogWindow {
-                id: rmUDiskDialog
-                dialogWidth: 50
-                dialogHeight: 24
-                visible: false
-                funsObject: items.funsObject
+        clip: true
+        spacing: 2
+        model: model
+        interactive: true
 
-                property string tipsText: "弹出失败"
+        header: Rectangle { height: 36 }
+        delegate: Rectangle {
+            id: btn
+            width: 42
+            height: 38
+            radius: 6
+            x: (listView.width - width) / 2
+
+            color: (model.checked && model.checkable) ? "#4f8cff" : "#ffffff"
+            border.color: (model.checked && model.checkable) ? "#2f6fe0" : "#cfcfcf"
+            border.width: 1
+
+            Column {
+                anchors.centerIn: parent
+                spacing: 3
+
+                Image {
+                    width: 16; height: 16;
+                    source: model.icon
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    MultiEffect {
+                        visible: model.checkable
+                        anchors.fill: parent
+                        source: parent
+                        colorization: 1.0
+                        colorizationColor: (model.checked && model.checkable) ? "#ffffff" : "#525252"
+                    }
+                }
 
                 Text {
-                    text: rmUDiskDialog.tipsText
-                    color: "#303133"
-                    font.pixelSize: 10
-                    anchors.centerIn: parent
+                    text: model.text
+                    font.pixelSize: 8
+                    wrapMode: Text.NoWrap
+                    color: (model.checked && model.checkable) ? "#ffffff" : "#2f2f2f"
+                    horizontalAlignment: Text.AlignHCenter
                 }
             }
 
-            onClicked: {
-                let isSuccess = funsObject.ejectDrive()
-                rmUDiskDialog.tipsText =  isSuccess ? "弹出成功" : "弹出失败"
-                rmUDiskDialog.heartPointX = items.mapToGlobal(0, 0).x + items.width/2
-                rmUDiskDialog.heartPointY = items.mapToGlobal(0, 0).y + items.height/2
-                rmUDiskDialog.hideOrShow()
-                rmUDiskDialog.delayColse(2000)
-                btnClicked()
+            TapHandler {
+                onPressedChanged: btn.scale = pressed ? 0.94 : 1.0
+                onTapped: root.handleButtonTap(index, parent.mapToGlobal(0, 0).x + parent.width/2, parent.mapToGlobal(0, 0).y + parent.height/2)
+            }
+
+            Behavior on scale {
+                NumberAnimation { duration: 88 }
+            }
+        }
+        footer: Rectangle { height: 16 }
+        add: Transition {
+            NumberAnimation {
+                properties: "opacity"
+                from: 0
+                to: 1
+                duration: 160
+                easing.type: Easing.OutCubic
+            }
+            NumberAnimation {
+                property: "scale"
+                from: 0
+                to: 1
+                duration: 160
+            }
+        }
+        remove: Transition {
+            ParallelAnimation {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 1
+                    to: 0
+                    duration: 160
+                }
+                NumberAnimation {
+                    property: "scale"
+                    from: 1
+                    to: 0.6
+                    duration: 160
+                }
+            }
+        }
+        displaced: Transition {
+            NumberAnimation {
+                properties: "y"
+                duration: 160
+                easing.type: Easing.OutCubic
             }
         }
     }
-    FoldBtn {
-        id: btnFold
-        isFold: items.isFolded
-        onFold: {
-            funCloseWindow.btnVisible = isFunCloseWindowEnable ? !funCloseWindow.btnVisible : isFunCloseWindowEnable
-            funVolume.btnVisible = isFunVolumeEnable ? !funVolume.btnVisible : isFunVolumeEnable
-            funOpenUDisk.btnVisible = isFunOpenUDiskEnable ? !funOpenUDisk.btnVisible : isFunOpenUDiskEnable
-            funRmUDisk.btnVisible = isFunRmUDiskEnable ? !funRmUDisk.btnVisible : isFunRmUDiskEnable
-            items.isFolded = !isFolded
-            btnClicked()
+
+    function handleButtonTap(index, pointX, pointY) {
+        let item = model.get(index)
+        let newState = !item.checked
+
+        // 联动
+        if (item.link) {
+            model.setProperty(index, "checked", newState)
+        } else {
+            item.checked = newState
+        }
+
+        // 互斥
+        if (newState && item.exclusive) {
+            for (let i = 0; i < model.count; ++i) {
+                if (i !== index && model.get(i).exclusive) {
+                    model.setProperty(i, "checked", false)
+                }
+            }
+        }
+
+        buttonTriggered(item.idStr, newState, pointX, pointY)
+    }
+
+    Rectangle {
+        opacity: backgroundOpacity
+        height: 30
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        radius: 8
+
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#00000000" }
+            GradientStop { position: 0.8; color: "#f2f2f2" }
+            GradientStop { position: 1.0; color: "#f2f2f2" }
         }
     }
 }

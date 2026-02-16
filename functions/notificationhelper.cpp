@@ -21,7 +21,6 @@ NotificationHelper::NotificationHelper(QObject *parent)
     // 创建托盘图标
     d->tray = new QSystemTrayIcon(nullptr);
     d->tray->setIcon(QIcon(":/icon/icon.ico"));
-    d->tray->setToolTip("易触控");
 
     // 创建右键菜单
     d->menu = new QMenu();
@@ -30,6 +29,7 @@ NotificationHelper::NotificationHelper(QObject *parent)
 
     d->tray->setContextMenu(d->menu);
     d->tray->show();
+    d->tray->setToolTip("易触控");
 
     // 点击“退出”
     connect(quitAction, &QAction::triggered, this, [=] {
@@ -38,9 +38,7 @@ NotificationHelper::NotificationHelper(QObject *parent)
 
         d->tray->hide();
 
-        QTimer::singleShot(50, this, [] {
-            QApplication::quit();
-        });
+        emit appQuit();
     });
 
     // 点击托盘通知
