@@ -16,6 +16,7 @@ public:
 signals:
     void notificationClicked(const QString &id);
     void appQuit();
+    void startSettings();
 };
 
 #endif // NOTIFICATIONHELPER_H

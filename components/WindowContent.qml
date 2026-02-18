@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
-import "./"
+import "./Dialog"
 
 Item {
     id: root
@@ -15,6 +15,7 @@ Item {
     property alias model: listView.model
     property bool isFolded: false
     property double backgroundOpacity: 1
+    property int windowAnimationDuration: 160
 
     signal buttonTriggered(string idStr, bool checked, int pointX, int pointY)
 
@@ -67,6 +68,7 @@ Item {
                 }
                 buttonTriggered("mainIconClick", false, parent.mapToGlobal(0, 0).x + parent.width/2, parent.mapToGlobal(0, 0).y + parent.height/2)
             }
+
         }
     }
 
@@ -212,5 +214,12 @@ Item {
             GradientStop { position: 0.8; color: "#f2f2f2" }
             GradientStop { position: 1.0; color: "#f2f2f2" }
         }
+    }
+
+    Behavior on height {
+        NumberAnimation { duration: windowAnimationDuration }
+    }
+    Behavior on backgroundOpacity {
+        NumberAnimation { duration: windowAnimationDuration }
     }
 }

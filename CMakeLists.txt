@@ -7,7 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick)
-find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Concurrent)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
@@ -23,16 +22,24 @@ qt_add_qml_module(appeasytouch
     VERSION 1.0
     QML_FILES
         Main.qml
-        QML_FILES    components/WindowContent.qml
-        SOURCES functions/functions.cpp functions/functions.h
         RESOURCES res.qrc app.rc
-        QML_FILES components/DialogWindow.qml
-        QML_FILES components/VolumeDialog.qml
         SOURCES functions/fullscreenwatcher.h functions/fullscreenwatcher.cpp
         SOURCES functions/notificationhelper.h functions/notificationhelper.cpp
         SOURCES functions/whiteboarditem.h functions/whiteboarditem.cpp
-        QML_FILES views/Whileboard.qml
+        SOURCES functions/functions.cpp functions/functions.h
         SOURCES QtLogger.cpp QtLogger.h
+        QML_FILES views/SettingsPage.qml
+        QML_FILES views/Whileboard.qml
+        QML_FILES components/WindowContent.qml
+        QML_FILES components/Dialog/VolumeDialog.qml
+        QML_FILES components/Dialog/DialogWindow.qml
+        QML_FILES components/Card/SettingsButtonCard.qml
+        QML_FILES components/Card/SettingsCard.qml
+        QML_FILES components/Card/SettingsComboCard.qml
+        QML_FILES components/Card/SettingsSliderCard.qml
+        QML_FILES components/Card/SettingsSwitchCard.qml
+        QML_FILES components/Card/SettingsTextFieldCard.qml
+        RESOURCES qtquickcontrols2.conf
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

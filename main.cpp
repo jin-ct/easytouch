@@ -1,9 +1,5 @@
 #include <QApplication>
 #include <QQmlApplicationEngine>
-#include <QSettings>
-#include <QCoreApplication>
-#include <QFileInfo>
-#include <QDir>
 #include <QDebug>
 
 #include "functions/functions.h"
@@ -13,33 +9,13 @@
 
 #include "QtLogger.h"
 
-bool setAutoStart(bool enable)
-{
-    QString appName = QCoreApplication::applicationName();
-    QString appPath = QCoreApplication::applicationFilePath();
-    appPath = QDir::toNativeSeparators(appPath);
-
-    QSettings reg("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-                  QSettings::NativeFormat);
-
-    if (enable) {
-        reg.setValue(appName, "\"" + appPath + "\"");
-        qDebug() << "自启动已启用:" << appPath;
-    } else {
-        reg.remove(appName);
-        qDebug() << "自启动已禁用";
-    }
-
-    return true;
-}
-
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    LOG_INIT(LogConfig());
+    app.setOrganizationName("jin-ct");
 
-    setAutoStart(true);
+    LOG_INIT(LogConfig());
 
     QQmlApplicationEngine engine;
 

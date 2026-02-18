@@ -216,6 +216,75 @@ float Functions::getVolume()
     return currentVolume;
 }
 
+bool Functions::getIsMute()
+{
+    CoInitialize(nullptr);
+
+    IMMDeviceEnumerator* deviceEnumerator = nullptr;
+    CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
+                     IID_PPV_ARGS(&deviceEnumerator));
+
+    IMMDevice* defaultDevice = nullptr;
+    deviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &defaultDevice);
+
+    IAudioEndpointVolume* endpointVolume = nullptr;
+    defaultDevice->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL,
+                            nullptr, (void**)&endpointVolume);
+
+    BOOL isMuted = FALSE;
+    endpointVolume->GetMute(&isMuted);
+
+    endpointVolume->Release();
+    defaultDevice->Release();
+    deviceEnumerator->Release();
+    CoUninitialize();
+
+    return isMuted == TRUE;
+}
+
+void Functions::setMute(bool mute)
+{
+    CoInitialize(nullptr);
+
+    IMMDeviceEnumerator* deviceEnumerator = nullptr;
+    CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
+                     IID_PPV_ARGS(&deviceEnumerator));
+
+    IMMDevice* defaultDevice = nullptr;
+    deviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &defaultDevice);
+
+    IAudioEndpointVolume* endpointVolume = nullptr;
+    defaultDevice->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL,
+                            nullptr, (void**)&endpointVolume);
+
+    endpointVolume->SetMute(mute ? TRUE : FALSE, nullptr);
+
+    endpointVolume->Release();
+    defaultDevice->Release();
+    deviceEnumerator->Release();
+    CoUninitialize();
+}
+
+bool Functions::setAutoStart(bool enable)
+{
+    QString appName = QCoreApplication::applicationName();
+    QString appPath = QCoreApplication::applicationFilePath();
+    appPath = QDir::toNativeSeparators(appPath);
+
+    QSettings reg("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+                  QSettings::NativeFormat);
+
+    if (enable) {
+        reg.setValue(appName, "\"" + appPath + "\"");
+        qDebug() << "自启动已启用:" << appPath;
+    } else {
+        reg.remove(appName);
+        qDebug() << "自启动已禁用";
+    }
+
+    return true;
+}
+
 bool Functions::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result)
 {
     MSG *msg = static_cast<MSG*>(message);

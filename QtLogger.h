@@ -40,7 +40,7 @@ enum class LogLevel {
 struct LogConfig {
     QString logDir = "logs";                   // 日志目录
     QString logFilePrefix = "et";              // 日志文件前缀
-    qint64 maxFileSize = 10 * 1024 * 1024;     // 单个日志文件最大10MB
+    qint64 maxFileSize = 1 * 1024 * 1024;     // 单个日志文件最大1MB
     int maxFileCount = 10;                     // 保留最大文件数
     LogLevel minLevel = LogLevel::DEBUG;       // 最小日志级别
     bool consoleOutput = true;                 // 控制台输出

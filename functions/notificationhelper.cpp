@@ -24,8 +24,11 @@ NotificationHelper::NotificationHelper(QObject *parent)
 
     // 创建右键菜单
     d->menu = new QMenu();
+    QAction *settingsAction = new QAction("设置", d->menu);
     QAction *quitAction = new QAction("退出程序", d->menu);
+    d->menu->addAction(settingsAction);
     d->menu->addAction(quitAction);
+
 
     d->tray->setContextMenu(d->menu);
     d->tray->show();
@@ -40,6 +43,9 @@ NotificationHelper::NotificationHelper(QObject *parent)
 
         emit appQuit();
     });
+
+    // 点击“设置”
+    connect(settingsAction, &QAction::triggered, this, [=] {emit startSettings();});
 
     // 点击托盘通知
     connect(d->tray, &QSystemTrayIcon::messageClicked, this, [this, d] {

@@ -1,13 +1,16 @@
 import QtQuick
 import QtQuick.Controls
+import QtCore
 import Functions 1.0
 import "./components"
+import "./components/Dialog"
 import "./views"
 
 ApplicationWindow {
     visible: true
     opacity: 0
     id: windows
+    flags:  Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
 
     property int windowBottomMargin: 20                          // 工具栏窗口初始下边距
     property int windowHorizontalMargin: 8                       // 工具栏窗口初始左右边距
@@ -27,7 +30,8 @@ ApplicationWindow {
 
         onUsbInserted: {
             showUsbBtn()
-            notificationHp.showNotification("openUsb", "点击打开U盘", "轻触此处打开U盘")
+            if (settingsPage.isSendOpenUsb)
+                notificationHp.showNotification("openUsb", "点击打开U盘", "轻触此处打开U盘")
             console.log("newUsbInserted")
         }
         onUsbRemoved: {
@@ -55,6 +59,9 @@ ApplicationWindow {
             fsWatcher.stop()
             Qt.quit()
         }
+        onStartSettings: {
+            settingsPage.show()
+        }
     }
 
     // 窗口创建完成
@@ -63,6 +70,10 @@ ApplicationWindow {
         leftWindow.y = Screen.desktopAvailableHeight - (rightWindowHeight + windowBottomMargin)
         rightWindow.height = rightWindowHeight
         leftWindow.height = leftWindowHeight
+        if (!settingsPage.isAutoShowBtns) {
+            rightContent.isFolded = true
+            leftContent.isFolded = true
+        }
         funs.setWindowNoActivate(windows)
         funs.setWindowNoActivate(rightWindow)
         funs.setWindowNoActivate(leftWindow)
@@ -84,7 +95,24 @@ ApplicationWindow {
         // ListElement { text: "随机点名"; idStr: "随机数"; checked: false; checkable: true; link: false; exclusive: false; icon: "qrc:/icon/UDisk.svg" }
     }
 
+    // 设置保存
+    Settings {
+        id: settings
+
+        property alias isAutoStart: settingsPage.isAutoStart
+        property alias isAutoShowBtns: settingsPage.isAutoShowBtns
+        property alias isSendOpenUsb: settingsPage.isSendOpenUsb
+        property alias isAutoUpdate: settingsPage.isAutoUpdate
+    }
+
     // =============== 窗口 ===============
+
+    // 设置窗口
+    SettingsPage {
+        id: settingsPage
+        visible: false
+    }
+
     // 批注窗口
     // Whileboard {
     //     id: whileboard
@@ -118,6 +146,7 @@ ApplicationWindow {
             window: rightWindow
             funsObject: funs
             model: toolModel
+            windowAnimationDuration: windows.windowAnimationDuration
 
             onButtonTriggered: (idStr, checked, pointX, pointY) => {
                 handleButtonTriggered(idStr, checked, pointX, pointY)
@@ -125,11 +154,15 @@ ApplicationWindow {
                 switch(idStr) {
                 case "mainIconClick":
                     isFolded = !isFolded
-                    windows.rightWindowHeight = isFolded ? windowFoldedHeight : windowHeight
-                    handleWindowHeightChange(rightWindow.height, windows.rightWindowHeight, true)
-                    rightWindowAnimation.start()
                     break
                 }
+            }
+
+            onIsFoldedChanged: {
+                windows.rightWindowHeight = isFolded ? windowFoldedHeight : windowHeight
+                handleWindowHeightChange(rightWindow.height, windows.rightWindowHeight, true)
+                height = rightWindowHeight
+                backgroundOpacity = isFolded ? 0 : 1
             }
         }
     }
@@ -150,6 +183,7 @@ ApplicationWindow {
             window: leftWindow
             funsObject: funs
             model: toolModel
+            windowAnimationDuration: windows.windowAnimationDuration
 
             onButtonTriggered: (idStr, checked, pointX, pointY) => {
                 handleButtonTriggered(idStr, checked, pointX, pointY)
@@ -157,50 +191,21 @@ ApplicationWindow {
                 switch(idStr) {
                 case "mainIconClick":
                     isFolded = !isFolded
-                    windows.leftWindowHeight = isFolded ? windowFoldedHeight : windowHeight
-                    handleWindowHeightChange(leftWindow.height, windows.leftWindowHeight, false)
-                    leftWindowAnimation.start()
                     break
                 }
+            }
+
+            onIsFoldedChanged: {
+                windows.leftWindowHeight = isFolded ? windowFoldedHeight : windowHeight
+                handleWindowHeightChange(leftWindow.height, windows.leftWindowHeight, false)
+                height = leftWindowHeight
+                backgroundOpacity = isFolded ? 0 : 1
             }
         }
     }
     // =============== 窗口（结束） ===============
 
     // 动画
-    PropertyAnimation {
-        id: rightWindowAnimation
-        target: rightContent
-        property: "height"
-        duration: windowAnimationDuration
-        to: rightWindowHeight
-        onStarted: rightWindowOpacityAnimation.start()
-    }
-    PropertyAnimation {
-        id: leftWindowAnimation
-        target: leftContent
-        property: "height"
-        duration: windowAnimationDuration
-        to: leftWindowHeight
-        from: leftContent.height
-        onStarted: leftWindowOpacityAnimation.start()
-    }
-    PropertyAnimation {
-        id: rightWindowOpacityAnimation
-        target: rightContent
-        property: "backgroundOpacity"
-        duration: windowAnimationDuration
-        to: rightContent.isFolded ? 0 : 1
-        easing.type: Easing.InOutQuad
-    }
-    PropertyAnimation {
-        id: leftWindowOpacityAnimation
-        target: leftContent
-        property: "backgroundOpacity"
-        duration: windowAnimationDuration
-        to: leftContent.isFolded ? 0 : 1
-        easing.type: Easing.InOutQuad
-    }
     PropertyAnimation {
         id: leftWindowOpacity
         target: leftWindow
