@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
+set(CMAKE_EXE_LINKER_FLAGS "-static -s")
+
+add_library(WMF::WMF INTERFACE IMPORTED)
+
 project(easytouch VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -27,6 +31,7 @@ qt_add_qml_module(appeasytouch
         SOURCES functions/notificationhelper.h functions/notificationhelper.cpp
         SOURCES functions/whiteboarditem.h functions/whiteboarditem.cpp
         SOURCES functions/functions.cpp functions/functions.h
+        SOURCES functions/updatehelper.h functions/updatehelper.cpp
         SOURCES QtLogger.cpp QtLogger.h
         QML_FILES views/SettingsPage.qml
         QML_FILES views/Whileboard.qml
