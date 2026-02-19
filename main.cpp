@@ -13,8 +13,6 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    app.setOrganizationName("jin-ct");
-
     LOG_INIT(LogConfig());
 
     QQmlApplicationEngine engine;

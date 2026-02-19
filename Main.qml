@@ -98,7 +98,8 @@ ApplicationWindow {
     // 设置保存
     Settings {
         id: settings
-
+        location: "file:///" + getAppDir() + "\\config\\settings.ini"
+        category: "Basic"
         property alias isAutoStart: settingsPage.isAutoStart
         property alias isAutoShowBtns: settingsPage.isAutoShowBtns
         property alias isSendOpenUsb: settingsPage.isSendOpenUsb
@@ -321,6 +322,10 @@ ApplicationWindow {
                 }
             }
         }, windowAnimationDuration)
+    }
+    function getAppDir() {
+        var appPath = Qt.application.arguments[0]
+        return appPath.substring(0, appPath.lastIndexOf("\\"))
     }
     property int usbBtnIndexBegin: 0
     function showUsbBtn() {
