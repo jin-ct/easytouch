@@ -30,7 +30,9 @@ qt_add_qml_module(appeasytouch
         SOURCES QtLogger.cpp QtLogger.h
         QML_FILES views/SettingsPage.qml
         QML_FILES views/Whileboard.qml
+        QML_FILES views/RandomGenerator.qml
         QML_FILES components/WindowContent.qml
+        QML_FILES components/WindowTitleBar.qml
         QML_FILES components/Dialog/VolumeDialog.qml
         QML_FILES components/Dialog/DialogWindow.qml
         QML_FILES components/Card/SettingsButtonCard.qml

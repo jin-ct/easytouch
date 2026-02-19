@@ -92,7 +92,7 @@ ApplicationWindow {
         ListElement { text: "系统音量"; idStr: "volume"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/volume.svg" }
         ListElement { text: "批注"; idStr: "pen"; checked: false; checkable: true; link: true; exclusive: true; icon: "qrc:/icon/pen.svg" }
         // ListElement { text: "屏幕移位"; idStr: "movetool"; checked: false; checkable: true; link: true; exclusive: true; icon: "qrc:/icon/rmudisk.svg" }
-        // ListElement { text: "随机点名"; idStr: "随机数"; checked: false; checkable: true; link: false; exclusive: false; icon: "qrc:/icon/UDisk.svg" }
+        ListElement { text: "随机数"; idStr: "random"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/random.svg" }
     }
 
     // 设置保存

@@ -11,5 +11,6 @@
         <file>icon/volume_mute.svg</file>
         <file>qtquickcontrols2.conf</file>
         <file>icon/close_2.svg</file>
+        <file>icon/random.svg</file>
     </qresource>
 </RCC>
