@@ -125,6 +125,20 @@ ApplicationWindow {
     //     }
     // }
 
+    // 随机数生成器窗口
+    Loader {
+        id: randomGenerator
+        function show() {
+            source = "views/RandomGenerator.qml"
+        }
+        Connections {
+            target: randomGenerator.item
+            function onVisibleChanged(val) {
+                if (!val) randomGenerator.source = ""
+            }
+        }
+    }
+
     // 工具栏的悬浮对话框
     VolumeDialog {
         id: volumeDialog
@@ -380,6 +394,9 @@ ApplicationWindow {
                 notificationHp.showNotification("rmUsb", "U盘弹出失败", "U盘弹出失败")
                 console.error("ejectDriveError")
             }
+            break
+        case "random":
+            randomGenerator.show()
             break
         }
     }
