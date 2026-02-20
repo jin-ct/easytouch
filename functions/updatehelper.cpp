@@ -29,11 +29,6 @@ UpdateHelper::UpdateHelper(QObject *parent)
 {
     networkManager = new QNetworkAccessManager(this);
     
-    // 自动检查更新
-    if (isAutoUpdate) {
-        checkForUpdates("jin-ct", "easytouch");
-    }
-    
     connect(this, &UpdateHelper::updateAvailable, this, [=](const QString &version, const QString &downloadUrl){
         qDebug() << "updateAvailable: " << version << " " << downloadUrl;
         startDownload(downloadUrl);
@@ -65,26 +60,13 @@ QString UpdateHelper::getCurrentVersion() const
     return version;
 }
 
-void UpdateHelper::setIsAutoUpdate(bool isAutoUpdate)
-{
-    this->isAutoUpdate = isAutoUpdate;
-}
-
-bool UpdateHelper::getIsAutoUpdate() const
-{
-    return isAutoUpdate;
-}
-
 void UpdateHelper::checkForUpdates(const QString &repoOwner, const QString &repoName)
 {
     this->repoOwner = repoOwner;
     this->repoName = repoName;
 
-    // QString apiUrl = QString("https://api.github.com/repos/%1/%2/releases/latest")
-    //                  .arg(repoOwner, repoName);
-    
-    // 临时测试接口
-    QString apiUrl = "https://creatisky.cn/c_res/easytouch/checkUpdate.php";
+    QString apiUrl = QString("https://api.github.com/repos/%1/%2/releases/latest")
+                     .arg(repoOwner, repoName);
 
     QNetworkRequest request(apiUrl);
     request.setRawHeader("User-Agent", "EasyTouch-Updater/1.0");

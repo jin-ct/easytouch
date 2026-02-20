@@ -24,6 +24,17 @@ ApplicationWindow {
     property double windowOpacity: 0.80                          // 工具栏窗口最高透明度
     property double windowOpacityChangeDuration: 10000           // 工具栏窗口透明度改变时间间隔
 
+    // 设置保存
+    Settings {
+        id: settings
+        location: "file:///" + getAppDir() + "\\config\\settings.ini"
+        category: "Basic"
+        property alias isAutoStart: settingsPage.isAutoStart
+        property alias isAutoShowBtns: settingsPage.isAutoShowBtns
+        property alias isSendOpenUsb: settingsPage.isSendOpenUsb
+        property alias isAutoUpdate: settingsPage.isAutoUpdate
+    }
+
     // cpp类实例
     Functions {
         id: funs
@@ -65,7 +76,10 @@ ApplicationWindow {
     }
     UpdateHelper {
         id: updateHelper
-        isAutoUpdate: settings.isAutoStart
+        Component.onCompleted: {
+            if (settings.isAutoUpdate)
+                updateHelper.checkForUpdates("jin-ct", "easytouch")
+        }
         onUpdateAvailable: (version) => {
             notificationHp.showNotification("update", "有新版本的易触控" + "（" + version + "）", "现在开始更新易触控")
         }
@@ -100,17 +114,6 @@ ApplicationWindow {
         ListElement { text: "批注"; idStr: "pen"; checked: false; checkable: true; link: true; exclusive: true; icon: "qrc:/icon/pen.svg" }
         // ListElement { text: "屏幕移位"; idStr: "movetool"; checked: false; checkable: true; link: true; exclusive: true; icon: "qrc:/icon/rmudisk.svg" }
         ListElement { text: "随机数"; idStr: "random"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/random.svg" }
-    }
-
-    // 设置保存
-    Settings {
-        id: settings
-        location: "file:///" + getAppDir() + "\\config\\settings.ini"
-        category: "Basic"
-        property alias isAutoStart: settingsPage.isAutoStart
-        property alias isAutoShowBtns: settingsPage.isAutoShowBtns
-        property alias isSendOpenUsb: settingsPage.isSendOpenUsb
-        property alias isAutoUpdate: settingsPage.isAutoUpdate
     }
 
     // =============== 窗口 ===============

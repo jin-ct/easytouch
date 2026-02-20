@@ -12,7 +12,6 @@
 class UpdateHelper : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool isAutoUpdate READ getIsAutoUpdate WRITE setIsAutoUpdate NOTIFY isAutoUpdateChanged);
 public:
     explicit UpdateHelper(QObject *parent = nullptr);
     ~UpdateHelper();
@@ -20,15 +19,12 @@ public:
     Q_INVOKABLE void checkForUpdates(const QString &repoOwner, const QString &repoName);
     Q_INVOKABLE void startDownload(const QString &downloadUrl);
     Q_INVOKABLE QString getCurrentVersion() const;
-    Q_INVOKABLE void setIsAutoUpdate(bool isAutoUpdate);
-    Q_INVOKABLE bool getIsAutoUpdate() const;
 
 signals:
     void updateAvailable(const QString &version, const QString &downloadUrl);
     void updateCheckFinished(bool hasUpdate);
     void updateProgress(qint64 bytesReceived, qint64 bytesTotal);
     void updateError(const QString &error);
-    void isAutoUpdateChanged(bool isAutoUpdate);
 
 private slots:
     void onReleaseInfoReceived();
@@ -56,7 +52,6 @@ private:
     QString extractPath;
     QString repoOwner;
     QString repoName;
-    bool isAutoUpdate = true;
 };
 
 #endif // UPDATEHELPER_H
