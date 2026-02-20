@@ -365,16 +365,17 @@ ApplicationWindow {
         var appPath = Qt.application.arguments[0]
         return appPath.substring(0, appPath.lastIndexOf("\\"))
     }
+    ListModel { id: tmpModel }
     function swapModels(modelA, modelB) {
-        let cache = []
+        tmpModel.clear()
         for (let i = 0; i < modelA.count; ++i)
-            cache.push(modelA.get(i))
+            tmpModel.append(modelA.get(i))
         modelA.clear()
         for (let j = 0; j < modelB.count; ++j)
             modelA.append(modelB.get(j))
         modelB.clear()
-        for (let k = 0; k < cache.length; ++k)
-            modelB.append(cache[k])
+        for (let k = 0; k < tmpModel.count; ++k)
+            modelB.append(tmpModel.get(k))
     }
     property int usbBtnIndexBegin: 0
     function showUsbBtn() {
@@ -440,7 +441,7 @@ ApplicationWindow {
             leftWindow.raise()
             break
         case "closePen":
-            swapModels(toolModel, penModel)
+            swapModels(penModel, toolModel)
             whileboard.close()
             break
         case "selectPen":
