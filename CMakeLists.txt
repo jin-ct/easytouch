@@ -14,6 +14,7 @@ find_package(Qt6 REQUIRED COMPONENTS Quick)
 find_package(Qt6 REQUIRED COMPONENTS Concurrent)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Network)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -24,29 +25,28 @@ qt_add_executable(appeasytouch
 qt_add_qml_module(appeasytouch
     URI easytouch
     VERSION 1.0
-    QML_FILES
-        Main.qml
-        RESOURCES res.qrc app.rc
-        SOURCES functions/fullscreenwatcher.h functions/fullscreenwatcher.cpp
-        SOURCES functions/notificationhelper.h functions/notificationhelper.cpp
-        SOURCES functions/whiteboarditem.h functions/whiteboarditem.cpp
-        SOURCES functions/functions.cpp functions/functions.h
-        SOURCES functions/updatehelper.h functions/updatehelper.cpp
-        SOURCES QtLogger.cpp QtLogger.h
-        QML_FILES views/SettingsPage.qml
-        QML_FILES views/Whileboard.qml
-        QML_FILES views/RandomGenerator.qml
-        QML_FILES components/WindowContent.qml
-        QML_FILES components/WindowTitleBar.qml
-        QML_FILES components/Dialog/VolumeDialog.qml
-        QML_FILES components/Dialog/DialogWindow.qml
-        QML_FILES components/Card/SettingsButtonCard.qml
-        QML_FILES components/Card/SettingsCard.qml
-        QML_FILES components/Card/SettingsComboCard.qml
-        QML_FILES components/Card/SettingsSliderCard.qml
-        QML_FILES components/Card/SettingsSwitchCard.qml
-        QML_FILES components/Card/SettingsTextFieldCard.qml
-        RESOURCES qtquickcontrols2.conf
+    RESOURCES res.qrc app.rc
+    SOURCES functions/fullscreenwatcher.h functions/fullscreenwatcher.cpp
+    SOURCES functions/notificationhelper.h functions/notificationhelper.cpp
+    SOURCES functions/whiteboarditem.h functions/whiteboarditem.cpp
+    SOURCES functions/functions.cpp functions/functions.h
+    SOURCES functions/updatehelper.h functions/updatehelper.cpp
+    SOURCES QtLogger.cpp QtLogger.h
+    QML_FILES Main.qml
+    QML_FILES views/SettingsPage.qml
+    QML_FILES views/Whileboard.qml
+    QML_FILES views/RandomGenerator.qml
+    QML_FILES components/WindowContent.qml
+    QML_FILES components/WindowTitleBar.qml
+    QML_FILES components/Dialog/VolumeDialog.qml
+    QML_FILES components/Dialog/DialogWindow.qml
+    QML_FILES components/Card/SettingsButtonCard.qml
+    QML_FILES components/Card/SettingsCard.qml
+    QML_FILES components/Card/SettingsComboCard.qml
+    QML_FILES components/Card/SettingsSliderCard.qml
+    QML_FILES components/Card/SettingsSwitchCard.qml
+    QML_FILES components/Card/SettingsTextFieldCard.qml
+    RESOURCES qtquickcontrols2.conf
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -65,8 +65,8 @@ target_link_libraries(appeasytouch
 )
 target_link_libraries(appeasytouch PRIVATE Qt6::Core)
 target_link_libraries(appeasytouch PRIVATE Qt6::Concurrent)
+target_link_libraries(appeasytouch PRIVATE Qt6::Network)
 target_link_libraries(appeasytouch PRIVATE dwmapi)
-target_link_libraries(appeasytouch PRIVATE Qt6::Core)
 target_link_libraries(appeasytouch PRIVATE Qt6::Widgets)
 
 include(GNUInstallDirs)

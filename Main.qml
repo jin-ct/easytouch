@@ -63,6 +63,13 @@ ApplicationWindow {
             settingsPage.show()
         }
     }
+    UpdateHelper {
+        id: updateHelper
+        isAutoUpdate: settings.isAutoStart
+        onUpdateAvailable: (version) => {
+            notificationHp.showNotification("update", "有新版本的易触控" + "（" + version + "）", "现在开始更新易触控")
+        }
+    }
 
     // 窗口创建完成
     Component.onCompleted: {
