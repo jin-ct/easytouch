@@ -4,9 +4,9 @@ import Functions 1.0
 
 Window {
     id: whileboardWin
-    width: Screen.width / 2
+    width: Screen.width
     height: Screen.height
-    visible: false
+    visible: true
     color: "transparent"
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
 
@@ -15,6 +15,19 @@ Window {
     property real penWidth: 1.5
     property bool eraserMode: false
     property real eraserRadius: 18
+
+    function clear() {
+        wb.clear()
+    }
+    function exportPng(path) {
+        wb.exportPng(path)
+    }
+    function switchToEraser() {
+        eraserMode = true
+    }
+    function switchToPen() {
+        eraserMode = false
+    }
 
     Item {
         id: root
@@ -29,28 +42,5 @@ Window {
             eraserMode: whileboardWin.eraserMode
             eraserRadius: whileboardWin.eraserRadius
         }
-
-        /* ===== 右下角控制按钮 ===== */
-    Column {
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.margins: 20
-        spacing: 8
-
-        Button {
-                text: whileboardWin.eraserMode ? "切换为画笔" : "切换为橡皮"
-                onClicked: whileboardWin.eraserMode = !whileboardWin.eraserMode
-        }
-
-        Button {
-            text: "清空"
-                onClicked: wb.clear()
-        }
-
-        Button {
-            text: "导出 PNG"
-                onClicked: wb.exportPng("doodle.png")
-        }
-    }
     }
 }

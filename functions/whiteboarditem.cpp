@@ -17,7 +17,7 @@ WhiteboardItem::WhiteboardItem(QQuickItem *parent)
     setAcceptHoverEvents(true);
     setFlag(ItemHasContents, true);
 
-    // 创建自定义灰色小点光标（类似 Win7）
+    // 创建自定义灰色小点光标
     QPixmap cursorPixmap(16, 16);
     cursorPixmap.fill(Qt::transparent);
     QPainter p(&cursorPixmap);

@@ -107,13 +107,22 @@ ApplicationWindow {
     }
 
     // 按钮列表数据
+    // 默认列表
     ListModel {
         id: toolModel
         ListElement { text: "关闭窗口"; idStr: "close"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/close.svg" }
         ListElement { text: "系统音量"; idStr: "volume"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/volume.svg" }
-        ListElement { text: "批注"; idStr: "pen"; checked: false; checkable: true; link: true; exclusive: true; icon: "qrc:/icon/pen.svg" }
+        ListElement { text: "批注"; idStr: "pen"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/pen_2.svg" }
         // ListElement { text: "屏幕移位"; idStr: "movetool"; checked: false; checkable: true; link: true; exclusive: true; icon: "qrc:/icon/rmudisk.svg" }
         ListElement { text: "随机数"; idStr: "random"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/random.svg" }
+    }
+    // 屏幕批注列表
+    ListModel {
+        id: penModel
+        ListElement { text: "批注"; idStr: "selectPen"; checked: true; checkable: true; link: true; exclusive: true; icon: "qrc:/icon/pen.svg" }
+        ListElement { text: "橡皮"; idStr: "selectEraser"; checked: false; checkable: true; link: true; exclusive: true; icon: "qrc:/icon/eraser.svg" }
+        ListElement { text: "关闭批注"; idStr: "closePen"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/rmudisk.svg" }
+        ListElement { text: "保存批注"; idStr: "savePen"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/save.svg" }
     }
 
     // =============== 窗口 ===============
@@ -125,15 +134,20 @@ ApplicationWindow {
     }
 
     // 批注窗口
-    // Whileboard {
-    //     id: whileboard
-    //     Component.onCompleted: {
-    //         // funs.setWindowNoActivate(whileboard)
-    //         whileboard.visible = true
-    //         // 确保窗口创建出 winId 后再禁用触摸反馈（否则可能不生效）
-    //         Qt.callLater(function() { funs.disableTouchFeedback(whileboard) })
-    //     }
-    // }
+    Loader {
+        id: whileboard
+        function show() {
+            source = "views/Whileboard.qml"
+        }
+        function close() {
+            source = ""
+        }
+        onLoaded: {
+            funs.setWindowNoActivate(whileboard.item)
+            // 确保窗口创建出 winId 后再禁用触摸反馈（否则可能不生效）
+            Qt.callLater(function() { funs.disableTouchFeedback(whileboard.item) })
+        }
+    }
 
     // 随机数生成器窗口
     Loader {
@@ -351,6 +365,17 @@ ApplicationWindow {
         var appPath = Qt.application.arguments[0]
         return appPath.substring(0, appPath.lastIndexOf("\\"))
     }
+    function swapModels(modelA, modelB) {
+        let cache = []
+        for (let i = 0; i < modelA.count; ++i)
+            cache.push(modelA.get(i))
+        modelA.clear()
+        for (let j = 0; j < modelB.count; ++j)
+            modelA.append(modelB.get(j))
+        modelB.clear()
+        for (let k = 0; k < cache.length; ++k)
+            modelB.append(cache[k])
+    }
     property int usbBtnIndexBegin: 0
     function showUsbBtn() {
         usbBtnIndexBegin = toolModel.count
@@ -407,6 +432,24 @@ ApplicationWindow {
             break
         case "random":
             randomGenerator.show()
+            break
+        case "pen":
+            swapModels(toolModel, penModel)
+            whileboard.show()
+            rightWindow.raise()
+            leftWindow.raise()
+            break
+        case "closePen":
+            swapModels(toolModel, penModel)
+            whileboard.close()
+            break
+        case "selectPen":
+            if(checked) whileboard.item.switchToPen()
+            break
+        case "selectEraser":
+            if(checked) whileboard.item.switchToEraser()
+            break
+        case "savePen":
             break
         }
     }

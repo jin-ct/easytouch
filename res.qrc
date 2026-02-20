@@ -12,5 +12,8 @@
         <file>qtquickcontrols2.conf</file>
         <file>icon/close_2.svg</file>
         <file>icon/random.svg</file>
+        <file>icon/eraser.svg</file>
+        <file>icon/save.svg</file>
+        <file>icon/pen_2.svg</file>
     </qresource>
 </RCC>
