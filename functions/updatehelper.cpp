@@ -10,6 +10,8 @@
 #include <QTextStream>
 #include <QStringConverter>
 #include <QThread>
+#include <QSslError>
+#include <QSslConfiguration>
 #include <Windows.h>
 #include <ShlObj.h>
 #include <ShlDisp.h>
@@ -72,10 +74,22 @@ void UpdateHelper::checkForUpdates(const QString &repoOwner, const QString &repo
     request.setRawHeader("User-Agent", "EasyTouch-Updater/1.0");
     request.setRawHeader("Accept", "application/vnd.github.v3+json");
 
+    // 配置 SSL，忽略证书错误（用于更新检查）
+    QSslConfiguration sslConfig = request.sslConfiguration();
+    sslConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(sslConfig);
+
     currentReply = networkManager->get(request);
     connect(currentReply, &QNetworkReply::finished, this, &UpdateHelper::onReleaseInfoReceived);
     connect(currentReply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::errorOccurred),
             this, &UpdateHelper::onDownloadError);
+    // 忽略 SSL 错误
+    connect(currentReply, &QNetworkReply::sslErrors, this, [this](const QList<QSslError> &errors) {
+        Q_UNUSED(errors);
+        if (currentReply) {
+            currentReply->ignoreSslErrors();
+        }
+    });
 }
 
 void UpdateHelper::onReleaseInfoReceived()
@@ -202,11 +216,23 @@ void UpdateHelper::downloadUpdate(const QString &downloadUrl)
     QNetworkRequest request(downloadUrl);
     request.setRawHeader("User-Agent", "EasyTouch-Updater/1.0");
 
+    // 配置 SSL，忽略证书错误（用于更新下载）
+    QSslConfiguration sslConfig = request.sslConfiguration();
+    sslConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(sslConfig);
+
     currentReply = networkManager->get(request);
     connect(currentReply, &QNetworkReply::downloadProgress, this, &UpdateHelper::onDownloadProgress);
     connect(currentReply, &QNetworkReply::finished, this, &UpdateHelper::onDownloadFinished);
     connect(currentReply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::errorOccurred),
             this, &UpdateHelper::onDownloadError);
+    // 忽略 SSL 错误
+    connect(currentReply, &QNetworkReply::sslErrors, this, [this](const QList<QSslError> &errors) {
+        Q_UNUSED(errors);
+        if (currentReply) {
+            currentReply->ignoreSslErrors();
+        }
+    });
 }
 
 void UpdateHelper::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
