@@ -42,6 +42,8 @@ qt_add_qml_module(appeasytouch
     QML_FILES components/WindowTitleBar.qml
     QML_FILES components/Dialog/VolumeDialog.qml
     QML_FILES components/Dialog/DialogWindow.qml
+    QML_FILES components/Dialog/PenDialog.qml
+    QML_FILES components/Dialog/EraserDialog.qml
     QML_FILES components/Card/SettingsButtonCard.qml
     QML_FILES components/Card/SettingsCard.qml
     QML_FILES components/Card/SettingsComboCard.qml

@@ -12,8 +12,8 @@ DialogWindow {
     property bool isMute: false
 
     onVisibleChanged: {
-        volumeSlider.value = funsObject.getVolume()
-        isMute = funsObject.getIsMute()
+        volumeSlider.value = funs.getVolume()
+        isMute = funs.getIsMute()
     }
 
     Row {
@@ -48,7 +48,7 @@ DialogWindow {
             }
             onClicked: {
                 isMute = !isMute
-                funsObject.setMute(isMute);
+                funs.setMute(isMute);
             }
 
             Behavior on scale {
@@ -62,7 +62,7 @@ DialogWindow {
             height: parent.height
             from: 0
             to: 1
-            value: funsObject.getVolume()
+            value: funs.getVolume()
 
             property bool volumeDirty: false
 
@@ -78,7 +78,7 @@ DialogWindow {
                 onTriggered: {
                     if (volumeSlider.volumeDirty) {
                         volumeSlider.volumeDirty = false
-                        funsObject.setVolume(volumeSlider.value)
+                        funs.setVolume(volumeSlider.value)
                     }
                 }
             }

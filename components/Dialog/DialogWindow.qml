@@ -10,7 +10,6 @@ Window {
     width: Screen.desktopAvailableWidth
     height: Screen.desktopAvailableHeight
 
-    property var funsObject
     property int heartPointX: 0
     property int heartPointY: 0
     property int dialogWidth: 0
@@ -19,7 +18,7 @@ Window {
     default property alias content: background.data
 
     Component.onCompleted: {
-        funsObject.setWindowNoActivate(dialog)
+        funs.setWindowNoActivate(dialog)
     }
 
     Timer {id: timer}
@@ -34,7 +33,11 @@ Window {
             hideOrShow()
         }, delayTime)
     }
-    function hideOrShow() {
+    function hideOrShow(pointX = 0, pointY = 0) {
+        if (pointX)
+            heartPointX = pointX
+        if (pointY)
+            heartPointY = pointY
         if (!dialog.visible)
             dialog.visible = true
         windowAnimation.start()
@@ -58,8 +61,8 @@ Window {
         x: heartPointX < (Screen.desktopAvailableWidth/2) ? (heartPointX + 27) : (heartPointX - width - 27)
         y: heartPointY - height/2
         radius: 6
-        color: "#96FFFFFF"
-        border.color: "#70909399"
+        color: "#FFFFFF"
+        border.color: "#cfcfcf"
         border.width: 1
     }
 

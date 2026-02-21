@@ -189,7 +189,30 @@ ApplicationWindow {
     // 工具栏的悬浮对话框
     VolumeDialog {
         id: volumeDialog
-        funsObject: funs
+    }
+    PenDialog {
+        id: penDialog
+        onSelectedColorChanged: {
+            if (whileboard.status === Loader.Ready) {
+                console.log("whileboard-onSelectedColorChanged", selectedColor)
+                whileboard.item.penColor = selectedColor
+            }
+        }
+        onSelectedWidthChanged: {
+            if (whileboard.status === Loader.Ready) {
+                console.log("whileboard-onSelectedWidthChanged", selectedWidth)
+                whileboard.item.penWidth = selectedWidth
+            }
+        }
+    }
+    EraserDialog {
+        id: eraserDialog
+        onClear: {
+            if (whileboard.status === Loader.Ready) {
+                console.log("whileboard-onClear")
+                whileboard.item.clear()
+            }
+        }
     }
 
     // 右侧工具栏
@@ -210,8 +233,8 @@ ApplicationWindow {
             model: toolModel
             windowAnimationDuration: windows.windowAnimationDuration
 
-            onButtonTriggered: (idStr, checked, pointX, pointY) => {
-                handleButtonTriggered(idStr, checked, pointX, pointY)
+            onButtonTriggered: (idStr, checked, perState, pointX, pointY) => {
+                handleButtonTriggered(idStr, checked, perState, pointX, pointY)
                 // 处理窗口主图标按钮事件
                 switch(idStr) {
                 case "mainIconClick":
@@ -247,8 +270,8 @@ ApplicationWindow {
             model: toolModel
             windowAnimationDuration: windows.windowAnimationDuration
 
-            onButtonTriggered: (idStr, checked, pointX, pointY) => {
-                handleButtonTriggered(idStr, checked, pointX, pointY)
+            onButtonTriggered: (idStr, checked, perState, pointX, pointY) => {
+                handleButtonTriggered(idStr, checked, perState, pointX, pointY)
                 // 处理窗口主图标按钮事件
                 switch(idStr) {
                 case "mainIconClick":
@@ -438,7 +461,7 @@ ApplicationWindow {
         windowsOpacityTimer.restart()
     }
 
-    function handleButtonTriggered(idStr, checked, pointX, pointY) {
+    function handleButtonTriggered(idStr, checked, perState, pointX, pointY) {
         console.log("funBtnTriggered, idStr =", idStr, ", checked =", checked, ", pointX =", pointX, ", pointY =", pointY)
         // 提升窗口透明度 (保存批注时不提升)
         if (idStr !== "savePen")
@@ -449,9 +472,7 @@ ApplicationWindow {
             funs.closeTopWindow()
             break
         case "volume":
-            volumeDialog.heartPointX = pointX
-            volumeDialog.heartPointY = pointY
-            volumeDialog.hideOrShow()
+            volumeDialog.hideOrShow(pointX, pointY)
             break
         case "openDrive":
             funs.openDrive()
@@ -478,10 +499,18 @@ ApplicationWindow {
             closePen()
             break
         case "selectPen":
-            if(checked) whileboard.item.switchToPen()
+            if(checked) {
+                whileboard.item.switchToPen()
+                if (perState)
+                    penDialog.hideOrShow(pointX, pointY)
+            }
             break
         case "selectEraser":
-            if(checked) whileboard.item.switchToEraser()
+            if(checked) {
+                whileboard.item.switchToEraser()
+                if (perState)
+                    eraserDialog.hideOrShow(pointX, pointY)
+            }
             break
         case "savePen":
             rightWindow.opacity = 0.2  // 截屏时降透明度

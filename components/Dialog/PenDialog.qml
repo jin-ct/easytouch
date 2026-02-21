@@ -1,0 +1,122 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Basic
+import "./"
+
+DialogWindow {
+    id: penDialog
+    dialogWidth: contentRow.childrenRect.width + 24
+    dialogHeight: 80
+    visible: false
+
+    // 当前选中的笔属性，供外部绑定或读取
+    property int selectedColorIndex: 0
+    property int selectedWidthIndex: 1
+    property color selectedColor: penDialog.penColors[penDialog.selectedColorIndex]
+    property real selectedWidth: penDialog.penWidths[penDialog.selectedWidthIndex]
+
+    // 六种常用颜色
+    readonly property var penColors: [
+        "#E74C3C",  // 红
+        "#3498DB",  // 蓝
+        "#2ECC71",  // 绿
+        "#F39C12",  // 橙
+        "#9B59B6",  // 紫
+        "#2C3E50"   // 深灰/黑
+    ]
+
+    // 三种画笔粗细（逻辑像素）
+    readonly property var penWidths: [1, 1.5, 2]
+
+    Row {
+        id: contentRow
+        spacing: 12
+        anchors {
+            centerIn: parent
+            left: parent.left
+            leftMargin: 12
+            right: parent.right
+            rightMargin: 12
+        }
+
+        Grid {
+            columns: 3
+            spacing: 6
+            anchors.verticalCenter: parent.verticalCenter
+            Repeater {
+                model: penDialog.penColors
+                delegate: Item {
+                    width: 26
+                    height: 26
+                    readonly property bool isSelected: penDialog.selectedColorIndex === index
+                    Rectangle {
+                        width: 22
+                        height: 22
+                        anchors.centerIn: parent
+                        radius: 11
+                        color: modelData
+                        border.width: parent.isSelected ? 2 : 0
+                        border.color: "#2C3E50"
+                        opacity: parent.isSelected ? 1 : 0.85
+                        Behavior on opacity { NumberAnimation { duration: 80 } }
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            penDialog.selectedColorIndex = index
+                            if (typeof penDialog.funsObject !== "undefined" && penDialog.funsObject.setPenColor)
+                                penDialog.funsObject.setPenColor(penDialog.selectedColor)
+                            penDialog.hideOrShow()
+                        }
+                    }
+                }
+            }
+        }
+
+        // 分隔线
+        Rectangle {
+            width: 1
+            height: 24
+            anchors.verticalCenter: parent.verticalCenter
+            color: "#70909399"
+        }
+
+        // 粗细选择区
+        Column {
+            spacing: 1
+            Repeater {
+                model: penDialog.penWidths
+                delegate: Item {
+                    width: 22
+                    height: 20
+                    readonly property bool isSelected: penDialog.selectedWidthIndex === index
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 22
+                        height: 22
+                        radius: 4
+                        color: parent.isSelected ? "#E8F4FD" : "transparent"
+                        border.width: parent.isSelected ? 1 : 0
+                        border.color: "#3498DB"
+                    }
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: (index === 0 ? 4 : index === 1 ? 8 : 11)
+                        height: (index === 0 ? 4 : index === 1 ? 8 : 11)
+                        radius: (index === 0 ? 4 : index === 1 ? 8 : 11) / 2
+                        color: parent.isSelected ? "#3498DB" : "#95A5A6"
+                        Behavior on color { ColorAnimation { duration: 80 } }
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            penDialog.selectedWidthIndex = index
+                            if (typeof penDialog.funsObject !== "undefined" && penDialog.funsObject.setPenWidth)
+                                penDialog.funsObject.setPenWidth(penDialog.selectedWidth)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

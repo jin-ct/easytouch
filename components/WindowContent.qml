@@ -17,7 +17,7 @@ Item {
     property double backgroundOpacity: 1
     property int windowAnimationDuration: 160
 
-    signal buttonTriggered(string idStr, bool checked, int pointX, int pointY)
+    signal buttonTriggered(string idStr, bool checked, bool perState, int pointX, int pointY)
 
     // 背景
     Rectangle {
@@ -67,7 +67,7 @@ Item {
                     isMoved = false
                     return
                 }
-                buttonTriggered("mainIconClick", false, parent.mapToGlobal(0, 0).x + parent.width/2, parent.mapToGlobal(0, 0).y + parent.height/2)
+                buttonTriggered("mainIconClick", false, false, parent.mapToGlobal(0, 0).x + parent.width/2, parent.mapToGlobal(0, 0).y + parent.height/2)
             }
 
         }
@@ -182,6 +182,7 @@ Item {
 
     function handleButtonTap(index, pointX, pointY) {
         let item = model.get(index)
+        let perState = item.checked
         let newState
         if (item.cancelable) {
             newState = !item.checked
@@ -205,7 +206,7 @@ Item {
             }
         }
 
-        buttonTriggered(item.idStr, newState, pointX, pointY)
+        buttonTriggered(item.idStr, newState, perState, pointX, pointY)
     }
 
     Rectangle {
