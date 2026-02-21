@@ -80,6 +80,7 @@ Window {
                             Image {
                                 id: logoImage
                                 source: "qrc:/icon/icon.svg"
+                                mipmap:true
                                 width: 40
                                 height: 40
                                 anchors.verticalCenter: parent.verticalCenter

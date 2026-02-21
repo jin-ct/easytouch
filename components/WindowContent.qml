@@ -45,6 +45,7 @@ Item {
         Image {
             source: "qrc:/icon/icon.svg"
             width: 36; height: 36
+            mipmap:true
             anchors.centerIn: parent
         }
 
@@ -108,6 +109,7 @@ Item {
                 Image {
                     width: 16; height: 16;
                     source: model.icon
+                    mipmap:true
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     MultiEffect {

@@ -37,6 +37,7 @@ DialogWindow {
                     anchors.centerIn: parent
                     width: 16
                     height: 16
+                    mipmap:true
                     source: isMute ? "qrc:/icon/volume_mute.svg" :"qrc:/icon/volume_2.svg"
                 }
             }
