@@ -298,7 +298,7 @@ void WhiteboardItem::eraseAt(const QPointF &pt)
 qreal WhiteboardItem::speedToWidth(qreal speed) const
 {
     // 与 QML 中类似的映射：写得越快越细，越慢越粗
-    const qreal minFactor = 1.5;
+    const qreal minFactor = 2.0;
     const qreal maxFactor = 2.0;
     const qreal baseSpeed = 0.8;
 
