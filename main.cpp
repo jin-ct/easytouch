@@ -8,6 +8,7 @@
 #include "functions/notificationhelper.h"
 #include "functions/whiteboarditem.h"
 #include "functions/updatehelper.h"
+#include "functions/filehelper.h"
 
 #include "QtLogger.h"
 
@@ -33,6 +34,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<NotificationHelper>("Functions", 1, 0, "NotificationHelper");
     qmlRegisterType<WhiteboardItem>("Functions", 1, 0, "WhiteboardItem");
     qmlRegisterType<UpdateHelper>("Functions", 1, 0, "UpdateHelper");
+    qmlRegisterType<FileHelper>("Functions", 1, 0, "FileHelper");
 
     QObject::connect(
         &engine,

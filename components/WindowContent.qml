@@ -182,7 +182,12 @@ Item {
 
     function handleButtonTap(index, pointX, pointY) {
         let item = model.get(index)
-        let newState = !item.checked
+        let newState
+        if (item.cancelable) {
+            newState = !item.checked
+        } else  {
+            newState = true
+        }
 
         // 联动
         if (item.link) {

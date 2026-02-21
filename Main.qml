@@ -33,6 +33,7 @@ ApplicationWindow {
         property alias isAutoShowBtns: settingsPage.isAutoShowBtns
         property alias isSendOpenUsb: settingsPage.isSendOpenUsb
         property alias isAutoUpdate: settingsPage.isAutoUpdate
+        property alias penSavePath: settingsPage.penSavePath
     }
 
     // cpp类实例
@@ -85,6 +86,10 @@ ApplicationWindow {
         }
     }
 
+    FileHelper {
+        id: fileHelper
+    }
+
     // 窗口创建完成
     Component.onCompleted: {
         rightWindow.y = Screen.desktopAvailableHeight - (rightWindowHeight + windowBottomMargin)
@@ -110,19 +115,37 @@ ApplicationWindow {
     // 默认列表
     ListModel {
         id: toolModel
-        ListElement { text: "关闭窗口"; idStr: "close"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/close.svg" }
-        ListElement { text: "系统音量"; idStr: "volume"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/volume.svg" }
-        ListElement { text: "批注"; idStr: "pen"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/pen_2.svg" }
-        // ListElement { text: "屏幕移位"; idStr: "movetool"; checked: false; checkable: true; link: true; exclusive: true; icon: "qrc:/icon/rmudisk.svg" }
-        ListElement { text: "随机数"; idStr: "random"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/random.svg" }
+        ListElement {
+            text: "关闭窗口"; idStr: "close"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/close.svg"
+        }
+        ListElement {
+            text: "系统音量"; idStr: "volume"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/volume.svg"
+        }
+        ListElement {
+            text: "批注"; idStr: "pen"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/pen_2.svg"
+        }
+        // ListElement {
+        //     text: "屏幕移位"; idStr: "movetool"; checked: false; checkable: true; link: true; exclusive: true; cancelable: true; icon: "qrc:/icon/rmudisk.svg"
+        // }
+        ListElement {
+            text: "随机数"; idStr: "random"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/random.svg"
+        }
     }
     // 屏幕批注列表
     ListModel {
         id: penModel
-        ListElement { text: "批注"; idStr: "selectPen"; checked: true; checkable: true; link: true; exclusive: true; icon: "qrc:/icon/pen.svg" }
-        ListElement { text: "橡皮"; idStr: "selectEraser"; checked: false; checkable: true; link: true; exclusive: true; icon: "qrc:/icon/eraser.svg" }
-        ListElement { text: "关闭批注"; idStr: "closePen"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/rmudisk.svg" }
-        ListElement { text: "保存批注"; idStr: "savePen"; checked: false; checkable: false; link: false; exclusive: false; icon: "qrc:/icon/save.svg" }
+        ListElement {
+            text: "批注"; idStr: "selectPen"; checked: true; checkable: true; link: true; exclusive: true; cancelable: false; icon: "qrc:/icon/pen.svg"
+        }
+        ListElement {
+            text: "橡皮"; idStr: "selectEraser"; checked: false; checkable: true; link: true; exclusive: true; cancelable: false; icon: "qrc:/icon/eraser.svg"
+        }
+        ListElement {
+            text: "关闭批注"; idStr: "closePen"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/rmudisk.svg"
+        }
+        ListElement {
+            text: "保存批注"; idStr: "savePen"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/save.svg"
+        }
     }
 
     // =============== 窗口 ===============
@@ -442,6 +465,8 @@ ApplicationWindow {
             break
         case "closePen":
             swapModels(penModel, toolModel)
+            penModel.setProperty(0, "checked", true)
+            penModel.setProperty(1, "checked", false)
             whileboard.close()
             break
         case "selectPen":
@@ -451,6 +476,7 @@ ApplicationWindow {
             if(checked) whileboard.item.switchToEraser()
             break
         case "savePen":
+            whileboard.item.exportPng(fileHelper.getNowDateTimeNameFilePath(settings.penSavePath, "png", true))
             break
         }
     }

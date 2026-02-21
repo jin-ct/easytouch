@@ -15,6 +15,7 @@ find_package(Qt6 REQUIRED COMPONENTS Concurrent)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS Network)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -32,6 +33,7 @@ qt_add_qml_module(appeasytouch
     SOURCES functions/functions.cpp functions/functions.h
     SOURCES functions/updatehelper.h functions/updatehelper.cpp
     SOURCES QtLogger.cpp QtLogger.h
+    SOURCES functions/filehelper.h functions/filehelper.cpp
     QML_FILES Main.qml
     QML_FILES views/SettingsPage.qml
     QML_FILES views/Whileboard.qml
@@ -68,6 +70,7 @@ target_link_libraries(appeasytouch PRIVATE Qt6::Concurrent)
 target_link_libraries(appeasytouch PRIVATE Qt6::Network)
 target_link_libraries(appeasytouch PRIVATE dwmapi)
 target_link_libraries(appeasytouch PRIVATE Qt6::Widgets)
+target_link_libraries(appeasytouch PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)
 install(TARGETS appeasytouch

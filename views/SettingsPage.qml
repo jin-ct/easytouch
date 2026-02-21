@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import Functions 1.0
 import "../components/Card"
 import "../components"
 
@@ -17,6 +18,8 @@ Window {
     property alias isAutoShowBtns: autoShowBtns.checked
     property alias isSendOpenUsb: sendOpenUsb.checked
     property alias isAutoUpdate: autoUpdate.checked
+    property alias penSavePath: penSavePathSetting.description
+
 
     Rectangle {
         id: root
@@ -157,6 +160,21 @@ Window {
                         checked: true
                         switchControl.onClicked: {
                             console.log("SettingChanged: (autoUpdate)checked=", checked)
+                        }
+                    }
+
+                    // 屏幕批注保存位置设置
+                    SettingsButtonCard {
+                        id: penSavePathSetting
+                        title: "屏幕批注保存位置"
+                        description: fileHelper.desktopFolder() + "/屏幕批注"  // 当前位置（默认为桌面下屏幕批注目录）
+                        text: "选择目录"
+                        button.onClicked: {
+                            let newPath = fileHelper.openFolderDialog("选择屏幕批注保存目录", penSavePath)
+                            if (newPath) {
+                                penSavePath = newPath
+                                console.log("penSavePathChanged: ", penSavePath)
+                            }
                         }
                     }
 
