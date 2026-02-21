@@ -8,6 +8,9 @@
 #include <QDir>
 #include <QCursor>
 #include <QPixmap>
+#include <QGuiApplication>
+#include <QScreen>
+#include <QQuickWindow>
 #include <cmath>
 
 WhiteboardItem::WhiteboardItem(QQuickItem *parent)
@@ -16,6 +19,8 @@ WhiteboardItem::WhiteboardItem(QQuickItem *parent)
     setAcceptedMouseButtons(Qt::AllButtons);
     setAcceptHoverEvents(true);
     setFlag(ItemHasContents, true);
+    setAntialiasing(true);   // 启用 QPainter 抗锯齿
+    setMipmap(true);         // 纹理缩放时使用 mipmap，减少屏幕显示锯齿
 
     // 创建自定义灰色小点光标
     QPixmap cursorPixmap(16, 16);
@@ -43,6 +48,9 @@ void WhiteboardItem::ensureImage()
     if (m_image.size() == sz)
         return;
 
+    // 纹理与内部图像同分辨率，paint() 时 1:1 绘制，由场景图 + mipmap 做平滑缩放
+    setTextureSize(sz);
+
     QImage newImg(sz, QImage::Format_ARGB32_Premultiplied);
     newImg.fill(Qt::transparent);
 
@@ -68,7 +76,8 @@ void WhiteboardItem::paint(QPainter *painter)
         ensureImage();
     if (!m_image.isNull()) {
         painter->setRenderHint(QPainter::Antialiasing, true);
-        // 将高分辨率位图缩放绘制到实际控件大小，实现超采样抗锯齿
+        painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
+        // 纹理已设为与 m_image 同尺寸，此处 1:1 绘制，缩放由场景图 + mipmap 平滑处理
         const QRectF targetRect(0, 0, width(), height());
         const QRectF sourceRect(0, 0, m_image.width(), m_image.height());
         painter->drawImage(targetRect, m_image, sourceRect);
@@ -119,14 +128,33 @@ void WhiteboardItem::clear()
 
 void WhiteboardItem::exportPng(const QString &path)
 {
-    if (m_image.isNull())
-        return;
-
     QString outPath = path;
     if (QDir(path).isRelative())
         outPath = QDir::current().absoluteFilePath(path);
 
-    m_image.save(outPath, "PNG");
+    QQuickWindow *win = window();
+    if (!win) return;
+    QScreen *screen = win->screen();
+    if (!screen) screen = QGuiApplication::primaryScreen();
+    if (!screen) return;
+
+    QRect winGeom = win->frameGeometry();
+    QRect screenGeom = screen->geometry();
+    qreal dpr = screen->devicePixelRatio();
+    int rx = qRound((winGeom.x() - screenGeom.x()) * dpr);
+    int ry = qRound((winGeom.y() - screenGeom.y()) * dpr);
+    int rw = qRound(winGeom.width() * dpr);
+    int rh = qRound(winGeom.height() * dpr);
+    QPixmap pix = screen->grabWindow(0);
+    if (pix.isNull() || rw <= 0 || rh <= 0) return;
+    QRect srcRect(rx, ry, rw, rh);
+    if (srcRect.left() < 0) srcRect.setLeft(0);
+    if (srcRect.top() < 0) srcRect.setTop(0);
+    if (srcRect.right() > pix.width()) srcRect.setRight(pix.width());
+    if (srcRect.bottom() > pix.height()) srcRect.setBottom(pix.height());
+    if (!srcRect.isValid()) return;
+    QImage img = pix.copy(srcRect).toImage();
+    img.save(outPath, "PNG");
 }
 
 void WhiteboardItem::mousePressEvent(QMouseEvent *event)
@@ -297,7 +325,6 @@ void WhiteboardItem::eraseAt(const QPointF &pt)
 
 qreal WhiteboardItem::speedToWidth(qreal speed) const
 {
-    // 与 QML 中类似的映射：写得越快越细，越慢越粗
     const qreal minFactor = 2.0;
     const qreal maxFactor = 2.0;
     const qreal baseSpeed = 0.8;

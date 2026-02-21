@@ -62,7 +62,7 @@ private:
     qreal speedToWidth(qreal speed) const;
 
     QImage m_image;
-    qreal m_scaleFactor = 3.0;        // 超采样倍率（2x）
+    qreal m_scaleFactor = 1.0;         // 超采样倍率
     QVector<QPointF> m_strokePoints;   // 当前笔画原始点，用于样条拟合
     QPointF m_lastPoint;
     qint64 m_lastTimeMs = 0;

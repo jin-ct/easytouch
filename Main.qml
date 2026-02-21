@@ -425,13 +425,24 @@ ApplicationWindow {
     function hideUsbBtn() {
         toolModel.remove(usbBtnIndexBegin, 2)
     }
+    function closePen() {
+        swapModels(penModel, toolModel)
+        penModel.setProperty(0, "checked", true)
+        penModel.setProperty(1, "checked", false)
+        whileboard.close()
+    }
+    function riseWindows(isFast) {
+        windowsOpacityTimer.stop()
+        rightWindowOpacity.rise(isFast)
+        leftWindowOpacity.rise(isFast)
+        windowsOpacityTimer.restart()
+    }
+
     function handleButtonTriggered(idStr, checked, pointX, pointY) {
         console.log("funBtnTriggered, idStr =", idStr, ", checked =", checked, ", pointX =", pointX, ", pointY =", pointY)
-        // 提升窗口透明度
-        windowsOpacityTimer.stop()
-        rightWindowOpacity.rise(true)
-        leftWindowOpacity.rise(true)
-        windowsOpacityTimer.restart()
+        // 提升窗口透明度 (保存批注时不提升)
+        if (idStr !== "savePen")
+            riseWindows(true)
         // 处理按钮事件
         switch(idStr) {
         case "close":
@@ -464,10 +475,7 @@ ApplicationWindow {
             leftWindow.raise()
             break
         case "closePen":
-            swapModels(penModel, toolModel)
-            penModel.setProperty(0, "checked", true)
-            penModel.setProperty(1, "checked", false)
-            whileboard.close()
+            closePen()
             break
         case "selectPen":
             if(checked) whileboard.item.switchToPen()
@@ -476,7 +484,11 @@ ApplicationWindow {
             if(checked) whileboard.item.switchToEraser()
             break
         case "savePen":
+            rightWindow.opacity = 0.2  // 截屏时降透明度
+            leftWindow.opacity = 0.2
             whileboard.item.exportPng(fileHelper.getNowDateTimeNameFilePath(settings.penSavePath, "png", true))
+            closePen()
+            riseWindows()
             break
         }
     }
