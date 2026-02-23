@@ -275,7 +275,7 @@ void WeChatHelper::startInertia()
     m_velocity = calcVelocity();
     m_samples.clear();
 
-    if (std::abs(m_velocity) < 0.5)
+    if (std::abs(m_velocity) < 0.8)
         return;
 
     m_inertiaTimer.start(16);
@@ -339,10 +339,10 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
             if (self->m_state == InputState::Idle) {
                 self->m_state = InputState::TouchPending;
                 self->m_pointerId = id;
-                self->m_lastX = pi.ptPixelLocation.x;
-                self->m_lastY = pi.ptPixelLocation.y;
-                self->m_touchStartX = pi.ptPixelLocation.x;
-                self->m_touchStartY = pi.ptPixelLocation.y;
+                self->m_lastX = pi.ptPixelLocationRaw.x;
+                self->m_lastY = pi.ptPixelLocationRaw.y;
+                self->m_touchStartX = pi.ptPixelLocationRaw.x;
+                self->m_touchStartY = pi.ptPixelLocationRaw.y;
                 self->m_longPressFired = false;
                 self->m_longPressTimer.start(kLongPressMs);
                 self->m_timer.restart();
@@ -369,8 +369,8 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
             (self->m_state == InputState::TouchPending || self->m_state == InputState::TouchScroll || self->m_state == InputState::TouchDrag) &&
             id == static_cast<UINT32>(self->m_pointerId)) {
 
-            int x = pi.ptPixelLocation.x;
-            int y = pi.ptPixelLocation.y;
+            int x = pi.ptPixelLocationRaw.x;
+            int y = pi.ptPixelLocationRaw.y;
             int dx = x - self->m_lastX;
             int dy = y - self->m_lastY;
             int totalDx = x - self->m_touchStartX;
@@ -386,6 +386,9 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
                     } else {
                         self->m_state = InputState::TouchDrag;
                         self->m_dragTargetHwnd = self->getWeChatHwnd();
+                        self->m_lastDragClientX = INT_MIN;
+                        self->m_lastDragClientY = INT_MIN;
+                        SetCapture(hwnd);
                         POINT pt = { self->m_touchStartX, self->m_touchStartY };
                         self->postMouseToHwnd(self->m_dragTargetHwnd, WM_LBUTTONDOWN, pt, MK_LBUTTON);
                     }
@@ -399,7 +402,16 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
                 self->sendWheelViaMouseInput(delta);
             }
             if (self->m_state == InputState::TouchDrag && self->m_dragTargetHwnd) {
-                self->postMouseToHwnd(self->m_dragTargetHwnd, WM_MOUSEMOVE, pi.ptPixelLocation, MK_LBUTTON);
+                POINT rawPt = { x, y };
+                POINT client = rawPt;
+                if (ScreenToClient(self->m_dragTargetHwnd, &client)) {
+                    if (client.x != self->m_lastDragClientX || client.y != self->m_lastDragClientY) {
+                        self->m_lastDragClientX = client.x;
+                        self->m_lastDragClientY = client.y;
+                        SetCursorPos(rawPt.x, rawPt.y);
+                        self->postMouseToHwnd(self->m_dragTargetHwnd, WM_MOUSEMOVE, rawPt, MK_LBUTTON);
+                    }
+                }
             }
 
             self->m_lastX = x;
@@ -425,12 +437,13 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
             if (self->m_state == InputState::TouchScroll)
                 self->startInertia();
             else if (self->m_state == InputState::TouchDrag && self->m_dragTargetHwnd) {
+                ReleaseCapture();
                 POINT upPt = { self->m_lastX, self->m_lastY };
                 self->postMouseToHwnd(self->m_dragTargetHwnd, WM_LBUTTONUP, upPt, 0);
                 self->m_dragTargetHwnd = nullptr;
             }
             else if (self->m_state == InputState::TouchPending && !self->m_longPressFired) {
-                POINT pt = pi.ptPixelLocation;
+                POINT pt = pi.ptPixelLocationRaw;
                 self->postMouseToWeChat(WM_LBUTTONDOWN, pt, MK_LBUTTON);
                 self->postMouseToWeChat(WM_LBUTTONUP, pt, 0);
             }
@@ -444,12 +457,15 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
         self->m_state = InputState::Idle;
         self->m_pointerId = -1;
         self->m_dragTargetHwnd = nullptr;
+        self->m_lastDragClientX = INT_MIN;
+        self->m_lastDragClientY = INT_MIN;
         return 0;
     }
 
     case WM_LBUTTONDOWN:
     {
         if (!self->isWeixinForeground()) break;
+        if (self->m_state != InputState::Idle) break;
         SetCapture(hwnd);
         POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
         ClientToScreen(hwnd, &pt);
@@ -460,6 +476,7 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
     case WM_LBUTTONUP:
     {
         if (!self->isWeixinForeground()) break;
+        if (self->m_state != InputState::Idle) break;
         ReleaseCapture();
         POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
         ClientToScreen(hwnd, &pt);
@@ -496,6 +513,7 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
     case WM_MOUSEMOVE:
     {
         if (!self->isWeixinForeground()) break;
+        if (self->m_state != InputState::Idle) break;
         POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
         ClientToScreen(hwnd, &pt);
         WPARAM keys = (self->m_mouseLeftDown ? MK_LBUTTON : 0) | (self->m_mouseRightDown ? MK_RBUTTON : 0);
@@ -513,6 +531,7 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
     case WM_MOUSEHOVER:
     {
         if (!self->isWeixinForeground()) break;
+        if (self->m_state != InputState::Idle) break;
         POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
         ClientToScreen(hwnd, &pt);
         self->postMouseToWeChat(WM_MOUSEMOVE, pt, 0);

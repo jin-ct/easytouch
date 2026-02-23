@@ -5,6 +5,7 @@
 #include <QElapsedTimer>
 #include <QTimer>
 #include <QVector>
+#include <climits>
 #include <windows.h>
 
 class WeChatHelper : public QObject
@@ -42,6 +43,8 @@ private:
     QTimer m_longPressTimer;
     bool m_longPressFired = false;
     HWND m_dragTargetHwnd = nullptr;  // 拖拽全程固定发往主窗口，便于标题栏拖动
+    int m_lastDragClientX = INT_MIN;   // 上次发送的拖拽客户区坐标，用于去抖
+    int m_lastDragClientY = INT_MIN;
     POINT m_lastWheelScreenPt = { 0, 0 }; // 最近一次滚轮的落脚点（用于惯性）
 
     // 惯性
