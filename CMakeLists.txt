@@ -16,6 +16,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -51,6 +52,7 @@ qt_add_qml_module(appeasytouch
     QML_FILES components/Card/SettingsSwitchCard.qml
     QML_FILES components/Card/SettingsTextFieldCard.qml
     RESOURCES qtquickcontrols2.conf
+    SOURCES functions/wechathelper.h functions/wechathelper.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -72,6 +74,7 @@ target_link_libraries(appeasytouch PRIVATE Qt6::Concurrent)
 target_link_libraries(appeasytouch PRIVATE Qt6::Network)
 target_link_libraries(appeasytouch PRIVATE dwmapi)
 target_link_libraries(appeasytouch PRIVATE Qt6::Widgets)
+target_link_libraries(appeasytouch PRIVATE Qt6::Core)
 target_link_libraries(appeasytouch PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)

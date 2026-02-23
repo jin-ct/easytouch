@@ -17,7 +17,7 @@ DialogWindow {
 
     // 六种常用颜色
     readonly property var penColors: [
-        "#E74C3C",  // 红
+        "red",      // 红
         "#3498DB",  // 蓝
         "#2ECC71",  // 绿
         "#F39C12",  // 橙
@@ -27,6 +27,11 @@ DialogWindow {
 
     // 三种画笔粗细（逻辑像素）
     readonly property var penWidths: [1, 1.5, 2]
+
+    function reset() {
+        selectedColorIndex = 0;
+        selectedWidthIndex = 1;
+    }
 
     Row {
         id: contentRow

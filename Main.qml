@@ -33,6 +33,7 @@ ApplicationWindow {
         property alias isAutoShowBtns: settingsPage.isAutoShowBtns
         property alias isSendOpenUsb: settingsPage.isSendOpenUsb
         property alias isAutoUpdate: settingsPage.isAutoUpdate
+        property alias isWeChatTouchHelperEnable: settingsPage.isWeChatTouchHelperEnable
         property alias penSavePath: settingsPage.penSavePath
     }
 
@@ -85,9 +86,16 @@ ApplicationWindow {
             notificationHp.showNotification("update", "有新版本的易触控" + "（" + version + "）", "现在开始更新易触控")
         }
     }
-
     FileHelper {
         id: fileHelper
+    }
+    Component {
+        id: weChatHelper
+        WeChatHelper {}
+    }
+    Loader {
+        id: weChatHelperLoader
+        sourceComponent: settings.isWeChatTouchHelperEnable ? weChatHelper : undefined
     }
 
     // 窗口创建完成
@@ -170,6 +178,10 @@ ApplicationWindow {
             // 确保窗口创建出 winId 后再禁用触摸反馈（否则可能不生效）
             Qt.callLater(function() { funs.disableTouchFeedback(whileboard.item) })
         }
+        onStatusChanged: {
+            if (status === Loader.Null)
+                penDialog.reset()
+        }
     }
 
     // 随机数生成器窗口
@@ -211,6 +223,10 @@ ApplicationWindow {
             if (whileboard.status === Loader.Ready) {
                 console.log("whileboard-onClear")
                 whileboard.item.clear()
+                // 清空后切换回画笔
+                whileboard.item.switchToPen()
+                toolModel.setProperty(0, "checked", true)
+                toolModel.setProperty(1, "checked", false)
             }
         }
     }
@@ -242,7 +258,7 @@ ApplicationWindow {
                     break
                 }
             }
-
+            onDrag: riseWindows(true)
             onIsFoldedChanged: {
                 windows.rightWindowHeight = isFolded ? windowFoldedHeight : windowHeight
                 handleWindowHeightChange(rightWindow.height, windows.rightWindowHeight, true)
@@ -279,7 +295,7 @@ ApplicationWindow {
                     break
                 }
             }
-
+            onDrag: riseWindows(true)
             onIsFoldedChanged: {
                 windows.leftWindowHeight = isFolded ? windowFoldedHeight : windowHeight
                 handleWindowHeightChange(leftWindow.height, windows.leftWindowHeight, false)

@@ -18,6 +18,7 @@ Window {
     property alias isAutoShowBtns: autoShowBtns.checked
     property alias isSendOpenUsb: sendOpenUsb.checked
     property alias isAutoUpdate: autoUpdate.checked
+    property alias isWeChatTouchHelperEnable: weChatTouchHelperSwich.checked
     property alias penSavePath: penSavePathSetting.description
 
 
@@ -160,6 +161,16 @@ Window {
                         checked: true
                         switchControl.onClicked: {
                             console.log("SettingChanged: (autoUpdate)checked=", checked)
+                        }
+                    }
+
+                    SettingsSwitchCard {
+                        id: weChatTouchHelperSwich
+                        title: "微信触控优化"
+                        description: "针对微信4.0不支持触控问题优化（微信窗口顶置时失效，可用于临时关闭）"
+                        checked: true
+                        switchControl.onClicked: {
+                            console.log("SettingChanged: (weChatTouchHelperSwich)checked=", checked)
                         }
                     }
 

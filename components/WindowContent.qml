@@ -18,6 +18,7 @@ Item {
     property int windowAnimationDuration: 160
 
     signal buttonTriggered(string idStr, bool checked, bool perState, int pointX, int pointY)
+    signal drag()
 
     // 背景
     Rectangle {
@@ -178,6 +179,7 @@ Item {
                 easing.type: Easing.OutCubic
             }
         }
+        onDragStarted: drag()
     }
 
     function handleButtonTap(index, pointX, pointY) {
