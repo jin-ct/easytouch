@@ -112,6 +112,12 @@ ApplicationWindow {
             console.log("windowFocusHelperLoaded")
         }
     }
+    ScreenMovement {
+        id: screenMove
+        Component.onCompleted: {
+            screenMove.start()
+        }
+    }
 
     // 窗口创建完成
     Component.onCompleted: {
