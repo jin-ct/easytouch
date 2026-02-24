@@ -34,6 +34,7 @@ ApplicationWindow {
         property alias isSendOpenUsb: settingsPage.isSendOpenUsb
         property alias isAutoUpdate: settingsPage.isAutoUpdate
         property alias isWeChatTouchHelperEnable: settingsPage.isWeChatTouchHelperEnable
+        property alias isWindowFocusHelperEnable: settingsPage.isWindowFocusHelperEnable
         property alias penSavePath: settingsPage.penSavePath
     }
 
@@ -96,6 +97,20 @@ ApplicationWindow {
     Loader {
         id: weChatHelperLoader
         sourceComponent: settings.isWeChatTouchHelperEnable ? weChatHelper : undefined
+        onLoaded: {
+            console.log("weChatHelperLoaded")
+        }
+    }
+    Component {
+        id: windowFocusHelper
+        WindowFocusHelper {}
+    }
+    Loader {
+        id: windowFocusHelperLoader
+        sourceComponent: settings.isWindowFocusHelperEnable ? windowFocusHelper : undefined
+        onLoaded: {
+            console.log("windowFocusHelperLoaded")
+        }
     }
 
     // 窗口创建完成

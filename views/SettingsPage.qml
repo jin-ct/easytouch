@@ -19,6 +19,7 @@ Window {
     property alias isSendOpenUsb: sendOpenUsb.checked
     property alias isAutoUpdate: autoUpdate.checked
     property alias isWeChatTouchHelperEnable: weChatTouchHelperSwich.checked
+    property alias isWindowFocusHelperEnable: windowFocusHelperSwich.checked
     property alias penSavePath: penSavePathSetting.description
 
 
@@ -171,6 +172,16 @@ Window {
                         checked: true
                         switchControl.onClicked: {
                             console.log("SettingChanged: (weChatTouchHelperSwich)checked=", checked)
+                        }
+                    }
+
+                    SettingsSwitchCard {
+                        id: windowFocusHelperSwich
+                        title: "窗口焦点助手"
+                        description: "保障新窗口获取焦点，防止触控下多次点击导致新窗口焦点被抢占"
+                        checked: true
+                        switchControl.onClicked: {
+                            console.log("SettingChanged: (windowFocusHelperSwich)checked=", checked)
                         }
                     }
 

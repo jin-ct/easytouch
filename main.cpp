@@ -10,6 +10,7 @@
 #include "functions/updatehelper.h"
 #include "functions/filehelper.h"
 #include "functions/wechathelper.h"
+#include "functions/windowfocushelper.h"
 
 #include "QtLogger.h"
 
@@ -37,6 +38,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<UpdateHelper>("Functions", 1, 0, "UpdateHelper");
     qmlRegisterType<FileHelper>("Functions", 1, 0, "FileHelper");
     qmlRegisterType<WeChatHelper>("Functions", 1, 0, "WeChatHelper");
+    qmlRegisterType<WindowFocusHelper>("Functions", 1, 0, "WindowFocusHelper");
 
     QObject::connect(
         &engine,

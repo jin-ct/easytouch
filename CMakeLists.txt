@@ -35,6 +35,8 @@ qt_add_qml_module(appeasytouch
     SOURCES functions/updatehelper.h functions/updatehelper.cpp
     SOURCES QtLogger.cpp QtLogger.h
     SOURCES functions/filehelper.h functions/filehelper.cpp
+    SOURCES functions/wechathelper.h functions/wechathelper.cpp
+    SOURCES functions/windowfocushelper.h functions/windowfocushelper.cpp
     QML_FILES Main.qml
     QML_FILES views/SettingsPage.qml
     QML_FILES views/Whileboard.qml
@@ -52,7 +54,6 @@ qt_add_qml_module(appeasytouch
     QML_FILES components/Card/SettingsSwitchCard.qml
     QML_FILES components/Card/SettingsTextFieldCard.qml
     RESOURCES qtquickcontrols2.conf
-    SOURCES functions/wechathelper.h functions/wechathelper.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
