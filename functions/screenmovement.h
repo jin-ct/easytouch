@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QRect>
+#include <QVariant>
 
 class QWidget;
 class QTimer;
@@ -17,18 +18,18 @@ public:
     // 在调用 start 后才开始显示遮罩或镜像
     // 若 x,y,w,h 全部为 0 或负数，则进入遮罩框选模式
     // 否则直接以传入矩形作为镜像区域，跳过遮罩框选
-    Q_INVOKABLE void start(int x = -1, int y = -1, int w = -1, int h = -1);
+    Q_INVOKABLE void start(const QVariant &sourceRect = QVariant(), const QVariant &mirrorRect = QVariant());
 
 signals:
     // 用户完成框选后发出，rect 为屏幕坐标
-    void selectionFinished(const QRect &rect);
+    void selectionFinished(const QVariant &rect);
 
-    // 双击虚线区域或镜像窗口时发出
     void closeRequested();
+    void saveRequested(const QVariant &sourceRect, const QVariant &mirrorRect);
 
 private:
     void beginSelectMode();
-    void beginMirrorMode(const QRect &rect);
+    void beginMirrorMode(const QRect &sourceRect, const QRect &mirrorRect);
     void stopAll();
 
     void setupMirrorCapture();

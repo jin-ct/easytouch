@@ -5,6 +5,7 @@
 #include <QScreen>
 #include <QTimer>
 #include <QPainter>
+#include <QPixmap>
 #include <QMouseEvent>
 #include <QStyleOption>
 #include <QGestureEvent>
@@ -190,12 +191,12 @@ public:
     }
 
     // 在创建后由外部调用，设置虚拟桌面矩形和初始内容区域
-    void initGeometry(const QRect &desktopRect, const QRect &sourceRectOnScreen)
+    void initGeometry(const QRect &desktopRect, const QRect &mirrorRect)
     {
         m_desktopRect = desktopRect;
         // MirrorWindow 本身会被设置成 desktopRect 的几何
         // 基准尺寸仍然是原框选区域大小
-        const QRect baseRect(sourceRectOnScreen.topLeft() - desktopRect.topLeft(), sourceRectOnScreen.size());
+        const QRect baseRect(mirrorRect.topLeft() - desktopRect.topLeft(), mirrorRect.size());
         m_baseSize = baseRect.size();
         m_hasBaseSize = m_baseSize.isValid();
 
@@ -223,6 +224,7 @@ signals:
     void singleClicked();
     void doubleClicked();
     void closeButtonClicked();
+    void saveButtonClicked();
 
 protected:
     // 让内容区域外的鼠标事件直接 OS 级穿透
@@ -273,6 +275,13 @@ protected:
             }
         }
 
+        QPen pen(QColor(66, 66, 66, 60));
+        pen.setWidth(1);
+        p.setPen(pen);
+        p.setBrush(Qt::NoBrush);
+        if (!m_contentRect.isNull())
+            p.drawRect(m_contentRect.adjusted(-1, -1, 1, 1));
+
         if (m_showFrame) {
             // 外边框
             QPen pen(QColor(255, 255, 255, 220));
@@ -280,26 +289,47 @@ protected:
             p.setPen(pen);
             p.setBrush(Qt::NoBrush);
             if (!m_contentRect.isNull())
-                p.drawRect(m_contentRect.adjusted(1, 1, -1, -1));
+                p.drawRect(m_contentRect.adjusted(-2, -2, 2, 2));
 
-            // 右上角一个圆形半透明关闭按钮
+            // 内容区域中间的按钮
             const int radius = 18;
             const QRect targetRect = m_contentRect.isNull() ? rect() : m_contentRect;
-            m_closeButtonRect = QRect(targetRect.right() - radius * 2 - 8,
-                                      targetRect.top() + 8,
-                                      radius * 2,
-                                      radius * 2);
-            p.setBrush(QColor(0, 0, 0, 150));
+            const QSize buttonSize(radius * 2, radius * 2);
+            const int spacing = 24;
+
+            const int totalWidth = buttonSize.width() * 2 + spacing;
+            const int baseX = targetRect.center().x() - totalWidth / 2;
+            const int baseY = targetRect.center().y() - buttonSize.height() / 2;
+
+            m_closeButtonRect = QRect(QPoint(baseX, baseY), buttonSize);
+            m_saveButtonRect  = QRect(QPoint(baseX + buttonSize.width() + spacing, baseY), buttonSize);
+
+            // 关闭按钮背景
+            p.setBrush(QColor(255, 255, 255, 150));
             p.setPen(Qt::NoPen);
             p.drawEllipse(m_closeButtonRect);
+            // 保存按钮背景
+            p.drawEllipse(m_saveButtonRect);
 
-            QPen crossPen(Qt::white);
-            crossPen.setWidth(2);
-            p.setPen(crossPen);
-            const QPoint c = m_closeButtonRect.center();
-            const int d = radius - 6;
-            p.drawLine(c + QPoint(-d, -d), c + QPoint(d, d));
-            p.drawLine(c + QPoint(-d, d), c + QPoint(d, -d));
+            // 按钮灰色描边
+            QPen btnBorderPen(QColor(180, 180, 180));
+            btnBorderPen.setWidth(1);
+            p.setPen(btnBorderPen);
+            p.setBrush(Qt::NoBrush);
+            p.drawEllipse(m_closeButtonRect.adjusted(0, 0, -1, -1));
+            p.drawEllipse(m_saveButtonRect.adjusted(0, 0, -1, -1));
+
+            // 关闭图标
+            if (!m_closeIcon.isNull()) {
+                const QRect iconRect = m_closeButtonRect.adjusted(8, 8, -8, -8);
+                p.drawPixmap(iconRect, m_closeIcon);
+            }
+
+            // 保存图标
+            if (!m_saveIcon.isNull()) {
+                const QRect iconRect = m_saveButtonRect.adjusted(8, 8, -8, -8);
+                p.drawPixmap(iconRect, m_saveIcon);
+            }
         }
     }
 
@@ -354,6 +384,8 @@ protected:
                 // 认为是单击
                 if (m_closeButtonRect.contains(localPos)) {
                     emit closeButtonClicked();
+                } else if (m_saveButtonRect.contains(localPos)) {
+                    emit saveButtonClicked();
                 } else {
                     m_showFrame = !m_showFrame;
                     update();
@@ -368,9 +400,8 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent *e) override
     {
         if (e->button() == Qt::LeftButton) {
-            // 仅当边框可见且双击命中右上角关闭按钮区域时才关闭，降低误触概率
             const QPoint pos = e->position().toPoint();
-            if (m_showFrame && m_closeButtonRect.contains(pos)) {
+            if (m_showFrame && m_contentRect.contains(pos)) {
                 emit doubleClicked();
             }
         }
@@ -396,7 +427,7 @@ private:
                         ? qreal(m_contentRect.width()) / qreal(m_baseSize.width())
                         : m_currentScale;
 
-            m_pinchStartCenter = g->startCenterPoint();
+            m_pinchStartCenter = g->centerPoint();
         }
         else if (g->state() == Qt::GestureFinished || g->state() == Qt::GestureCanceled) {
             m_pinchActive = false;
@@ -417,7 +448,7 @@ private:
             return;
 
         qreal targetScale = m_pinchStartScale * totalFactor;
-        targetScale = qBound(0.3, targetScale, 3.0); // 全局限制缩放范围
+        targetScale = qBound(0.3, targetScale, 10.0); // 全局限制缩放范围
 
         const qreal realStep = (m_pinchStartScale > 0.0) ? (targetScale / m_pinchStartScale) : 1.0;
         if (realStep <= 0.0 || qFuzzyCompare(realStep, 1.0))
@@ -465,6 +496,7 @@ private:
 
     bool    m_showFrame{false};
     QRect   m_closeButtonRect;
+    QRect   m_saveButtonRect;
 
     bool    m_hasBaseSize{false};
     QSize   m_baseSize;
@@ -479,6 +511,9 @@ private:
     QRect   m_pinchStartRect;
     qreal   m_pinchStartScale{1.0};
     QPointF m_pinchStartCenter;
+
+    QPixmap m_closeIcon{QStringLiteral(":/icon/close_2.svg")};
+    QPixmap m_saveIcon{QStringLiteral(":/icon/save.svg")};
 };
 
 // ============ ScreenMovement 实现 ============
@@ -497,13 +532,14 @@ ScreenMovement::~ScreenMovement()
     stopAll();
 }
 
-void ScreenMovement::start(int x, int y, int w, int h)
+void ScreenMovement::start(const QVariant &sourceRect, const QVariant &mirrorRect)
 {
     stopAll();
 
-    if (w > 0 && h > 0) {
-        QRect rect(x, y, w, h);
-        beginMirrorMode(rect);
+    if (sourceRect.isValid() && mirrorRect.isValid()) {
+        beginMirrorMode(sourceRect.toRect(), mirrorRect.toRect());
+    } else if (sourceRect.isValid()) {
+        beginMirrorMode(sourceRect.toRect(), sourceRect.toRect());
     } else {
         beginSelectMode();
     }
@@ -517,7 +553,7 @@ void ScreenMovement::beginSelectMode()
     connect(overlay, &MaskSelectOverlay::selectionFinished, this, [this](const QRect &rect) {
         m_maskOverlay = nullptr;
         if (!rect.isNull() && rect.width() > 10 && rect.height() > 10) {
-            beginMirrorMode(rect);
+            beginMirrorMode(rect, rect);
             emit selectionFinished(rect);
         } else {
             emit closeRequested();
@@ -528,9 +564,9 @@ void ScreenMovement::beginSelectMode()
     overlay->raise();
 }
 
-void ScreenMovement::beginMirrorMode(const QRect &rect)
+void ScreenMovement::beginMirrorMode(const QRect &sourceRect, const QRect &mirrorRect)
 {
-    m_sourceRect = rect;
+    m_sourceRect = sourceRect;
 
     // 计算虚拟桌面矩形，用于创建全屏镜像窗口
     QRect desktopRect;
@@ -540,7 +576,7 @@ void ScreenMovement::beginMirrorMode(const QRect &rect)
     }
 
     // 原区域上的虚线边框
-    m_borderOverlay = new BorderOverlay(rect);
+    m_borderOverlay = new BorderOverlay(sourceRect);
     m_borderOverlay->show();
     m_borderOverlay->raise();
 
@@ -550,13 +586,16 @@ void ScreenMovement::beginMirrorMode(const QRect &rect)
 
     // 镜像窗口全屏覆盖虚拟桌面，仅在内容区域绘制/响应
     mirror->setGeometry(desktopRect);
-    mirror->initGeometry(desktopRect, rect);
+    mirror->initGeometry(desktopRect, mirrorRect);
 
-    connect(mirror, &MirrorWindow::doubleClicked, this, [this]() {
+    connect(mirror, &MirrorWindow::closeButtonClicked, this, [this]() {
         emit closeRequested();
         stopAll();
     });
-    connect(mirror, &MirrorWindow::closeButtonClicked, this, [this]() {
+    connect(mirror, &MirrorWindow::saveButtonClicked, this, [this]() {
+        emit saveRequested(QVariant(m_sourceRect), QVariant(m_mirrorWindow->contentsRect()));
+    });
+    connect(mirror, &MirrorWindow::destroyed, this, [this]() {
         emit closeRequested();
         stopAll();
     });
@@ -564,7 +603,7 @@ void ScreenMovement::beginMirrorMode(const QRect &rect)
     mirror->show();
     mirror->raise();
 
-    // 把镜像窗口标记为“从屏幕捕获中排除”，实现视觉层面的“穿透”
+    // 把镜像窗口标记为“从屏幕捕获中排除”，实现视觉层面的“穿透” (Win10+)
     HWND hwnd = reinterpret_cast<HWND>(mirror->winId());
     if (hwnd) {
         SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE);
