@@ -222,9 +222,11 @@ ApplicationWindow {
     // 工具栏的悬浮对话框
     VolumeDialog {
         id: volumeDialog
+        funs: funs
     }
     PenDialog {
         id: penDialog
+        funs: funs
         onSelectedColorChanged: {
             if (whileboard.status === Loader.Ready) {
                 console.log("whileboard-onSelectedColorChanged", selectedColor)
@@ -240,6 +242,7 @@ ApplicationWindow {
     }
     EraserDialog {
         id: eraserDialog
+        funs: funs
         onClear: {
             if (whileboard.status === Loader.Ready) {
                 console.log("whileboard-onClear")
@@ -509,7 +512,8 @@ ApplicationWindow {
             funs.closeTopWindow()
             break
         case "volume":
-            volumeDialog.hideOrShow(pointX, pointY)
+            if (!volumeDialog.visible)
+                volumeDialog.hideOrShow(pointX, pointY)
             break
         case "openDrive":
             funs.openDrive()
@@ -538,15 +542,19 @@ ApplicationWindow {
         case "selectPen":
             if(checked) {
                 whileboard.item.switchToPen()
-                if (perState)
-                    penDialog.hideOrShow(pointX, pointY)
+                if (perState) {
+                    if (!penDialog.visible)
+                        penDialog.hideOrShow(pointX, pointY)
+                }
             }
             break
         case "selectEraser":
             if(checked) {
                 whileboard.item.switchToEraser()
-                if (perState)
-                    eraserDialog.hideOrShow(pointX, pointY)
+                if (perState) {
+                    if (!eraserDialog.visible)
+                        eraserDialog.hideOrShow(pointX, pointY)
+                }
             }
             break
         case "savePen":

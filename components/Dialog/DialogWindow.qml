@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import Functions 1.0
 
 Window {
     id: dialog
@@ -7,18 +8,28 @@ Window {
     flags:  Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
     opacity: 0
     title: "易触控工具栏"
-    width: Screen.desktopAvailableWidth
-    height: Screen.desktopAvailableHeight
+    width: dialog.dialogWidth
+    height: dialog.dialogHeight
+    x: heartPointX < (Screen.desktopAvailableWidth/2) ? (heartPointX + 27) : (heartPointX - width - 27)
+    y: heartPointY - height/2
+
+    required property Functions funs
 
     property int heartPointX: 0
     property int heartPointY: 0
     property int dialogWidth: 0
     property int dialogHeight: 0
 
-    default property alias content: background.data
-
     Component.onCompleted: {
         funs.setWindowNoActivate(dialog)
+    }
+
+    Connections {
+        target: funs
+        function onMousePressed(pos) {
+            if (dialog.visible && !funs.isRectContains(Qt.rect(dialog.x, dialog.y, dialog.width, dialog.height), pos))
+                dialog.hideOrShow()
+        }
     }
 
     Timer {id: timer}
@@ -43,23 +54,9 @@ Window {
         windowAnimation.start()
     }
 
-    MouseArea {
-        anchors.fill: parent
-        onPressed: (e) => {
-            if (e.x < background.x || e.x > background.x + dialog.dialogWidth ||
-                e.y < background.y || e.y > background.y + dialog.dialogHeight)
-            {
-                hideOrShow()
-            }
-        }
-    }
-
     Rectangle {
         id: background
-        width: dialog.dialogWidth
-        height: dialog.dialogHeight
-        x: heartPointX < (Screen.desktopAvailableWidth/2) ? (heartPointX + 27) : (heartPointX - width - 27)
-        y: heartPointY - height/2
+        anchors.fill: parent
         radius: 6
         color: "#FFFFFF"
         border.color: "#cfcfcf"

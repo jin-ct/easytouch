@@ -1,3 +1,8 @@
+/**
+ * @file functions.cpp
+ * @note 用于设置窗口或监听信号，以及实现基本功能（如关闭窗口、系统音量等）
+ */
+
 #include "functions.h"
 #include <QDesktopServices>
 #include <QUrl>
@@ -12,11 +17,17 @@
 #include <QSettings>
 #include <QDebug>
 #include <WinUser.h>
+#include <windowsx.h>
+
+// 用于系统钩子
+Functions* Functions::instance = nullptr;
+HHOOK Functions::g_mouseHook = nullptr;
+
 
 //=== 用于全局安装 nativeEventFilter ===
-class UsbEventFilter : public QAbstractNativeEventFilter {
+class EventFilter : public QAbstractNativeEventFilter {
 public:
-    UsbEventFilter(Functions *mgr) : funs(mgr) {}
+    EventFilter(Functions *mgr) : funs(mgr) {}
     bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override {
         return funs->nativeEventFilter(eventType, message, result);
     }
@@ -27,7 +38,9 @@ private:
 Functions::Functions(QObject *parent)
     : QObject{parent}
 {
-    qApp->installNativeEventFilter(new UsbEventFilter(this));
+    qApp->installNativeEventFilter(new EventFilter(this));
+    instance = this;
+    installHook();
 }
 
 Functions::~Functions()
@@ -285,8 +298,19 @@ bool Functions::setAutoStart(bool enable)
     return true;
 }
 
+bool Functions::isRectContains(const QVariant &rect, const QVariant &point)
+{
+    return rect.toRect().contains(point.toPoint());
+}
+
+QVariant Functions::windowMapFromGlobal(QWindow *window, const QVariant &pos)
+{
+    return QVariant(window->mapFromGlobal(pos.toPoint()));
+}
+
 bool Functions::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result)
 {
+    // U盘事件
     MSG *msg = static_cast<MSG*>(message);
     if (msg->message == WM_DEVICECHANGE) {
         if (msg->wParam == DBT_DEVICEARRIVAL) {
@@ -331,5 +355,44 @@ void Functions::checkUsbDrives(bool inserted)
             });
             isUsbInserted = false;
         }
+    }
+}
+
+void Functions::installHook()
+{
+    g_mouseHook = SetWindowsHookEx(
+        WH_MOUSE_LL,
+        LowLevelMouseProc,
+        GetModuleHandle(nullptr),
+        0
+    );
+}
+
+LRESULT Functions::LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    if (nCode == HC_ACTION) {
+        const MSLLHOOKSTRUCT* info = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
+
+        if (wParam == WM_LBUTTONDOWN) {
+            if (Functions::instance)
+                QMetaObject::invokeMethod(
+                    Functions::instance,
+                    "onMouse",
+                    Qt::QueuedConnection,
+                    0  // eventType: 鼠标按下
+                );
+        }
+    }
+
+    return CallNextHookEx(Functions::g_mouseHook, nCode, wParam, lParam);
+}
+
+void Functions::onMouse(int eventType)
+{
+    switch (eventType) {
+    case 0:   // 鼠标按下
+        const QPoint globalPos = QCursor::pos();
+        emit mousePressed(QVariant(globalPos));
+        break;
     }
 }

@@ -69,9 +69,6 @@ DialogWindow {
                         anchors.fill: parent
                         onClicked: {
                             penDialog.selectedColorIndex = index
-                            if (typeof penDialog.funsObject !== "undefined" && penDialog.funsObject.setPenColor)
-                                penDialog.funsObject.setPenColor(penDialog.selectedColor)
-                            penDialog.hideOrShow()
                         }
                     }
                 }
@@ -116,8 +113,6 @@ DialogWindow {
                         anchors.fill: parent
                         onClicked: {
                             penDialog.selectedWidthIndex = index
-                            if (typeof penDialog.funsObject !== "undefined" && penDialog.funsObject.setPenWidth)
-                                penDialog.funsObject.setPenWidth(penDialog.selectedWidth)
                         }
                     }
                 }
