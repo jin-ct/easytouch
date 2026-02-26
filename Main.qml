@@ -183,6 +183,8 @@ ApplicationWindow {
     SettingsPage {
         id: settingsPage
         visible: false
+        funs: funs
+        fileHelper: fileHelper
     }
 
     // 批注窗口
@@ -269,7 +271,7 @@ ApplicationWindow {
         WindowContent {
             id: rightContent
             window: rightWindow
-            funsObject: funs
+            funs: funs
             model: toolModel
             windowAnimationDuration: windows.windowAnimationDuration
 
@@ -306,7 +308,7 @@ ApplicationWindow {
         WindowContent {
             id: leftContent
             window: leftWindow
-            funsObject: funs
+            funs: funs
             model: toolModel
             windowAnimationDuration: windows.windowAnimationDuration
 

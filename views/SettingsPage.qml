@@ -22,6 +22,8 @@ Window {
     property alias isWindowFocusHelperEnable: windowFocusHelperSwich.checked
     property alias penSavePath: penSavePathSetting.description
 
+    required property Functions funs
+    required property FileHelper fileHelper
 
     Rectangle {
         id: root
@@ -128,7 +130,8 @@ Window {
                         description: "Windows 登录后自动启动易触控"
                         checked: true
                         switchControl.onCheckedChanged: {
-                            funs.setAutoStart(checked)
+                            if (funs)
+                                funs.setAutoStart(checked)
                         }
                         switchControl.onClicked: {
                             console.log("SettingChanged: (autoStart)checked=", checked)

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
+import Functions 1.0
 import "./Dialog"
 
 Item {
@@ -10,8 +11,9 @@ Item {
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.top: parent.top
 
-    property var window
-    property var funsObject
+    required property Window window
+    required property Functions funs
+
     property alias model: listView.model
     property bool isFolded: false
     property double backgroundOpacity: 1
