@@ -3,10 +3,10 @@ import QtQuick.Controls
 import QtQuick.Controls.Basic
 import "./"
 
-DialogWindow {
-    id: eraserDialog
-    dialogWidth: contentRow.childrenRect.width + 12  // "+12" 表示左右边距和
-    dialogHeight: 36
+PopupWindow {
+    id: eraserPopup
+    popupWidth: contentRow.childrenRect.width + 12  // "+12" 表示左右边距和
+    popupHeight: 36
     visible: false
 
     signal clear()
@@ -29,7 +29,7 @@ DialogWindow {
         anchors.fill: parent
         onClicked: {
             clear()
-            eraserDialog.hideOrShow()
+            eraserPopup.hideOrShow()
         }
     }
 }

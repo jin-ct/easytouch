@@ -42,12 +42,12 @@ qt_add_qml_module(appeasytouch
     QML_FILES views/SettingsPage.qml
     QML_FILES views/Whileboard.qml
     QML_FILES views/RandomGenerator.qml
-    QML_FILES components/WindowContent.qml
+    QML_FILES components/ToolWindowContent.qml
     QML_FILES components/WindowTitleBar.qml
-    QML_FILES components/Dialog/VolumeDialog.qml
-    QML_FILES components/Dialog/DialogWindow.qml
-    QML_FILES components/Dialog/PenDialog.qml
-    QML_FILES components/Dialog/EraserDialog.qml
+    QML_FILES components/Popup/VolumePopup.qml
+    QML_FILES components/Popup/PopupWindow.qml
+    QML_FILES components/Popup/PenPopup.qml
+    QML_FILES components/Popup/EraserPopup.qml
     QML_FILES components/Card/SettingsButtonCard.qml
     QML_FILES components/Card/SettingsCard.qml
     QML_FILES components/Card/SettingsComboCard.qml

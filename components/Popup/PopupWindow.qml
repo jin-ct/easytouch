@@ -3,13 +3,13 @@ import QtQuick.Controls
 import Functions 1.0
 
 Window {
-    id: dialog
+    id: popup
     color: "transparent"
     flags:  Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
     opacity: 0
     title: "易触控工具栏"
-    width: dialog.dialogWidth
-    height: dialog.dialogHeight
+    width: popup.popupWidth
+    height: popup.popupHeight
     x: heartPointX < (Screen.desktopAvailableWidth/2) ? (heartPointX + 27) : (heartPointX - width - 27)
     y: heartPointY - height/2
 
@@ -17,18 +17,18 @@ Window {
 
     property int heartPointX: 0
     property int heartPointY: 0
-    property int dialogWidth: 0
-    property int dialogHeight: 0
+    property int popupWidth: 0
+    property int popupHeight: 0
 
     Component.onCompleted: {
-        funs.setWindowNoActivate(dialog)
+        funs.setWindowNoActivate(popup)
     }
 
     Connections {
         target: funs
         function onMousePressed(pos) {
-            if (dialog.visible && !funs.isRectContains(Qt.rect(dialog.x, dialog.y, dialog.width, dialog.height), pos))
-                dialog.hideOrShow()
+            if (popup.visible && !funs.isRectContains(Qt.rect(popup.x, popup.y, popup.width, popup.height), pos))
+                popup.hideOrShow()
         }
     }
 
@@ -49,8 +49,8 @@ Window {
             heartPointX = pointX
         if (pointY)
             heartPointY = pointY
-        if (!dialog.visible)
-            dialog.visible = true
+        if (!popup.visible)
+            popup.visible = true
         windowAnimation.start()
     }
 
@@ -66,15 +66,15 @@ Window {
 
     PropertyAnimation {
         id: windowAnimation
-        target: dialog
+        target: popup
         property: "opacity"
         duration: 90
-        to: dialog.opacity === 0 ? 1 : 0
+        to: popup.opacity === 0 ? 1 : 0
         easing.type: Easing.OutInQuad
 
         onStopped: {
-            if (dialog.opacity === 0)
-                dialog.visible = false
+            if (popup.opacity === 0)
+                popup.visible = false
         }
     }
 

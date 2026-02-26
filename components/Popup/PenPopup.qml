@@ -3,17 +3,17 @@ import QtQuick.Controls
 import QtQuick.Controls.Basic
 import "./"
 
-DialogWindow {
-    id: penDialog
-    dialogWidth: contentRow.childrenRect.width + 24
-    dialogHeight: 80
+PopupWindow {
+    id: penPopup
+    popupWidth: contentRow.childrenRect.width + 24
+    popupHeight: 80
     visible: false
 
     // 当前选中的笔属性，供外部绑定或读取
     property int selectedColorIndex: 0
     property int selectedWidthIndex: 1
-    property color selectedColor: penDialog.penColors[penDialog.selectedColorIndex]
-    property real selectedWidth: penDialog.penWidths[penDialog.selectedWidthIndex]
+    property color selectedColor: penPopup.penColors[penPopup.selectedColorIndex]
+    property real selectedWidth: penPopup.penWidths[penPopup.selectedWidthIndex]
 
     // 六种常用颜色
     readonly property var penColors: [
@@ -49,11 +49,11 @@ DialogWindow {
             spacing: 6
             anchors.verticalCenter: parent.verticalCenter
             Repeater {
-                model: penDialog.penColors
+                model: penPopup.penColors
                 delegate: Item {
                     width: 26
                     height: 26
-                    readonly property bool isSelected: penDialog.selectedColorIndex === index
+                    readonly property bool isSelected: penPopup.selectedColorIndex === index
                     Rectangle {
                         width: 22
                         height: 22
@@ -68,7 +68,7 @@ DialogWindow {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            penDialog.selectedColorIndex = index
+                            penPopup.selectedColorIndex = index
                         }
                     }
                 }
@@ -87,11 +87,11 @@ DialogWindow {
         Column {
             spacing: 1
             Repeater {
-                model: penDialog.penWidths
+                model: penPopup.penWidths
                 delegate: Item {
                     width: 22
                     height: 20
-                    readonly property bool isSelected: penDialog.selectedWidthIndex === index
+                    readonly property bool isSelected: penPopup.selectedWidthIndex === index
                     Rectangle {
                         anchors.centerIn: parent
                         width: 22
@@ -112,7 +112,7 @@ DialogWindow {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            penDialog.selectedWidthIndex = index
+                            penPopup.selectedWidthIndex = index
                         }
                     }
                 }

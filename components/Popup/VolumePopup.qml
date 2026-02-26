@@ -3,10 +3,10 @@ import QtQuick.Controls
 import QtQuick.Controls.Basic
 import "./"
 
-DialogWindow {
-    id: volumeDialog
-    dialogWidth: contentRow.childrenRect.width + 12  // "+12" 表示左右边距和
-    dialogHeight: 36
+PopupWindow {
+    id: volumePopup
+    popupWidth: contentRow.childrenRect.width + 12  // "+12" 表示左右边距和
+    popupHeight: 36
     visible: false
 
     property bool isMute: false

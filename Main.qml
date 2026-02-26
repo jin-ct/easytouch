@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtCore
 import Functions 1.0
 import "./components"
-import "./components/Dialog"
+import "./components/Popup"
 import "./views"
 
 ApplicationWindow {
@@ -203,7 +203,7 @@ ApplicationWindow {
         }
         onStatusChanged: {
             if (status === Loader.Null)
-                penDialog.reset()
+                penPopup.reset()
         }
     }
 
@@ -222,12 +222,12 @@ ApplicationWindow {
     }
 
     // 工具栏的悬浮对话框
-    VolumeDialog {
-        id: volumeDialog
+    VolumePopup {
+        id: volumePopup
         funs: funs
     }
-    PenDialog {
-        id: penDialog
+    PenPopup {
+        id: penPopup
         funs: funs
         onSelectedColorChanged: {
             if (whileboard.status === Loader.Ready) {
@@ -242,8 +242,8 @@ ApplicationWindow {
             }
         }
     }
-    EraserDialog {
-        id: eraserDialog
+    EraserPopup {
+        id: eraserPopup
         funs: funs
         onClear: {
             if (whileboard.status === Loader.Ready) {
@@ -268,7 +268,7 @@ ApplicationWindow {
         opacity: windowOpacity
         title: "易触控工具栏"
 
-        WindowContent {
+        ToolWindowContent {
             id: rightContent
             window: rightWindow
             funs: funs
@@ -305,7 +305,7 @@ ApplicationWindow {
         opacity: windowOpacity
         title: "易触控工具栏"
 
-        WindowContent {
+        ToolWindowContent {
             id: leftContent
             window: leftWindow
             funs: funs
@@ -514,8 +514,8 @@ ApplicationWindow {
             funs.closeTopWindow()
             break
         case "volume":
-            if (!volumeDialog.visible)
-                volumeDialog.hideOrShow(pointX, pointY)
+            if (!volumePopup.visible)
+                volumePopup.hideOrShow(pointX, pointY)
             break
         case "openDrive":
             funs.openDrive()
@@ -545,8 +545,8 @@ ApplicationWindow {
             if(checked) {
                 whileboard.item.switchToPen()
                 if (perState) {
-                    if (!penDialog.visible)
-                        penDialog.hideOrShow(pointX, pointY)
+                    if (!penPopup.visible)
+                        penPopup.hideOrShow(pointX, pointY)
                 }
             }
             break
@@ -554,8 +554,8 @@ ApplicationWindow {
             if(checked) {
                 whileboard.item.switchToEraser()
                 if (perState) {
-                    if (!eraserDialog.visible)
-                        eraserDialog.hideOrShow(pointX, pointY)
+                    if (!eraserPopup.visible)
+                        eraserPopup.hideOrShow(pointX, pointY)
                 }
             }
             break

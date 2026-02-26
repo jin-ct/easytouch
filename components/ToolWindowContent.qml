@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
 import Functions 1.0
-import "./Dialog"
+import "./Popup"
 
 Item {
     id: root
