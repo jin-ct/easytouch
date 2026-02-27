@@ -212,35 +212,6 @@ Window {
                         }
                     }
 
-                    // // 文本输入卡片
-                    // SettingsTextFieldCard {
-                    //     title: qsTr("用户名称")
-                    //     description: qsTr("用于在部分界面中显示的称呼")
-                    //     width: Math.min(parent.width - 32, 480)
-                    //     placeholderText: qsTr("请输入名称")
-                    // }
-
-                    // // 下拉框卡片
-                    // SettingsComboCard {
-                    //     title: qsTr("主题样式")
-                    //     description: qsTr("选择应用的主题风格")
-                    //     width: Math.min(parent.width - 32, 480)
-
-                    //     model: [qsTr("跟随系统"), qsTr("浅色"), qsTr("深色")]
-                    // }
-
-                    // // Slider 卡片
-                    // SettingsSliderCard {
-                    //     title: qsTr("界面缩放")
-                    //     description: qsTr("调整设置界面的缩放比例（示例）")
-                    //     width: Math.min(parent.width - 32, 480)
-                    //     anchors.horizontalCenter: parent.horizontalCenter
-
-                    //     from: 80
-                    //     to: 120
-                    //     value: 100
-                    // }
-
                     Item { height: 8; width: 1 } // 底部留白
                 }
             }
