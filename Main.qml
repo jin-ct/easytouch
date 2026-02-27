@@ -59,14 +59,6 @@ ApplicationWindow {
             console.log("usbRemoved")
         }
     }
-    FullscreenWatcher {
-        id: fsWatcher
-
-        onFullscreenEntered: {
-        }
-        onFullscreenExited: {
-        }
-    }
     NotificationHelper {
         id: notificationHp
 
