@@ -19,6 +19,11 @@ Item {
     property double backgroundOpacity: 1
     property int windowAnimationDuration: 160
 
+    property bool isLongPressing: false
+    property bool isLongPressed: false
+    property int longPressingBtnIndex: 0
+    property var longPressingBtnPoint: ({x: 0, y: 0})
+
     signal buttonTriggered(string idStr, bool checked, bool perState, int pointX, int pointY)
     signal drag()
 
@@ -133,9 +138,27 @@ Item {
                 }
             }
 
-            TapHandler {
-                onPressedChanged: btn.scale = pressed ? 0.94 : 1.0
-                onTapped: root.handleButtonTap(index, parent.mapToGlobal(0, 0).x + parent.width/2, parent.mapToGlobal(0, 0).y + parent.height/2)
+            MouseArea {
+                anchors.fill: parent
+                onPressedChanged: {
+                    btn.scale = pressed ? 0.94 : 1.0
+                    if (pressed) {
+                        isLongPressing = true
+                        longPressingBtnIndex = index
+                        longPressingBtnPoint =
+                                {x: parent.mapToGlobal(0, 0).x + parent.width/2, y: parent.mapToGlobal(0, 0).y + parent.height/2}
+                        longPressTimer.start()
+                    } else {
+                        isLongPressing = false
+                    }
+                }
+                onClicked: {
+                    if (isLongPressed) {
+                        isLongPressed = false;
+                        return
+                    }
+                    root.handleButtonTap(index, parent.mapToGlobal(0, 0).x + parent.width/2, parent.mapToGlobal(0, 0).y + parent.height/2)
+                }
             }
 
             Behavior on scale {
@@ -213,6 +236,13 @@ Item {
         buttonTriggered(item.idStr, newState, perState, pointX, pointY)
     }
 
+    function longPressed() {
+        let item = model.get(longPressingBtnIndex)
+        let pointX = longPressingBtnPoint.x
+        let pointY = longPressingBtnPoint.y
+        buttonTriggered(item.idStr + "LongPressed", false, false, pointX, pointY)
+    }
+
     Rectangle {
         opacity: backgroundOpacity
         height: 30
@@ -233,5 +263,19 @@ Item {
     }
     Behavior on backgroundOpacity {
         NumberAnimation { duration: windowAnimationDuration }
+    }
+
+    Timer {
+        id: longPressTimer
+        interval: 500
+        repeat: false
+
+        onTriggered: {
+            if (isLongPressing) {
+                isLongPressed = true
+                longPressed()
+                isLongPressing = false
+            }
+        }
     }
 }

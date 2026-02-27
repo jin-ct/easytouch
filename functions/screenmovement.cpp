@@ -220,6 +220,14 @@ public:
         update();
     }
 
+    const QRect& getCurrContentRect() const {
+        return m_contentRect;
+    }
+
+    void setIsFromSave(bool isFromSave) {
+        this->isFromSave = isFromSave;
+    }
+
 signals:
     void singleClicked();
     void doubleClicked();
@@ -325,10 +333,17 @@ protected:
                 p.drawPixmap(iconRect, m_closeIcon);
             }
 
-            // 保存图标
-            if (!m_saveIcon.isNull()) {
-                const QRect iconRect = m_saveButtonRect.adjusted(8, 8, -8, -8);
-                p.drawPixmap(iconRect, m_saveIcon);
+            // 保存图标或删除图标
+            if (!isFromSave) {
+                if (!m_saveIcon.isNull()) {
+                    const QRect iconRect = m_saveButtonRect.adjusted(8, 8, -8, -8);
+                    p.drawPixmap(iconRect, m_saveIcon);
+                }
+            } else {
+                if (!m_deleteIcon.isNull()) {
+                    const QRect iconRect = m_saveButtonRect.adjusted(8, 8, -8, -8);
+                    p.drawPixmap(iconRect, m_deleteIcon);
+                }
             }
         }
     }
@@ -514,6 +529,9 @@ private:
 
     QPixmap m_closeIcon{QStringLiteral(":/icon/close_2.svg")};
     QPixmap m_saveIcon{QStringLiteral(":/icon/save.svg")};
+    QPixmap m_deleteIcon{QStringLiteral(":/icon/delete.svg")};
+
+    int isFromSave{false};
 };
 
 // ============ ScreenMovement 实现 ============
@@ -532,10 +550,11 @@ ScreenMovement::~ScreenMovement()
     stopAll();
 }
 
-void ScreenMovement::start(const QVariant &sourceRect, const QVariant &mirrorRect)
+void ScreenMovement::start(const QVariant &sourceRect, const QVariant &mirrorRect, int saveId)
 {
+    this->saveId = saveId;
     stopAll();
-
+    qDebug() << "ScreenMoveStarted:" << sourceRect.toRect() << mirrorRect.toRect();
     if (sourceRect.isValid() && mirrorRect.isValid()) {
         beginMirrorMode(sourceRect.toRect(), mirrorRect.toRect());
     } else if (sourceRect.isValid()) {
@@ -543,6 +562,11 @@ void ScreenMovement::start(const QVariant &sourceRect, const QVariant &mirrorRec
     } else {
         beginSelectMode();
     }
+}
+
+bool ScreenMovement::isStarted()
+{
+    return m_maskOverlay && m_borderOverlay && m_maskOverlay;
 }
 
 void ScreenMovement::beginSelectMode()
@@ -584,6 +608,8 @@ void ScreenMovement::beginMirrorMode(const QRect &sourceRect, const QRect &mirro
     auto *mirror = new MirrorWindow;
     m_mirrorWindow = mirror;
 
+    mirror->setIsFromSave(saveId >= 0);
+
     // 镜像窗口全屏覆盖虚拟桌面，仅在内容区域绘制/响应
     mirror->setGeometry(desktopRect);
     mirror->initGeometry(desktopRect, mirrorRect);
@@ -592,8 +618,12 @@ void ScreenMovement::beginMirrorMode(const QRect &sourceRect, const QRect &mirro
         emit closeRequested();
         stopAll();
     });
-    connect(mirror, &MirrorWindow::saveButtonClicked, this, [this]() {
-        emit saveRequested(QVariant(m_sourceRect), QVariant(m_mirrorWindow->contentsRect()));
+    connect(mirror, &MirrorWindow::saveButtonClicked, this, [=]() {
+        if (saveId >= 0) {
+            emit deleteRequested(saveId);
+        } else {
+            emit saveRequested(QVariant(m_sourceRect), QVariant(mirror->getCurrContentRect()));
+        }
     });
     connect(mirror, &MirrorWindow::destroyed, this, [this]() {
         emit closeRequested();

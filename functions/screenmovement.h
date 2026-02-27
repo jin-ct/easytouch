@@ -18,7 +18,9 @@ public:
     // 在调用 start 后才开始显示遮罩或镜像
     // 若 x,y,w,h 全部为 0 或负数，则进入遮罩框选模式
     // 否则直接以传入矩形作为镜像区域，跳过遮罩框选
-    Q_INVOKABLE void start(const QVariant &sourceRect = QVariant(), const QVariant &mirrorRect = QVariant());
+    Q_INVOKABLE void start(const QVariant &sourceRect = QVariant(), const QVariant &mirrorRect = QVariant(), int saveId = -1);
+    Q_INVOKABLE bool isStarted();
+    Q_INVOKABLE void stopAll();
 
 signals:
     // 用户完成框选后发出，rect 为屏幕坐标
@@ -26,11 +28,11 @@ signals:
 
     void closeRequested();
     void saveRequested(const QVariant &sourceRect, const QVariant &mirrorRect);
+    void deleteRequested(int saveId = -1);
 
 private:
     void beginSelectMode();
     void beginMirrorMode(const QRect &sourceRect, const QRect &mirrorRect);
-    void stopAll();
 
     void setupMirrorCapture();
     void stopMirrorCapture();
@@ -40,6 +42,8 @@ private:
     QWidget *m_borderOverlay;// 覆盖在原区域上的虚线边框窗口
     QWidget *m_mirrorWindow; // 镜像窗口
     QTimer  *m_captureTimer; // 定时抓屏
+
+    int saveId{-1};  // 若为从保存的位置记录进入镜像模式则 saveId >= 0
 };
 
 #endif // SCREENMOVEMENT_H

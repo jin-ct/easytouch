@@ -15,5 +15,7 @@
         <file>icon/eraser.svg</file>
         <file>icon/save.svg</file>
         <file>icon/pen_2.svg</file>
+        <file>icon/screenMove.svg</file>
+        <file>icon/delete.svg</file>
     </qresource>
 </RCC>

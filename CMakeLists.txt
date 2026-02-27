@@ -48,12 +48,15 @@ qt_add_qml_module(appeasytouch
     QML_FILES components/Popup/PopupWindow.qml
     QML_FILES components/Popup/PenPopup.qml
     QML_FILES components/Popup/EraserPopup.qml
+    QML_FILES components/Popup/ScrMoveSaveList.qml
     QML_FILES components/Card/SettingsButtonCard.qml
     QML_FILES components/Card/SettingsCard.qml
     QML_FILES components/Card/SettingsComboCard.qml
     QML_FILES components/Card/SettingsSliderCard.qml
     QML_FILES components/Card/SettingsSwitchCard.qml
     QML_FILES components/Card/SettingsTextFieldCard.qml
+    QML_FILES components/Dialog/ScrMoveSaveDialog.qml
+    QML_FILES components/Dialog/MessageBoxDialog.qml
     RESOURCES qtquickcontrols2.conf
 )
 

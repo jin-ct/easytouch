@@ -37,6 +37,12 @@ ApplicationWindow {
         property alias isWindowFocusHelperEnable: settingsPage.isWindowFocusHelperEnable
         property alias penSavePath: settingsPage.penSavePath
     }
+    Settings {
+        id: scrMoveSaveData
+        location: "file:///" + getAppDir() + "\\config\\screenMove.ini"
+        category: "ScreenMoveSaveDatas"
+        property var screenMoveSaveList: []
+    }
 
     // cpp类实例
     Functions {
@@ -114,8 +120,17 @@ ApplicationWindow {
     }
     ScreenMovement {
         id: screenMove
-        Component.onCompleted: {
-            screenMove.start()
+        onSaveRequested: (sourceRect, mirrorRect) => {
+            scrMoveSaveDialog.show(sourceRect, mirrorRect)
+            console.log("onScreenMoveSaveRequested: ", sourceRect, mirrorRect)
+        }
+        onDeleteRequested: (btnId) => {
+            showMessageBox("删除记录", "你确定要删除该记录吗？", () => {
+                var data = scrMoveSaveData.screenMoveSaveList
+                data.splice(btnId, 1)
+                scrMoveSaveData.screenMoveSaveList = data
+                console.log("ScreenMoveSaveDataDeleted:", btnId)
+            })
         }
     }
 
@@ -153,9 +168,9 @@ ApplicationWindow {
         ListElement {
             text: "批注"; idStr: "pen"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/pen_2.svg"
         }
-        // ListElement {
-        //     text: "屏幕移位"; idStr: "movetool"; checked: false; checkable: true; link: true; exclusive: true; cancelable: true; icon: "qrc:/icon/rmudisk.svg"
-        // }
+        ListElement {
+            text: "屏幕移位"; idStr: "screenMove"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/screenMove.svg"
+        }
         ListElement {
             text: "随机数"; idStr: "random"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/random.svg"
         }
@@ -221,7 +236,33 @@ ApplicationWindow {
         }
     }
 
-    // 工具栏的悬浮对话框
+    // 屏幕移位保存对话框
+    Loader {
+        id: scrMoveSaveDialog
+        property rect sourceRect
+        property rect mirrorRect
+        function show(sourceRect, mirrorRect) {
+            scrMoveSaveDialog.sourceRect = sourceRect
+            scrMoveSaveDialog.mirrorRect = mirrorRect
+            source = "components/Dialog/ScrMoveSaveDialog.qml"
+        }
+        onLoaded: {
+            item.setRect(scrMoveSaveDialog.sourceRect, scrMoveSaveDialog.mirrorRect)
+        }
+        Connections {
+            target: scrMoveSaveDialog.item
+            function onVisibleChanged(val) {
+                if (!val) scrMoveSaveDialog.source = ""
+            }
+            function onSaved(newData) {
+                scrMoveSaveData.screenMoveSaveList =
+                        scrMoveSaveData.screenMoveSaveList.concat(newData)
+                console.log("ScreenMoveSaved: ", scrMoveSaveDialog.sourceRect, scrMoveSaveDialog.mirrorRect)
+            }
+        }
+    }
+
+    // 工具栏的弹出层
     VolumePopup {
         id: volumePopup
         funs: funs
@@ -255,6 +296,12 @@ ApplicationWindow {
                 toolModel.setProperty(1, "checked", false)
             }
         }
+    }
+    ScrMoveSaveList {
+        id: scrMoveSaveList
+        funs: funs
+        screenMovement: screenMove
+        screenMoveSaveList: scrMoveSaveData.screenMoveSaveList
     }
 
     // 右侧工具栏
@@ -453,6 +500,24 @@ ApplicationWindow {
         var appPath = Qt.application.arguments[0]
         return appPath.substring(0, appPath.lastIndexOf("\\"))
     }
+    function showMessageBox(title, message, okBtnClickedCb = () =>{} , cancelBtnClickedCb = () =>{}) {
+        const comp = Qt.createComponent("components/Dialog/MessageBoxDialog.qml")
+        if (comp.status === Component.Ready) {
+            const dlg = comp.createObject()
+            dlg.title = title
+            dlg.message = message
+            dlg.okBtnClicked.connect(() => {
+                okBtnClickedCb()
+            })
+            dlg.cancelBtnClicked.connect(() => {
+                cancelBtnClickedCb()
+            })
+            dlg.visibleChanged.connect((visible) => {
+                if (!visible)
+                    dlg.destroy()
+            })
+        }
+    }
     ListModel { id: tmpModel }
     function swapModels(modelA, modelB) {
         tmpModel.clear()
@@ -565,6 +630,16 @@ ApplicationWindow {
             whileboard.item.exportPng(fileHelper.getNowDateTimeNameFilePath(settings.penSavePath, "png", true))
             closePen()
             riseWindows()
+            break
+        case "screenMove":
+            if (!screenMove.isStarted()) {
+                screenMove.start()
+            } else {
+                screenMove.stopAll()
+            }
+            break
+        case "screenMoveLongPressed":
+            scrMoveSaveList.hideOrShow(pointX, pointY)
             break
         }
     }
