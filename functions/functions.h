@@ -42,6 +42,9 @@ public:
     bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result);
 
     // 系统鼠标钩子
+    // 系统钩子
+    Q_INVOKABLE void installHook();
+    Q_INVOKABLE void uninstallHook();
     static LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam);
 
     static Functions *instance;
@@ -68,8 +71,6 @@ private:
     QString prevContactVisualization;
     QString prevGestureVisualization;
 
-    // 系统钩子
-    void installHook();
 };
 
 #endif // FUNCTIONS_H

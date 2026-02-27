@@ -40,7 +40,6 @@ Functions::Functions(QObject *parent)
 {
     qApp->installNativeEventFilter(new EventFilter(this));
     instance = this;
-    installHook();
 }
 
 Functions::~Functions()
@@ -366,6 +365,13 @@ void Functions::installHook()
         GetModuleHandle(nullptr),
         0
     );
+    qDebug() << "WindowsMouseHookInstalled";
+}
+
+void Functions::uninstallHook()
+{
+    UnhookWindowsHookEx(g_mouseHook);
+    qDebug() << "WindowsMouseHookUninstalled";
 }
 
 LRESULT Functions::LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)

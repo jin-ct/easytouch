@@ -49,8 +49,13 @@ Window {
             heartPointX = pointX
         if (pointY)
             heartPointY = pointY
-        if (!popup.visible)
+        if (!popup.visible) {
             popup.visible = true
+            funs.installHook()
+        } else {
+            funs.uninstallHook()
+        }
+
         windowAnimation.start()
     }
 
