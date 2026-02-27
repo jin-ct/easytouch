@@ -68,7 +68,6 @@ ApplicationWindow {
             }
         }
         onAppQuit: {
-            fsWatcher.stop()
             Qt.quit()
         }
         onStartSettings: {
