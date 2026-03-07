@@ -14,6 +14,7 @@ Window {
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
 
     // 各设置选项数据
+    property alias isShowToolBar: showToolBar.checked
     property alias isAutoStart: autoStart.checked
     property alias isAutoShowBtns: autoShowBtns.checked
     property alias isSendOpenUsb: sendOpenUsb.checked
@@ -121,6 +122,16 @@ Window {
                                     elide: Text.ElideRight
                                 }
                             }
+                        }
+                    }
+
+                    SettingsSwitchCard {
+                        id: showToolBar
+                        title: "显示侧边工具栏"
+                        description: "是否显示侧边工具栏"
+                        checked: true
+                        switchControl.onClicked: {
+                            console.log("SettingChanged: (isShowToolBar)checked=", checked)
                         }
                     }
 

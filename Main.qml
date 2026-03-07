@@ -29,6 +29,7 @@ ApplicationWindow {
         id: settings
         location: "file:///" + getAppDir() + "\\config\\settings.ini"
         category: "Basic"
+        property alias isShowToolBar: settingsPage.isShowToolBar
         property alias isAutoStart: settingsPage.isAutoStart
         property alias isAutoShowBtns: settingsPage.isAutoShowBtns
         property alias isSendOpenUsb: settingsPage.isSendOpenUsb
@@ -300,7 +301,7 @@ ApplicationWindow {
         id: rightWindow
         width: windowWidth
         x: Screen.desktopAvailableWidth - (width + windowHorizontalMargin)
-        visible: true
+        visible: settings.isShowToolBar
         color: "transparent"
         flags:  Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
         opacity: windowOpacity
@@ -337,7 +338,7 @@ ApplicationWindow {
         id: leftWindow
         width: windowWidth
         x: windowHorizontalMargin
-        visible: true
+        visible: settings.isShowToolBar
         color: "transparent"
         flags:  Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
         opacity: windowOpacity
