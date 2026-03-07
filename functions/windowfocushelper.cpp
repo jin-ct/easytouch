@@ -135,11 +135,13 @@ LRESULT CALLBACK WindowFocusHelper::shellWndProc(HWND hwnd, UINT msg, WPARAM wPa
         if (wParam == HSHELL_WINDOWCREATED) {
             qDebug() << "HSHELL_WINDOWCREATED";
             HWND newHwnd = reinterpret_cast<HWND>(lParam);
-            // 若当前前景是资源管理器时延迟设焦，避免触控下多次点击导致新窗口焦点被抢
-            if (isFocusableWindow(newHwnd) && isForegroundInWhitelist())
-                self->scheduleFocusToWindow(newHwnd, true);
-            else
-                self->scheduleFocusToWindow(newHwnd, true);
+            if (isFocusableWindow(newHwnd)) {
+                // 若当前前景是白名单内软件则时延迟设焦
+                if (isForegroundInWhitelist())
+                    self->scheduleFocusToWindow(newHwnd, true);
+                else
+                    self->scheduleFocusToWindow(newHwnd, true);
+            }
         }
         return 0;
     }

@@ -110,7 +110,7 @@ void Functions::disableTouchFeedback(QWindow *window)
             pSetWindowFeedbackSetting(hwnd, 7, 0, sz, &off);
             pSetWindowFeedbackSetting(hwnd, 9, 0, sz, &off);
             pSetWindowFeedbackSetting(hwnd, 10, 0, sz, &off);
-            // pSetWindowFeedbackSetting(hwnd, 11, 0, sz, &off);
+            pSetWindowFeedbackSetting(hwnd, 11, 0, sz, &off);
             pSetWindowFeedbackSetting(hwnd, 12, 0, sz, &off);
             pSetWindowFeedbackSetting(hwnd, 13, 0, sz, &off);
         }
