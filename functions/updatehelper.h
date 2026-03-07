@@ -16,7 +16,7 @@ public:
     explicit UpdateHelper(QObject *parent = nullptr);
     ~UpdateHelper();
 
-    Q_INVOKABLE void checkForUpdates(const QString &repoOwner, const QString &repoName);
+    Q_INVOKABLE void checkForUpdates(const QString &repoOwner, const QString &repoName, bool isRetrying = false);
     Q_INVOKABLE void startDownload(const QString &downloadUrl);
     Q_INVOKABLE QString getCurrentVersion() const;
 
@@ -25,6 +25,7 @@ signals:
     void updateCheckFinished(bool hasUpdate);
     void updateProgress(qint64 bytesReceived, qint64 bytesTotal);
     void updateError(const QString &error);
+    void networkError();
 
 private slots:
     void onReleaseInfoReceived();

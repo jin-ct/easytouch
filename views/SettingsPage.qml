@@ -161,7 +161,7 @@ Window {
                     SettingsSwitchCard {
                         id: autoUpdate
                         title: "自动更新"
-                        description: "软件启动时自动从GitHub检查并获取最新发布版"
+                        description: "软件启动时自动从远程仓库检查并获取最新发布版"
                         checked: true
                         switchControl.onClicked: {
                             console.log("SettingChanged: (autoUpdate)checked=", checked)

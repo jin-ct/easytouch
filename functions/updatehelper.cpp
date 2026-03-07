@@ -44,6 +44,9 @@ UpdateHelper::UpdateHelper(QObject *parent)
     connect(this, &UpdateHelper::updateProgress, this, [=](qint64 bytesReceived, qint64 bytesTotal){
         qDebug() << "updateProgress: " << bytesReceived << " / " << bytesTotal;
     });
+    connect(this, &UpdateHelper::networkError, this, [=](){
+        checkForUpdates(repoOwner, repoName, true);
+    });
 }
 
 UpdateHelper::~UpdateHelper()
@@ -62,13 +65,16 @@ QString UpdateHelper::getCurrentVersion() const
     return version;
 }
 
-void UpdateHelper::checkForUpdates(const QString &repoOwner, const QString &repoName)
+void UpdateHelper::checkForUpdates(const QString &repoOwner, const QString &repoName, bool isRetrying)
 {
     this->repoOwner = repoOwner;
     this->repoName = repoName;
 
-    QString apiUrl = QString("https://api.github.com/repos/%1/%2/releases/latest")
-                     .arg(repoOwner, repoName);
+    QString giteeApiHost = "https://gitee.com/api/v5";
+    QString githubApiHost = "https://api.github.com";
+
+    QString apiUrl = QString("%1/repos/%2/%3/releases/latest")
+                     .arg(isRetrying ? githubApiHost : giteeApiHost, repoOwner, repoName);
 
     QNetworkRequest request(apiUrl);
     request.setRawHeader("User-Agent", "EasyTouch-Updater/1.0");
@@ -96,12 +102,14 @@ void UpdateHelper::onReleaseInfoReceived()
 {
     if (!currentReply) {
         emit updateError("网络请求失败");
+        emit networkError();
         emit updateCheckFinished(false);
         return;
     }
 
     if (currentReply->error() != QNetworkReply::NoError) {
         emit updateError(QString("网络错误: %1").arg(currentReply->errorString()));
+        emit networkError();
         emit updateCheckFinished(false);
         currentReply->deleteLater();
         currentReply = nullptr;
@@ -244,11 +252,13 @@ void UpdateHelper::onDownloadFinished()
 {
     if (!currentReply) {
         emit updateError("下载失败");
+        emit networkError();
         return;
     }
 
     if (currentReply->error() != QNetworkReply::NoError) {
         emit updateError(QString("下载错误: %1").arg(currentReply->errorString()));
+        emit networkError();
         currentReply->deleteLater();
         currentReply = nullptr;
         return;
@@ -280,6 +290,7 @@ void UpdateHelper::onDownloadError(QNetworkReply::NetworkError error)
     Q_UNUSED(error);
     if (currentReply) {
         emit updateError(QString("网络错误: %1").arg(currentReply->errorString()));
+        emit networkError();
         currentReply->deleteLater();
         currentReply = nullptr;
     }
