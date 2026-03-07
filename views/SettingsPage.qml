@@ -128,7 +128,7 @@ Window {
                         id: autoStart
                         title: "开机自启动"
                         description: "Windows 登录后自动启动易触控"
-                        checked: true
+                        checked: false
                         switchControl.onCheckedChanged: {
                             if (funs)
                                 funs.setAutoStart(checked)
