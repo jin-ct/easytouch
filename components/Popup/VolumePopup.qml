@@ -108,6 +108,8 @@ PopupWindow {
         }
 
         Text {
+            width: 26
+            horizontalAlignment: Text.AlignHCenter
             leftPadding: 2
             rightPadding: 6
             anchors.verticalCenter: parent.verticalCenter
