@@ -44,6 +44,7 @@ bool WindowFocusHelper::isForegroundInWhitelist()
     if (QueryFullProcessImageNameW(hProc, 0, path, &size)) {
         const wchar_t* name = path + wcslen(path);
         while (name > path && name[-1] != L'\\' && name[-1] != L'/') --name;
+        qDebug() << "HSHELL_WINDOWCREATED_Name：" << QString::fromWCharArray(path).toLower();
         for (size_t i = 0; i < kForegroundWhitelistCount; ++i) {
             if (_wcsicmp(name, kForegroundWhitelist[i]) == 0) {
                 ok = true;

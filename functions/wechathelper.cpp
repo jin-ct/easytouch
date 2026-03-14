@@ -22,7 +22,7 @@ WeChatHelper::WeChatHelper(QObject *parent)
             return;
         }
         // 惯性滑动
-        sendWheelViaMouseInput(int(m_velocity * 120.0));
+        sendWheelViaMouseInput(int(m_velocity * 80.0));
     });
 
     m_longPressTimer.setSingleShot(true);
@@ -223,19 +223,81 @@ void WeChatHelper::postMouseToHwnd(HWND h, UINT msg, const POINT &screenPt, WPAR
 
 void WeChatHelper::postMouseToWeChat(UINT msg, const POINT &screenPt, WPARAM wParam)
 {
-    HWND h = getWeChatHwnd();
-    if (!h || !IsWindow(h)) return;
-    POINT client = screenPt;
-    if (!ScreenToClient(h, &client)) return;
-    for (;;) {
-        HWND child = RealChildWindowFromPoint(h, client);
-        if (!child || child == h) break;
-        h = child;
-        client = screenPt;
-        if (!ScreenToClient(h, &client)) break;
+    HWND wechatHwnd = getWeChatHwnd();
+    if (!wechatHwnd || !IsWindow(wechatHwnd))
+        return;
+
+    DWORD wechatPid = 0;
+    GetWindowThreadProcessId(wechatHwnd, &wechatPid);
+    if (!wechatPid)
+        return;
+
+    HWND topWeChatHwnd = nullptr;
+    {
+        POINT pt = screenPt;
+        for (HWND h = GetTopWindow(nullptr); h != nullptr; h = GetWindow(h, GW_HWNDNEXT)) {
+            DWORD pid = 0;
+            GetWindowThreadProcessId(h, &pid);
+            if (pid != wechatPid)
+                continue;
+            if (!IsWindowVisible(h) || IsIconic(h))
+                continue;
+
+            RECT r = {};
+            if (!GetWindowRect(h, &r))
+                continue;
+            if (!PtInRect(&r, pt))
+                continue;
+
+            topWeChatHwnd = h;
+            break;  // Z 序从前到后，第一个命中的就是最上层
+        }
     }
-    LPARAM lParam = MAKELPARAM(client.x, client.y);
-    PostMessage(h, msg, wParam, lParam);
+
+    if (!topWeChatHwnd)
+        topWeChatHwnd = wechatHwnd;
+
+    // 先把屏幕坐标转换成顶层微信窗口的客户区坐标
+    POINT ptClient = screenPt;
+    if (!ScreenToClient(topWeChatHwnd, &ptClient))
+        return;
+
+    HWND target = topWeChatHwnd;
+    POINT ptInTarget = ptClient;
+
+    // 在父窗口客户区坐标下调用 RealChildWindowFromPoint，
+    // 命中子窗口后再把点转换到子窗口客户区，如此循环，直到没有更深的子窗口
+    for (;;) {
+        HWND child = RealChildWindowFromPoint(target, ptInTarget);
+        if (!child || child == target)
+            break;
+
+        POINT ptInChild = ptInTarget;
+        MapWindowPoints(target, child, &ptInChild, 1);
+
+        target = child;
+        ptInTarget = ptInChild;
+    }
+
+    auto sendTo = [](HWND hwnd, UINT m, WPARAM wp, LPARAM lp) {
+        DWORD_PTR result = 0;
+        // 优先同步投递，避免 PostMessage 被队列/钩子吞掉导致完全没反应
+        if (SendMessageTimeoutW(hwnd, m, wp, lp,
+                                SMTO_BLOCK | SMTO_ABORTIFHUNG,
+                                50, &result) == 0) {
+            PostMessage(hwnd, m, wp, lp);
+        }
+    };
+
+    // 先发给命中的最深子窗口（坐标为该子窗口客户区）
+    LPARAM lParamTarget = MAKELPARAM(ptInTarget.x, ptInTarget.y);
+    sendTo(target, msg, wParam, lParamTarget);
+
+    // 再兜底发给顶层微信窗口（坐标为其客户区），兼容“子控件不处理但父窗口处理”的情况
+    if (target != topWeChatHwnd) {
+        LPARAM lParamRoot = MAKELPARAM(ptClient.x, ptClient.y);
+        sendTo(topWeChatHwnd, msg, wParam, lParamRoot);
+    }
 }
 
 void WeChatHelper::onLongPressTimeout()
@@ -275,7 +337,7 @@ void WeChatHelper::startInertia()
     m_velocity = calcVelocity();
     m_samples.clear();
 
-    if (std::abs(m_velocity) < 0.8)
+    if (std::abs(m_velocity) < 1.2)
         return;
 
     m_inertiaTimer.start(16);
