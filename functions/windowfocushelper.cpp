@@ -140,8 +140,6 @@ LRESULT CALLBACK WindowFocusHelper::shellWndProc(HWND hwnd, UINT msg, WPARAM wPa
                 // 若当前前景是白名单内软件则时延迟设焦
                 if (isForegroundInWhitelist())
                     self->scheduleFocusToWindow(newHwnd, true);
-                else
-                    self->scheduleFocusToWindow(newHwnd, true);
             }
         }
         return 0;

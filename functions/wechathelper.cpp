@@ -337,7 +337,7 @@ void WeChatHelper::startInertia()
     m_velocity = calcVelocity();
     m_samples.clear();
 
-    if (std::abs(m_velocity) < 1.2)
+    if (std::abs(m_velocity) < 1.2 || std::abs(m_velocity) > 8)
         return;
 
     m_inertiaTimer.start(16);
