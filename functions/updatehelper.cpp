@@ -499,16 +499,19 @@ void UpdateHelper::createUpdateScript(const QString &extractPath)
     // 写入批处理脚本
     out << "@echo off\n";
     out << "REM 简单等待应用程序完全退出\n";
-    out << "timeout /t 3 /nobreak\n";
+    out << "ping 127.0.0.1 -n 3 >nul\n";
     out << "\n";
     out << "REM 复制文件\n";
     out << "xcopy /E /Y /I \"" << extractPath << "\\*\" \"" << appDir << "\"\n";
     out << "\n";
-    out << "REM 清空临时目录\n";
-    out << "rmdir /S /Q \"" << tempDir << "\"\n";
+    out << "REM 延时1s后启动程序\n";
+    out << "ping 127.0.0.1 -n 2 >nul\n";
     out << "\n";
     out << "REM 启动程序\n";
     out << "start \"\" \"" << exePath << "\"\n";
+    out << "\n";
+    out << "REM 清空临时目录\n";
+    out << "rmdir /S /Q \"" << tempDir << "\"\n";
     out << "\n";
     out << "REM 删除自身\n";
     out << "del \"%~f0\"\n";
