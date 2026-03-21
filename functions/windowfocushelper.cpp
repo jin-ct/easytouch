@@ -11,9 +11,15 @@ static const int kFocusDelayMs = 800;
 
 static const wchar_t kShellHostClassName[] = L"WindowFocusHelperShellHost";
 
-static const wchar_t* const kForegroundWhitelist[] = {
-    L"explorer.exe",
-    L"weixin.exe",
+struct WindowInf
+{
+    const wchar_t* exeName;
+    const wchar_t* title;
+};
+
+static const WindowInf kForegroundWhitelist[] = {
+    {.exeName = L"explorer.exe", .title = L"文件资源管理器"},
+    {.exeName = L"weixin.exe", .title = L"微信"},
 };
 static const size_t kForegroundWhitelistCount = sizeof(kForegroundWhitelist) / sizeof(kForegroundWhitelist[0]);
 
@@ -31,6 +37,9 @@ bool WindowFocusHelper::isForegroundInWhitelist()
     HWND fg = GetForegroundWindow();
     if (!fg) return false;
 
+    wchar_t title[256] = {};
+    GetWindowText(fg, title, 256);
+
     DWORD pid = 0;
     GetWindowThreadProcessId(fg, &pid);
     if (!pid) return false;
@@ -42,15 +51,16 @@ bool WindowFocusHelper::isForegroundInWhitelist()
     DWORD size = MAX_PATH;
     bool ok = false;
     if (QueryFullProcessImageNameW(hProc, 0, path, &size)) {
-        const wchar_t* name = path + wcslen(path);
-        while (name > path && name[-1] != L'\\' && name[-1] != L'/') --name;
-        qDebug() << "HSHELL_WINDOWCREATED_Name：" << QString::fromWCharArray(path).toLower();
+        QString m_path = QString::fromWCharArray(path).toLower();
+        QString m_title = QString::fromWCharArray(title);
         for (size_t i = 0; i < kForegroundWhitelistCount; ++i) {
-            if (_wcsicmp(name, kForegroundWhitelist[i]) == 0) {
+            if (m_path.contains(QString::fromWCharArray(kForegroundWhitelist[i].exeName).toLower()) &&
+                m_title.contains(QString::fromWCharArray(kForegroundWhitelist[i].title))) {
                 ok = true;
                 break;
             }
         }
+        qDebug() << "新窗口创建时的焦点 (进程路径: " << m_path << ", 窗口标题: " << m_title << ",在窗口列表内: " << ok << ")";
     }
     CloseHandle(hProc);
     return ok;
@@ -60,7 +70,13 @@ void WindowFocusHelper::scheduleFocusToWindow(HWND hwnd, bool isDelay)
 {
     if (!hwnd) return;
     if (isDelay)
-        QTimer::singleShot(kFocusDelayMs, this, [this, hwnd]() { applyFocusToWindow(hwnd); });
+        QTimer::singleShot(kFocusDelayMs, this, [this, hwnd]() {
+            applyFocusToWindow(hwnd);
+            QTimer::singleShot(kFocusDelayMs*2, this, [this, hwnd]() {
+                if (GetForegroundWindow() != hwnd)
+                    applyFocusToWindow(hwnd);
+            });
+        });
     else
         applyFocusToWindow(hwnd);
 }
