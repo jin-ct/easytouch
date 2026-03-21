@@ -65,7 +65,7 @@ Item {
             onPositionChanged: {
                 if (pressed) {
                     var delta = Qt.point(mouseX - lastMousePos.x, mouseY - lastMousePos.y)
-                    if (delta.x < 2 && delta.y < 2)
+                    if (Math.abs(delta.x) < 2 && Math.abs(delta.y) < 2)
                         return
                     root.window.x += delta.x
                     root.window.y += delta.y
