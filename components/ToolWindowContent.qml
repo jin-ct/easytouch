@@ -15,7 +15,7 @@ Item {
     required property Functions funs
 
     property alias model: listView.model
-    property bool isFolded: false
+    property bool isFolded: true
     property double backgroundOpacity: 1
     property int windowAnimationDuration: 160
 

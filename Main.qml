@@ -132,9 +132,9 @@ ApplicationWindow {
         leftWindow.y = Screen.desktopAvailableHeight - (rightWindowHeight + windowBottomMargin)
         rightWindow.height = rightWindowHeight
         leftWindow.height = leftWindowHeight
-        if (!settingsPage.isAutoShowBtns) {
-            rightContent.isFolded = true
-            leftContent.isFolded = true
+        if (settingsPage.isAutoShowBtns) {
+            rightContent.isFolded = false
+            leftContent.isFolded = false
         }
         funs.setWindowNoActivate(windows)
         funs.setWindowNoActivate(rightWindow)
