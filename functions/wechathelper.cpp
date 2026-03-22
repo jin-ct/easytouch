@@ -9,14 +9,17 @@ const wchar_t *WeChatHelper::s_overlayClassName = L"WeChatHelperOverlay";
 
 static const int kScrollDragThreshold = 12;
 static const int kLongPressMs = 500;
-static const int kWheelDeltaScale = 4;   // 滚轮 delta = dy * scale，与滑动距离成正比
-static const int kWheelDeltaMax = 360;   // 单次最大 delta，避免速度突变
+static const float kWheelDeltaScale = 3;        // 滚轮 delta = dy * scale，与滑动距离成正比
+static const int kWheelDeltaMax = 360;          // 单次最大 delta，避免速度突变
+static const float kVelocityThresholdMin = 2.5; // 触发惯性的速度阈值
+static const float kVelocityThresholdMax = 8;   // 惯性计算的最大速度值，避免速度突变
+static const float kVelocityScale = 0.90;       // 惯性单次减小比例
 
 WeChatHelper::WeChatHelper(QObject *parent)
     : QObject(parent)
 {
     QObject::connect(&m_inertiaTimer, &QTimer::timeout, this, [this] {
-        m_velocity *= 0.90;
+        m_velocity *= kVelocityScale;
         if (std::abs(m_velocity) < 0.01) {
             m_inertiaTimer.stop();
             return;
@@ -212,15 +215,6 @@ void WeChatHelper::sendWheelToWeChat(int delta, const POINT &screenPt)
     PostMessage(h, WM_MOUSEWHEEL, wParam, lParam);
 }
 
-void WeChatHelper::postMouseToHwnd(HWND h, UINT msg, const POINT &screenPt, WPARAM wParam)
-{
-    if (!h || !IsWindow(h)) return;
-    POINT client = screenPt;
-    if (!ScreenToClient(h, &client)) return;
-    LPARAM lParam = MAKELPARAM(client.x, client.y);
-    PostMessage(h, msg, wParam, lParam);
-}
-
 void WeChatHelper::postMouseToWeChat(UINT msg, const POINT &screenPt, WPARAM wParam)
 {
     HWND wechatHwnd = getWeChatHwnd();
@@ -280,13 +274,7 @@ void WeChatHelper::postMouseToWeChat(UINT msg, const POINT &screenPt, WPARAM wPa
     }
 
     auto sendTo = [](HWND hwnd, UINT m, WPARAM wp, LPARAM lp) {
-        DWORD_PTR result = 0;
-        // 优先同步投递，避免 PostMessage 被队列/钩子吞掉导致完全没反应
-        if (SendMessageTimeoutW(hwnd, m, wp, lp,
-                                SMTO_BLOCK | SMTO_ABORTIFHUNG,
-                                50, &result) == 0) {
-            PostMessage(hwnd, m, wp, lp);
-        }
+        PostMessage(hwnd, m, wp, lp);
     };
 
     // 先发给命中的最深子窗口（坐标为该子窗口客户区）
@@ -337,7 +325,7 @@ void WeChatHelper::startInertia()
     m_velocity = calcVelocity();
     m_samples.clear();
 
-    if (std::abs(m_velocity) < 1.2 || std::abs(m_velocity) > 8)
+    if (std::abs(m_velocity) < kVelocityThresholdMin || std::abs(m_velocity) > kVelocityThresholdMax)
         return;
 
     m_inertiaTimer.start(16);
@@ -372,9 +360,6 @@ void WeChatHelper::sendWheelViaMouseInput(int delta)
     input.mi.dwExtraInfo = GetMessageExtraInfo();
 
     SendInput(1, &input, sizeof(INPUT));
-
-    // 还原光标位置，避免干扰用户
-    SetCursorPos(oldPos.x, oldPos.y);
 }
 
 LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -452,14 +437,14 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
                         self->m_lastDragClientY = INT_MIN;
                         SetCapture(hwnd);
                         POINT pt = { self->m_touchStartX, self->m_touchStartY };
-                        self->postMouseToHwnd(self->m_dragTargetHwnd, WM_LBUTTONDOWN, pt, MK_LBUTTON);
+                        self->postMouseToWeChat(WM_LBUTTONDOWN, pt, MK_LBUTTON);
                     }
                 }
             }
 
             if (self->m_state == InputState::TouchScroll && std::abs(dy) > 2) {
                 self->recordSample(dy);
-                int absDelta = std::min(std::abs(dy) * kWheelDeltaScale, kWheelDeltaMax);
+                int absDelta = std::min((int)(std::abs(dy) * kWheelDeltaScale), kWheelDeltaMax);
                 int delta = (dy > 0 ? 1 : -1) * absDelta;
                 self->sendWheelViaMouseInput(delta);
             }
@@ -471,7 +456,7 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
                         self->m_lastDragClientX = client.x;
                         self->m_lastDragClientY = client.y;
                         SetCursorPos(rawPt.x, rawPt.y);
-                        self->postMouseToHwnd(self->m_dragTargetHwnd, WM_MOUSEMOVE, rawPt, MK_LBUTTON);
+                        self->postMouseToWeChat(WM_MOUSEMOVE, rawPt, MK_LBUTTON);
                     }
                 }
             }
@@ -498,11 +483,10 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
             self->m_longPressTimer.stop();
             if (self->m_state == InputState::TouchScroll)
                 self->startInertia();
-            else if (self->m_state == InputState::TouchDrag && self->m_dragTargetHwnd) {
+            else if (self->m_state == InputState::TouchDrag) {
                 ReleaseCapture();
                 POINT upPt = { self->m_lastX, self->m_lastY };
-                self->postMouseToHwnd(self->m_dragTargetHwnd, WM_LBUTTONUP, upPt, 0);
-                self->m_dragTargetHwnd = nullptr;
+                self->postMouseToWeChat(WM_LBUTTONUP, upPt, 0);
             }
             else if (self->m_state == InputState::TouchPending && !self->m_longPressFired) {
                 POINT pt = pi.ptPixelLocationRaw;
@@ -518,7 +502,6 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
         }
         self->m_state = InputState::Idle;
         self->m_pointerId = -1;
-        self->m_dragTargetHwnd = nullptr;
         self->m_lastDragClientX = INT_MIN;
         self->m_lastDragClientY = INT_MIN;
         return 0;
@@ -576,27 +559,14 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
     {
         if (!self->isWeixinForeground()) break;
         if (self->m_state != InputState::Idle) break;
+        UINT32 id = GET_POINTERID_WPARAM(wParam);
+        POINTER_INFO pi = {};
+        if (!GetPointerInfo(id, &pi)) break;
         POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
         ClientToScreen(hwnd, &pt);
         WPARAM keys = (self->m_mouseLeftDown ? MK_LBUTTON : 0) | (self->m_mouseRightDown ? MK_RBUTTON : 0);
-        self->postMouseToWeChat(WM_MOUSEMOVE, pt, keys);
-        {
-            TRACKMOUSEEVENT tme = {};
-            tme.cbSize = sizeof(tme);
-            tme.dwFlags = TME_HOVER;
-            tme.hwndTrack = hwnd;
-            tme.dwHoverTime = HOVER_DEFAULT;
-            TrackMouseEvent(&tme);
-        }
-        return 0;
-    }
-    case WM_MOUSEHOVER:
-    {
-        if (!self->isWeixinForeground()) break;
-        if (self->m_state != InputState::Idle) break;
-        POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-        ClientToScreen(hwnd, &pt);
-        self->postMouseToWeChat(WM_MOUSEMOVE, pt, 0);
+        if (keys != 0)
+            self->postMouseToWeChat(WM_MOUSEMOVE, pt, keys);
         return 0;
     }
     case WM_MOUSEWHEEL:
