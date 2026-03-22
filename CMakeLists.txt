@@ -39,6 +39,7 @@ qt_add_qml_module(appeasytouch
     SOURCES functions/windowfocushelper.h functions/windowfocushelper.cpp
     SOURCES functions/screenmovement.h functions/screenmovement.cpp
     QML_FILES Main.qml
+    QML_FILES views/ToolWindows.qml
     QML_FILES views/SettingsPage.qml
     QML_FILES views/Whileboard.qml
     QML_FILES views/RandomGenerator.qml
