@@ -1,13 +1,12 @@
 #include "windowfocushelper.h"
-#include <QTimer>
 #include <QDebug>
 
 #ifndef HSHELL_WINDOWCREATED
 #define HSHELL_WINDOWCREATED 1
 #endif
 
-// 延迟设焦的毫秒数，晚于资源管理器“抢焦点”的时机
-static const int kFocusDelayMs = 800;
+// 设焦间隔的毫秒数
+static const int kFocusDelayMs = 100;
 
 static const wchar_t kShellHostClassName[] = L"WindowFocusHelperShellHost";
 
@@ -24,6 +23,19 @@ static const WindowInf kForegroundWhitelist[] = {
 static const size_t kForegroundWhitelistCount = sizeof(kForegroundWhitelist) / sizeof(kForegroundWhitelist[0]);
 
 WindowFocusHelper::WindowFocusHelper(QObject *parent) : QObject(parent) {
+    focusSettingTimer.setInterval(kFocusDelayMs);
+    connect(&this->focusSettingTimer, &QTimer::timeout, this, [=](){
+        if (GetForegroundWindow() != focusSettingWindow) {
+            applyFocusToWindow(focusSettingWindow);
+        } else {
+            focusSettingTimer.stop();
+            // 双重保险
+            QTimer::singleShot(1000, this, [=](){
+                if (GetForegroundWindow() != focusSettingWindow)
+                    applyFocusToWindow(focusSettingWindow);
+            });
+        }
+    });
     start();
 }
 
@@ -69,16 +81,12 @@ bool WindowFocusHelper::isForegroundInWhitelist()
 void WindowFocusHelper::scheduleFocusToWindow(HWND hwnd, bool isDelay)
 {
     if (!hwnd) return;
-    if (isDelay)
-        QTimer::singleShot(kFocusDelayMs, this, [this, hwnd]() {
-            applyFocusToWindow(hwnd);
-            QTimer::singleShot(kFocusDelayMs*2, this, [this, hwnd]() {
-                if (GetForegroundWindow() != hwnd)
-                    applyFocusToWindow(hwnd);
-            });
-        });
-    else
+    if (isDelay) {
+        focusSettingWindow = hwnd;
+        focusSettingTimer.start();
+    } else {
         applyFocusToWindow(hwnd);
+    }
 }
 
 void WindowFocusHelper::applyFocusToWindow(HWND hwnd)

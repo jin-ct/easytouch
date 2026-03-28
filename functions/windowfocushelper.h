@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <windows.h>
+#include <QTimer>
 
 class WindowFocusHelper : public QObject
 {
@@ -21,6 +22,9 @@ private:
     static bool isForegroundInWhitelist();
     void scheduleFocusToWindow(HWND hwnd, bool isDelay = false);
     void applyFocusToWindow(HWND hwnd);
+
+    QTimer focusSettingTimer;
+    HWND focusSettingWindow;
 
     HWND m_shellHost{ nullptr };
     bool m_active{ false };
