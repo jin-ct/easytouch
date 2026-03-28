@@ -17,6 +17,7 @@ Window {
     property alias isShowToolBar: showToolBar.checked
     property alias isAutoStart: autoStart.checked
     property alias isAutoShowBtns: autoShowBtns.checked
+    property alias isShowWinodwOpacityAnimation: showWinodwOpacityAnimation.checked
     property alias isSendOpenUsb: sendOpenUsb.checked
     property alias isAutoUpdate: autoUpdate.checked
     property alias isWeChatTouchHelperEnable: weChatTouchHelperSwich.checked
@@ -152,6 +153,16 @@ Window {
                         checked: true
                         switchControl.onClicked: {
                             console.log("SettingChanged: (autoShowBtns)checked=", checked)
+                        }
+                    }
+
+                    SettingsSwitchCard {
+                        id: showWinodwOpacityAnimation
+                        title: "窗口透明度闪烁"
+                        description: "窗口透明度周期性闪烁"
+                        checked: true
+                        switchControl.onClicked: {
+                            console.log("SettingChanged: (showWinodwOpacityAnimation)checked=", checked)
                         }
                     }
 

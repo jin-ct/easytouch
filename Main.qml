@@ -20,6 +20,7 @@ ApplicationWindow {
         property alias isShowToolBar: settingsPage.isShowToolBar
         property alias isAutoStart: settingsPage.isAutoStart
         property alias isAutoShowBtns: settingsPage.isAutoShowBtns
+        property alias isShowWinodwOpacityAnimation: settingsPage.isShowWinodwOpacityAnimation
         property alias isSendOpenUsb: settingsPage.isSendOpenUsb
         property alias isAutoUpdate: settingsPage.isAutoUpdate
         property alias isWeChatTouchHelperEnable: settingsPage.isWeChatTouchHelperEnable

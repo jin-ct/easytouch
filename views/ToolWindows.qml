@@ -64,7 +64,8 @@ Item {
         setTimeout(() => {
             rightWindowOpacity.drop()
             leftWindowOpacity.drop()
-            windowsOpacityTimer.start()
+            if (settings.isShowWinodwOpacityAnimation)
+                windowsOpacityTimer.start()
         }, 6000)
         console.log("ToolWindowsCompleted")
     }
