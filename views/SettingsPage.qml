@@ -23,9 +23,6 @@ Window {
     property alias isWindowFocusHelperEnable: windowFocusHelperSwich.checked
     property alias penSavePath: penSavePathSetting.description
 
-    required property Functions funs
-    required property FileHelper fileHelper
-
     Rectangle {
         id: root
 
@@ -141,8 +138,7 @@ Window {
                         description: "Windows 登录后自动启动易触控"
                         checked: false
                         switchControl.onCheckedChanged: {
-                            if (funs)
-                                funs.setAutoStart(checked)
+                            Global.funs.setAutoStart(checked)
                         }
                         switchControl.onClicked: {
                             console.log("SettingChanged: (autoStart)checked=", checked)
@@ -203,10 +199,10 @@ Window {
                     SettingsButtonCard {
                         id: penSavePathSetting
                         title: "屏幕批注保存位置"
-                        description: fileHelper.desktopFolder() + "/屏幕批注"  // 当前位置（默认为桌面下屏幕批注目录）
+                        description: Global.fileHelper.desktopFolder() + "/屏幕批注"  // 当前位置（默认为桌面下屏幕批注目录）
                         text: "选择目录"
                         button.onClicked: {
-                            let newPath = fileHelper.openFolderDialog("选择屏幕批注保存目录", penSavePath)
+                            let newPath = Global.fileHelper.openFolderDialog("选择屏幕批注保存目录", penSavePath)
                             if (newPath) {
                                 penSavePath = newPath
                                 console.log("penSavePathChanged: ", penSavePath)

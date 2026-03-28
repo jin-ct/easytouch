@@ -13,8 +13,8 @@ Item {
     property int windowWidth: 52                                 // 工具栏窗口宽度
     property int windowHeight: 196                               // 工具栏窗口高度（未折叠）
     property int windowFoldedHeight: 52                          // 工具栏窗口高度（已折叠）
-    property int rightWindowHeight:  windowHeight                // 工具栏右窗口当前高度（窗口动画前变换）
-    property int leftWindowHeight: windowHeight                  // 工具栏左窗口当前高度（窗口动画前变换）
+    property int rightWindowHeight:  windowFoldedHeight          // 工具栏右窗口当前高度（窗口动画前变换）
+    property int leftWindowHeight: windowFoldedHeight            // 工具栏左窗口当前高度（窗口动画前变换）
     property int windowAnimationDuration: 160                    // 工具栏窗口动画时长
     property double windowLowOpacity: 0.40                       // 工具栏窗口最低透明度
     property double windowOpacity: 0.80                          // 工具栏窗口最高透明度
@@ -22,9 +22,7 @@ Item {
 
     property bool isShowDoubelWindow: true
 
-    required property Settings settings
-    required property FileHelper fileHelper
-    required property Functions funs
+    property alias m_penPopup: penPopup
 
     Settings {
         id: scrMoveSaveData
@@ -33,18 +31,36 @@ Item {
         property var screenMoveSaveList: []
     }
 
+    ScreenMovement {
+        id: screenMove
+        onSaveRequested: (sourceRect, mirrorRect) => {
+            scrMoveSaveDialog.show(sourceRect, mirrorRect)
+            console.log("onScreenMoveSaveRequested: ", sourceRect, mirrorRect)
+        }
+        onDeleteRequested: (btnId) => {
+            showMessageBox("删除记录", "你确定要删除该记录吗？", () => {
+                var data = scrMoveSaveData.screenMoveSaveList
+                data.splice(btnId, 1)
+                scrMoveSaveData.screenMoveSaveList = data
+                console.log("ScreenMoveSaveDataDeleted:", btnId)
+            })
+        }
+    }
+
     // 窗口创建完成
     Component.onCompleted: {
-        rightWindow.y = Screen.desktopAvailableHeight - (rightWindowHeight + windowBottomMargin)
-        leftWindow.y = Screen.desktopAvailableHeight - (rightWindowHeight + windowBottomMargin)
+        rightWindow.y = Screen.desktopAvailableHeight - (windowHeight + windowBottomMargin)
+        rightWindow.x = Screen.desktopAvailableWidth - (windowWidth + windowHorizontalMargin)
+        leftWindow.y = Screen.desktopAvailableHeight - (windowHeight + windowBottomMargin)
+        leftWindow.x = windowHorizontalMargin
         rightWindow.height = rightWindowHeight
         leftWindow.height = leftWindowHeight
         if (settings.isAutoShowBtns) {
             rightContent.isFolded = false
             leftContent.isFolded = false
         }
-        funs.setWindowNoActivate(rightWindow)
-        funs.setWindowNoActivate(leftWindow)
+        Global.funs.setWindowNoActivate(rightWindow)
+        Global.funs.setWindowNoActivate(leftWindow)
         setTimeout(() => {
             rightWindowOpacity.drop()
             leftWindowOpacity.drop()
@@ -93,11 +109,9 @@ Item {
     // 工具栏的弹出层
     VolumePopup {
         id: volumePopup
-        funs: funs
     }
     PenPopup {
         id: penPopup
-        funs: funs
         onSelectedColorChanged: {
             if (whileboard.status === Loader.Ready) {
                 console.log("whileboard-onSelectedColorChanged", selectedColor)
@@ -113,7 +127,6 @@ Item {
     }
     EraserPopup {
         id: eraserPopup
-        funs: funs
         onClear: {
             if (whileboard.status === Loader.Ready) {
                 console.log("whileboard-onClear")
@@ -127,7 +140,6 @@ Item {
     }
     ScrMoveSaveList {
         id: scrMoveSaveList
-        funs: funs
         screenMovement: screenMove
         screenMoveSaveList: scrMoveSaveData.screenMoveSaveList
     }
@@ -162,7 +174,6 @@ Item {
         id: rightWindow
         visible: true
         width: windowWidth
-        x: Screen.desktopAvailableWidth - (width + windowHorizontalMargin)
         color: "transparent"
         flags:  Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
         opacity: windowOpacity
@@ -171,7 +182,6 @@ Item {
         ToolWindowContent {
             id: rightContent
             window: rightWindow
-            funs: funs
             model: toolModel
             windowAnimationDuration: root.windowAnimationDuration
 
@@ -197,9 +207,8 @@ Item {
     // 左侧工具栏
     Window {
         id: leftWindow
-        visible: isShowDoubelWindow
+        visible: true
         width: windowWidth
-        x: windowHorizontalMargin
         color: "transparent"
         flags:  Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
         opacity: windowOpacity
@@ -208,7 +217,6 @@ Item {
         ToolWindowContent {
             id: leftContent
             window: leftWindow
-            funs: funs
             model: toolModel
             windowAnimationDuration: root.windowAnimationDuration
 
@@ -428,17 +436,17 @@ Item {
         // 处理按钮事件
         switch(idStr) {
         case "close":
-            funs.closeTopWindow()
+            Global.funs.closeTopWindow()
             break
         case "volume":
             if (!volumePopup.visible)
                 volumePopup.hideOrShow(pointX, pointY)
             break
         case "openDrive":
-            funs.openDrive()
+            Global.funs.openDrive()
             break
         case "ejectDrive":
-            if (funs.ejectDrive()) {
+            if (Global.funs.ejectDrive()) {
                 notificationHp.showNotification("rmUsb", "U盘已安全拔出", "U盘已安全拔出")
                 console.log("ejectDriveSuccess")
             } else {
@@ -479,7 +487,7 @@ Item {
         case "savePen":
             rightWindow.opacity = 0.2  // 截屏时降透明度
             leftWindow.opacity = 0.2
-            whileboard.item.exportPng(fileHelper.getNowDateTimeNameFilePath(settings.penSavePath, "png", true))
+            whileboard.item.exportPng(Global.fileHelper.getNowDateTimeNameFilePath(settings.penSavePath, "png", true))
             closePen()
             riseWindows()
             break

@@ -12,7 +12,6 @@ Item {
     anchors.top: parent.top
 
     required property Window window
-    required property Functions funs
 
     property alias model: listView.model
     property bool isFolded: true

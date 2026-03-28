@@ -13,6 +13,7 @@
 #include "functions/windowfocushelper.h"
 #include "functions/screenmovement.h"
 
+#include "globalmanager.h"
 #include "QtLogger.h"
 
 int main(int argc, char *argv[])
@@ -41,6 +42,15 @@ int main(int argc, char *argv[])
     qmlRegisterType<WeChatHelper>("Functions", 1, 0, "WeChatHelper");
     qmlRegisterType<WindowFocusHelper>("Functions", 1, 0, "WindowFocusHelper");
     qmlRegisterType<ScreenMovement>("Functions", 1, 0, "ScreenMovement");
+
+    qmlRegisterSingletonType<GlobalManager>(
+        "Functions", 1, 0, "Global",
+        [](QQmlEngine *engine, QJSEngine *) -> QObject* {
+            auto mgr = new GlobalManager();
+            mgr->setParent(engine);
+            return mgr;
+        }
+    );
 
     QObject::connect(
         &engine,

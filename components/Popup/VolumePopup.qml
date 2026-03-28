@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
+import Functions 1.0
 import "./"
 
 PopupWindow {
@@ -12,8 +13,8 @@ PopupWindow {
     property bool isMute: false
 
     onVisibleChanged: {
-        volumeSlider.value = funs.getVolume()
-        isMute = funs.getIsMute()
+        volumeSlider.value = Global.funs.getVolume()
+        isMute = Global.funs.getIsMute()
     }
 
     Row {
@@ -48,7 +49,7 @@ PopupWindow {
             }
             onClicked: {
                 isMute = !isMute
-                funs.setMute(isMute);
+                Global.funs.setMute(isMute);
             }
 
             Behavior on scale {
@@ -62,7 +63,7 @@ PopupWindow {
             height: parent.height
             from: 0
             to: 1
-            value: funs.getVolume()
+            value: Global.funs.getVolume()
 
             property bool volumeDirty: false
 
@@ -78,7 +79,7 @@ PopupWindow {
                 onTriggered: {
                     if (volumeSlider.volumeDirty) {
                         volumeSlider.volumeDirty = false
-                        funs.setVolume(volumeSlider.value)
+                        Global.funs.setVolume(volumeSlider.value)
                     }
                 }
             }

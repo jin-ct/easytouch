@@ -28,12 +28,13 @@ qt_add_qml_module(appeasytouch
     URI easytouch
     VERSION 1.0
     RESOURCES res.qrc app.rc
+    SOURCES globalmanager.h globalmanager.cpp
+    SOURCES QtLogger.cpp QtLogger.h
     SOURCES functions/fullscreenwatcher.h functions/fullscreenwatcher.cpp
     SOURCES functions/notificationhelper.h functions/notificationhelper.cpp
     SOURCES functions/whiteboarditem.h functions/whiteboarditem.cpp
     SOURCES functions/functions.cpp functions/functions.h
     SOURCES functions/updatehelper.h functions/updatehelper.cpp
-    SOURCES QtLogger.cpp QtLogger.h
     SOURCES functions/filehelper.h functions/filehelper.cpp
     SOURCES functions/wechathelper.h functions/wechathelper.cpp
     SOURCES functions/windowfocushelper.h functions/windowfocushelper.cpp

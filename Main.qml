@@ -27,48 +27,41 @@ ApplicationWindow {
         property alias penSavePath: settingsPage.penSavePath
     }
 
-    // cpp类实例
-    Functions {
-        id: funs
-
-        onUsbInserted: {
-            showUsbBtn()
-            if (settingsPage.isSendOpenUsb)
-                notificationHp.showNotification("openUsb", "点击打开U盘", "轻触此处打开U盘")
+    // cpp通信
+    Connections {
+        target: Global.funs
+        function onUsbInserted() {
+            if (toolWindows.status === Loader.Ready)
+                toolWindows.showUsbBtn()
+            if (settings.isSendOpenUsb)
+                Global.notification.showNotification("openUsb", "点击打开U盘", "轻触此处打开U盘")
             console.log("newUsbInserted")
         }
-        onUsbRemoved: {
-            hideUsbBtn()
+        function onUsbRemoved() {
+            if (toolWindows.status === Loader.Ready)
+                toolWindows.hideUsbBtn()
             console.log("usbRemoved")
         }
     }
-    NotificationHelper {
-        id: notificationHp
-
-        onNotificationClicked: (id) => {
+    Connections {
+        target: Global.notification
+        function onNotificationClicked(id) {
             if (id === "openUsb") {
-                funs.openDrive()
+                Global.funs.openDrive()
             }
         }
-        onAppQuit: {
+        function onAppQuit() {
             Qt.quit()
         }
-        onStartSettings: {
+        function onStartSettings() {
             settingsPage.show()
         }
     }
-    UpdateHelper {
-        id: updateHelper
-        Component.onCompleted: {
-            if (settings.isAutoUpdate)
-                updateHelper.checkForUpdates("jin-ct", "easytouch")
+    Connections {
+        target: Global.updateHelper
+        function onUpdateAvailable(version) {
+            Global.notification.showNotification("update", "有新版本的易触控" + "（" + version + "）", "现在开始更新易触控")
         }
-        onUpdateAvailable: (version) => {
-            notificationHp.showNotification("update", "有新版本的易触控" + "（" + version + "）", "现在开始更新易触控")
-        }
-    }
-    FileHelper {
-        id: fileHelper
     }
     Component {
         id: weChatHelper
@@ -92,29 +85,15 @@ ApplicationWindow {
             console.log("windowFocusHelperLoaded")
         }
     }
-    ScreenMovement {
-        id: screenMove
-        onSaveRequested: (sourceRect, mirrorRect) => {
-            scrMoveSaveDialog.show(sourceRect, mirrorRect)
-            console.log("onScreenMoveSaveRequested: ", sourceRect, mirrorRect)
-        }
-        onDeleteRequested: (btnId) => {
-            showMessageBox("删除记录", "你确定要删除该记录吗？", () => {
-                var data = scrMoveSaveData.screenMoveSaveList
-                data.splice(btnId, 1)
-                scrMoveSaveData.screenMoveSaveList = data
-                console.log("ScreenMoveSaveDataDeleted:", btnId)
-            })
-        }
-    }
 
     // 窗口创建完成
     Component.onCompleted: {
-        funs.setWindowNoActivate(windows)
+        Global.funs.setWindowNoActivate(windows)
         if (settings.isShowToolBar) {
             toolWindows.show()
         }
-
+        if (settings.isAutoUpdate)
+            Global.updateHelper.checkForUpdates("jin-ct", "easytouch")
         console.log("windowsCompleted")
     }
 
@@ -124,8 +103,6 @@ ApplicationWindow {
     SettingsPage {
         id: settingsPage
         visible: false
-        funs: funs
-        fileHelper: fileHelper
     }
 
     // 批注窗口
@@ -138,13 +115,13 @@ ApplicationWindow {
             source = ""
         }
         onLoaded: {
-            funs.setWindowNoActivate(whileboard.item)
+            Global.funs.setWindowNoActivate(whileboard.item)
             // 确保窗口创建出 winId 后再禁用触摸反馈（否则可能不生效）
-            Qt.callLater(function() { funs.disableTouchFeedback(whileboard.item) })
+            Qt.callLater(function() { Global.funs.disableTouchFeedback(whileboard.item) })
         }
         onStatusChanged: {
-            if (status === Loader.Null)
-                penPopup.reset()
+            if (status === Loader.Null && toolWindows.status === Loader.Ready)
+                toolWindows.item.m_penPopup.reset()
         }
     }
 
@@ -163,11 +140,11 @@ ApplicationWindow {
     }
 
     // 工具栏窗口
-    ToolWindows {
+    Loader {
         id: toolWindows
-        funs: funs
-        fileHelper: fileHelper
-        settings: settings
+        function show() {
+            source = "views/ToolWindows.qml"
+        }
     }
 
     // =============== 窗口（结束） ===============

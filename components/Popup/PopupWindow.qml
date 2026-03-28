@@ -13,21 +13,19 @@ Window {
     x: heartPointX < (Screen.desktopAvailableWidth/2) ? (heartPointX + 27) : (heartPointX - width - 27)
     y: heartPointY - height/2
 
-    required property Functions funs
-
     property int heartPointX: 0
     property int heartPointY: 0
     property int popupWidth: 0
     property int popupHeight: 0
 
     Component.onCompleted: {
-        funs.setWindowNoActivate(popup)
+        Global.funs.setWindowNoActivate(popup)
     }
 
     Connections {
-        target: funs
+        target: Global.funs
         function onMousePressed(pos) {
-            if (popup.visible && !funs.isRectContains(Qt.rect(popup.x, popup.y, popup.width, popup.height), pos))
+            if (popup.visible && !Global.funs.isRectContains(Qt.rect(popup.x, popup.y, popup.width, popup.height), pos))
                 popup.hideOrShow()
         }
     }
@@ -51,9 +49,9 @@ Window {
             heartPointY = pointY
         if (!popup.visible) {
             popup.visible = true
-            funs.installHook()
+            Global.funs.installHook()
         } else {
-            funs.uninstallHook()
+            Global.funs.uninstallHook()
         }
 
         windowAnimation.start()
