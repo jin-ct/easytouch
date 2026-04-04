@@ -42,6 +42,7 @@ Item {
                 var data = scrMoveSaveData.screenMoveSaveList
                 data.splice(btnId, 1)
                 scrMoveSaveData.screenMoveSaveList = data
+                screenMove.stopAll()
                 console.log("ScreenMoveSaveDataDeleted:", btnId)
             })
         }
@@ -154,7 +155,7 @@ Item {
         function show(sourceRect, mirrorRect) {
             scrMoveSaveDialog.sourceRect = sourceRect
             scrMoveSaveDialog.mirrorRect = mirrorRect
-            source = "components/Dialog/ScrMoveSaveDialog.qml"
+            source = "../components/Dialog/ScrMoveSaveDialog.qml"
         }
         onLoaded: {
             item.setRect(scrMoveSaveDialog.sourceRect, scrMoveSaveDialog.mirrorRect)
@@ -364,7 +365,7 @@ Item {
         }, windowAnimationDuration)
     }
     function showMessageBox(title, message, okBtnClickedCb = () =>{} , cancelBtnClickedCb = () =>{}) {
-        const comp = Qt.createComponent("components/Dialog/MessageBoxDialog.qml")
+        const comp = Qt.createComponent("../components/Dialog/MessageBoxDialog.qml")
         if (comp.status === Component.Ready) {
             const dlg = comp.createObject()
             dlg.title = title
