@@ -15,7 +15,7 @@ Item {
 
     property alias model: listView.model
     property bool isFolded: true
-    property double backgroundOpacity: 1
+    property double backgroundOpacity: 0.5
     property int windowAnimationDuration: 160
 
     property bool isLongPressing: false
@@ -26,16 +26,6 @@ Item {
     signal buttonTriggered(string idStr, bool checked, bool perState, int pointX, int pointY)
     signal drag()
 
-    // 背景
-    Rectangle {
-        opacity: backgroundOpacity
-        anchors.fill: parent
-        anchors.topMargin: 18
-        radius: 8
-        color: "#f2f2f2"
-        border.color: "#cfcfcf"
-    }
-
     // 主图标
     Rectangle {
         id: dragHandle
@@ -43,7 +33,7 @@ Item {
         height: 52
         radius: width / 2
         color: "#eaeaea"
-        border.color: "#c8c8c8"
+        border.color: dragHandleMouseArea.pressed ? "#B8B8B8" : "#c8c8c8"
         z: 99
 
         anchors.horizontalCenter: parent.horizontalCenter
@@ -57,6 +47,7 @@ Item {
         }
 
         MouseArea {
+            id: dragHandleMouseArea
             anchors.fill: parent
             property point lastMousePos: Qt.point(0, 0)
             property bool isMoved: false
@@ -82,130 +73,166 @@ Item {
         }
     }
 
-    // 按钮列表
-    ListView {
-        id: listView
+    // 背景
+    Rectangle {
         opacity: backgroundOpacity
+        width: parent.width
+        height: isFolded ? 0 : parent.height - 18
+        anchors.topMargin: 18
+        anchors.top: parent.top
+        radius: 8
+        color: "#f2f2f2"
+        border.color: "#cfcfcf"
 
-        anchors {
-            top: parent.top; topMargin: 18
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom; bottomMargin: 6
-        }
+        // 按钮列表
+        ListView {
+            id: listView
+            opacity: backgroundOpacity
 
-        clip: true
-        spacing: 2
-        model: model
-        interactive: true
+            anchors {
+                top: parent.top;
+                left: parent.left
+                right: parent.right
+                bottom: parent.bottom; bottomMargin: 6
+            }
 
-        header: Rectangle { height: 36 }
-        delegate: Rectangle {
-            id: btn
-            width: 42
-            height: 38
-            radius: 6
-            x: (listView.width - width) / 2
+            clip: true
+            spacing: 2
+            model: model
+            interactive: true
 
-            color: (model.checked && model.checkable) ? "#4f8cff" : "#ffffff"
-            border.color: (model.checked && model.checkable) ? "#2f6fe0" : "#cfcfcf"
-            border.width: 1
+            header: Rectangle { height: 36 }
+            delegate: Rectangle {
+                id: btn
+                width: 42
+                height: 38
+                radius: 6
+                x: (listView.width - width) / 2
 
-            Column {
-                anchors.centerIn: parent
-                spacing: 3
+                color: (model.checked && model.checkable) ? "#4f8cff" : "#ffffff"
+                border.color: (model.checked && model.checkable) ? "#2f6fe0" : "#cfcfcf"
+                border.width: 1
 
-                Image {
-                    width: 16; height: 16;
-                    source: model.icon
-                    mipmap:true
-                    anchors.horizontalCenter: parent.horizontalCenter
+                Column {
+                    anchors.centerIn: parent
+                    spacing: 3
 
-                    MultiEffect {
-                        visible: model.checkable
-                        anchors.fill: parent
-                        source: parent
-                        colorization: 1.0
-                        colorizationColor: (model.checked && model.checkable) ? "#ffffff" : "#525252"
+                    Image {
+                        width: 16; height: 16;
+                        source: model.icon
+                        mipmap:true
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        MultiEffect {
+                            visible: model.checkable
+                            anchors.fill: parent
+                            source: parent
+                            colorization: 1.0
+                            colorizationColor: (model.checked && model.checkable) ? "#ffffff" : "#525252"
+                        }
+                    }
+
+                    Text {
+                        text: model.text
+                        font.pixelSize: 8
+                        wrapMode: Text.NoWrap
+                        color: (model.checked && model.checkable) ? "#ffffff" : "#2f2f2f"
+                        horizontalAlignment: Text.AlignHCenter
                     }
                 }
 
-                Text {
-                    text: model.text
-                    font.pixelSize: 8
-                    wrapMode: Text.NoWrap
-                    color: (model.checked && model.checkable) ? "#ffffff" : "#2f2f2f"
-                    horizontalAlignment: Text.AlignHCenter
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onPressedChanged: {
-                    btn.scale = pressed ? 0.94 : 1.0
-                    if (pressed) {
-                        isLongPressing = true
-                        longPressingBtnIndex = index
-                        longPressingBtnPoint =
-                                {x: parent.mapToGlobal(0, 0).x + parent.width/2, y: parent.mapToGlobal(0, 0).y + parent.height/2}
-                        longPressTimer.start()
-                    } else {
-                        isLongPressing = false
+                MouseArea {
+                    anchors.fill: parent
+                    onPressedChanged: {
+                        btn.scale = pressed ? 0.94 : 1.0
+                        if (pressed) {
+                            isLongPressing = true
+                            longPressingBtnIndex = index
+                            longPressingBtnPoint =
+                                    {x: parent.mapToGlobal(0, 0).x + parent.width/2, y: parent.mapToGlobal(0, 0).y + parent.height/2}
+                            longPressTimer.start()
+                        } else {
+                            isLongPressing = false
+                        }
+                    }
+                    onClicked: {
+                        if (isLongPressed) {
+                            isLongPressed = false;
+                            return
+                        }
+                        root.handleButtonTap(index, parent.mapToGlobal(0, 0).x + parent.width/2, parent.mapToGlobal(0, 0).y + parent.height/2)
                     }
                 }
-                onClicked: {
-                    if (isLongPressed) {
-                        isLongPressed = false;
-                        return
-                    }
-                    root.handleButtonTap(index, parent.mapToGlobal(0, 0).x + parent.width/2, parent.mapToGlobal(0, 0).y + parent.height/2)
+
+                Behavior on scale {
+                    NumberAnimation { duration: 88 }
                 }
             }
-
-            Behavior on scale {
-                NumberAnimation { duration: 88 }
-            }
-        }
-        footer: Rectangle { height: 16 }
-        add: Transition {
-            NumberAnimation {
-                properties: "opacity"
-                from: 0
-                to: 1
-                duration: 160
-                easing.type: Easing.OutCubic
-            }
-            NumberAnimation {
-                property: "scale"
-                from: 0
-                to: 1
-                duration: 160
-            }
-        }
-        remove: Transition {
-            ParallelAnimation {
+            footer: Rectangle { height: 16 }
+            add: Transition {
                 NumberAnimation {
-                    property: "opacity"
-                    from: 1
-                    to: 0
+                    properties: "opacity"
+                    from: 0
+                    to: 1
                     duration: 160
+                    easing.type: Easing.OutCubic
                 }
                 NumberAnimation {
                     property: "scale"
-                    from: 1
-                    to: 0.6
+                    from: 0
+                    to: 1
                     duration: 160
                 }
             }
+            remove: Transition {
+                ParallelAnimation {
+                    NumberAnimation {
+                        property: "opacity"
+                        from: 1
+                        to: 0
+                        duration: 160
+                    }
+                    NumberAnimation {
+                        property: "scale"
+                        from: 1
+                        to: 0.6
+                        duration: 160
+                    }
+                }
+            }
+            displaced: Transition {
+                NumberAnimation {
+                    properties: "y"
+                    duration: 160
+                    easing.type: Easing.OutCubic
+                }
+            }
+            onDragStarted: drag()
         }
-        displaced: Transition {
-            NumberAnimation {
-                properties: "y"
-                duration: 160
-                easing.type: Easing.OutCubic
+
+        // 底部渐变遮罩
+        Rectangle {
+            opacity: backgroundOpacity
+            height: 30
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            radius: 8
+
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "#00000000" }
+                GradientStop { position: 0.8; color: "#f2f2f2" }
+                GradientStop { position: 1.0; color: "#f2f2f2" }
             }
         }
-        onDragStarted: drag()
+
+        Behavior on height {
+            NumberAnimation { duration: windowAnimationDuration }
+        }
+    }
+
+    Behavior on backgroundOpacity {
+        NumberAnimation { duration: windowAnimationDuration }
     }
 
     function handleButtonTap(index, pointX, pointY) {
@@ -242,28 +269,6 @@ Item {
         let pointX = longPressingBtnPoint.x
         let pointY = longPressingBtnPoint.y
         buttonTriggered(item.idStr + "LongPressed", false, false, pointX, pointY)
-    }
-
-    Rectangle {
-        opacity: backgroundOpacity
-        height: 30
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        radius: 8
-
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#00000000" }
-            GradientStop { position: 0.8; color: "#f2f2f2" }
-            GradientStop { position: 1.0; color: "#f2f2f2" }
-        }
-    }
-
-    Behavior on height {
-        NumberAnimation { duration: windowAnimationDuration }
-    }
-    Behavior on backgroundOpacity {
-        NumberAnimation { duration: windowAnimationDuration }
     }
 
     Timer {

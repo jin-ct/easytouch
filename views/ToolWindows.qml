@@ -56,6 +56,8 @@ Item {
         rightWindow.height = rightWindowHeight
         leftWindow.height = leftWindowHeight
         if (settings.isAutoShowBtns) {
+            rightContent.backgroundOpacity = 1
+            leftContent.backgroundOpacity = 1
             rightContent.isFolded = false
             leftContent.isFolded = false
         }
@@ -200,7 +202,7 @@ Item {
                 root.rightWindowHeight = isFolded ? windowFoldedHeight : windowHeight
                 handleWindowHeightChange(rightWindow.height, root.rightWindowHeight, true)
                 height = rightWindowHeight
-                backgroundOpacity = isFolded ? 0 : 1
+                backgroundOpacity = isFolded ? 0.5 : 1
             }
         }
     }
@@ -235,7 +237,7 @@ Item {
                 root.leftWindowHeight = isFolded ? windowFoldedHeight : windowHeight
                 handleWindowHeightChange(leftWindow.height, root.leftWindowHeight, false)
                 height = leftWindowHeight
-                backgroundOpacity = isFolded ? 0 : 1
+                backgroundOpacity = isFolded ? 0.5 : 1
             }
         }
     }
