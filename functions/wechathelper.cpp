@@ -9,23 +9,25 @@ const wchar_t *WeChatHelper::s_overlayClassName = L"WeChatHelperOverlay";
 
 static const int kScrollDragThreshold = 12;
 static const int kLongPressMs = 500;
-static const float kWheelDeltaScale = 3;        // 滚轮 delta = dy * scale，与滑动距离成正比
-static const int kWheelDeltaMax = 360;          // 单次最大 delta，避免速度突变
-static const float kVelocityThresholdMin = 2.5; // 触发惯性的速度阈值
-static const float kVelocityThresholdMax = 8;   // 惯性计算的最大速度值，避免速度突变
-static const float kVelocityScale = 0.90;       // 惯性单次减小比例
+static const float kWheelDeltaScale = 3;         // 滚轮 delta = dy * scale，与滑动距离成正比
+static const int kWheelDeltaMax = 360;           // 单次最大 delta，避免速度突变
+static const float kVelocityThresholdMin = 2.0;  // 触发惯性的速度阈值
+static const double kVelocityThresholdMax = 360; // 惯性计算的最大速度值，避免速度突变
+static const float kMaxVelocityScale = 0.95;     // 惯性的最大速度占输入速度比例
+static const float kVelocityScale = 0.90;        // 惯性单次变化比例
+static const float kVelocityScaleDuration = 12;  // 惯性单次变化时间间隔 (ms)
 
 WeChatHelper::WeChatHelper(QObject *parent)
     : QObject(parent)
 {
     QObject::connect(&m_inertiaTimer, &QTimer::timeout, this, [this] {
-        m_velocity *= kVelocityScale;
-        if (std::abs(m_velocity) < 0.01) {
+        m_inertiaVelocity *= kVelocityScale;
+        if (std::abs(m_inertiaVelocity) < 0.01) {
             m_inertiaTimer.stop();
             return;
         }
         // 惯性滑动
-        sendWheelViaMouseInput(int(m_velocity * 80.0));
+        sendWheelViaMouseInput(int(m_inertiaVelocity * 80.0));
     });
 
     m_longPressTimer.setSingleShot(true);
@@ -297,12 +299,11 @@ void WeChatHelper::onLongPressTimeout()
     postMouseToWeChat(WM_RBUTTONUP, pt, 0);
 }
 
-void WeChatHelper::recordSample(int deltaY)
+void WeChatHelper::recordSample(int deltaY, qint64 elapsed)
 {
-    qint64 t = m_timer.elapsed();
-    m_samples.append({t, deltaY});
+    m_samples.append({elapsed, deltaY});
 
-    while (!m_samples.isEmpty() && t - m_samples.first().first > 100)
+    while (!m_samples.isEmpty() && elapsed - m_samples.first().first > 100)
         m_samples.removeFirst();
 }
 
@@ -312,9 +313,11 @@ double WeChatHelper::calcVelocity()
         return 0.0;
 
     int sum = 0;
-    qint64 dt = m_samples.last().first - m_samples.first().first;
-    for (auto &s : m_samples)
-        sum += s.second;
+    qint64 dt = m_timer.elapsed();
+    for (auto &s : m_samples) {
+        if (std::abs(sum + s.second) > std::abs(sum))
+            sum += s.second;
+    }
 
     if (dt <= 0) return 0.0;
     return double(sum) / double(dt);
@@ -324,11 +327,12 @@ void WeChatHelper::startInertia()
 {
     m_velocity = calcVelocity();
     m_samples.clear();
+    m_inertiaVelocity = std::min(m_velocity * kMaxVelocityScale, kVelocityThresholdMax);
 
-    if (std::abs(m_velocity) < kVelocityThresholdMin || std::abs(m_velocity) > kVelocityThresholdMax)
+    if (std::abs(m_velocity) < kVelocityThresholdMin)
         return;
 
-    m_inertiaTimer.start(16);
+    m_inertiaTimer.start(kVelocityScaleDuration);
 }
 
 void WeChatHelper::sendWheelViaMouseInput(int delta)
@@ -443,7 +447,7 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
             }
 
             if (self->m_state == InputState::TouchScroll && std::abs(dy) > 2) {
-                self->recordSample(dy);
+                self->recordSample(dy, self->m_timer.elapsed());
                 int absDelta = std::min((int)(std::abs(dy) * kWheelDeltaScale), kWheelDeltaMax);
                 int delta = (dy > 0 ? 1 : -1) * absDelta;
                 self->sendWheelViaMouseInput(delta);

@@ -52,6 +52,8 @@ private:
     QVector<QPair<qint64, int>> m_samples;
     QTimer m_inertiaTimer;
     double m_velocity = 0.0;
+    double m_inertiaVelocity = 0.10;
+    bool m_inertiaAccelerateOk = false;
 
     bool isWeixinForeground();
     HWND getWeChatHwnd();
@@ -60,7 +62,7 @@ private:
     void createOverlay();
     void destroyOverlay();
     void updateOverlayVisibility();
-    void recordSample(int deltaY);
+    void recordSample(int deltaY, qint64 elapsed);
     double calcVelocity();
     void startInertia();
     void sendWheelToWeChat(int delta, const POINT &screenPt);
