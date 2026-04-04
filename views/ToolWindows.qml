@@ -450,10 +450,10 @@ Item {
             break
         case "ejectDrive":
             if (Global.funs.ejectDrive()) {
-                notificationHp.showNotification("rmUsb", "U盘已安全拔出", "U盘已安全拔出")
+                Global.notification.showNotification("rmUsb", "U盘已安全拔出", "U盘已安全拔出")
                 console.log("ejectDriveSuccess")
             } else {
-                notificationHp.showNotification("rmUsb", "U盘弹出失败", "U盘弹出失败")
+                Global.notification.showNotification("rmUsb", "U盘弹出失败", "U盘弹出失败")
                 console.error("ejectDriveError")
             }
             break

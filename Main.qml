@@ -33,14 +33,14 @@ ApplicationWindow {
         target: Global.funs
         function onUsbInserted() {
             if (toolWindows.status === Loader.Ready)
-                toolWindows.showUsbBtn()
+                toolWindows.item.showUsbBtn()
             if (settings.isSendOpenUsb)
                 Global.notification.showNotification("openUsb", "点击打开U盘", "轻触此处打开U盘")
             console.log("newUsbInserted")
         }
         function onUsbRemoved() {
             if (toolWindows.status === Loader.Ready)
-                toolWindows.hideUsbBtn()
+                toolWindows.item.hideUsbBtn()
             console.log("usbRemoved")
         }
     }
