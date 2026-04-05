@@ -265,86 +265,19 @@ void WeChatHelper::sendWheelToWeChat(int delta, const POINT &screenPt)
     PostMessage(h, WM_MOUSEWHEEL, wParam, lParam);
 }
 
-void WeChatHelper::postMouseToWeChat(UINT msg, const POINT &screenPt, WPARAM wParam)
-{
-    HWND wechatHwnd = getWeChatHwnd();
-    if (!wechatHwnd || !IsWindow(wechatHwnd))
-        return;
-
-    DWORD wechatPid = 0;
-    GetWindowThreadProcessId(wechatHwnd, &wechatPid);
-    if (!wechatPid)
-        return;
-
-    HWND topWeChatHwnd = nullptr;
-    {
-        POINT pt = screenPt;
-        for (HWND h = GetTopWindow(nullptr); h != nullptr; h = GetWindow(h, GW_HWNDNEXT)) {
-            DWORD pid = 0;
-            GetWindowThreadProcessId(h, &pid);
-            if (pid != wechatPid)
-                continue;
-            if (!IsWindowVisible(h) || IsIconic(h))
-                continue;
-
-            RECT r = {};
-            if (!GetWindowRect(h, &r))
-                continue;
-            if (!PtInRect(&r, pt))
-                continue;
-
-            topWeChatHwnd = h;
-            break;  // Z 序从前到后，第一个命中的就是最上层
-        }
-    }
-
-    if (!topWeChatHwnd)
-        topWeChatHwnd = wechatHwnd;
-
-    // 先把屏幕坐标转换成顶层微信窗口的客户区坐标
-    POINT ptClient = screenPt;
-    if (!ScreenToClient(topWeChatHwnd, &ptClient))
-        return;
-
-    HWND target = topWeChatHwnd;
-    POINT ptInTarget = ptClient;
-
-    // 在父窗口客户区坐标下调用 RealChildWindowFromPoint，
-    // 命中子窗口后再把点转换到子窗口客户区，如此循环，直到没有更深的子窗口
-    for (;;) {
-        HWND child = RealChildWindowFromPoint(target, ptInTarget);
-        if (!child || child == target)
-            break;
-
-        POINT ptInChild = ptInTarget;
-        MapWindowPoints(target, child, &ptInChild, 1);
-
-        target = child;
-        ptInTarget = ptInChild;
-    }
-
-    auto sendTo = [](HWND hwnd, UINT m, WPARAM wp, LPARAM lp) {
-        PostMessage(hwnd, m, wp, lp);
-    };
-
-    // 先发给命中的最深子窗口（坐标为该子窗口客户区）
-    LPARAM lParamTarget = MAKELPARAM(ptInTarget.x, ptInTarget.y);
-    sendTo(target, msg, wParam, lParamTarget);
-
-    // 再兜底发给顶层微信窗口（坐标为其客户区），兼容“子控件不处理但父窗口处理”的情况
-    if (target != topWeChatHwnd) {
-        LPARAM lParamRoot = MAKELPARAM(ptClient.x, ptClient.y);
-        sendTo(topWeChatHwnd, msg, wParam, lParamRoot);
-    }
-}
-
 void WeChatHelper::onLongPressTimeout()
 {
     if (m_state != InputState::TouchPending) return;
     m_longPressFired = true;
     POINT pt = { m_touchStartX, m_touchStartY };
-    postMouseToWeChat(WM_RBUTTONDOWN, pt, MK_RBUTTON);
-    postMouseToWeChat(WM_RBUTTONUP, pt, 0);
+    updateHole(m_overlay, pt);
+    SetCursorPos(pt.x, pt.y);
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_MOUSE;
+    inputs[0].mi.dwFlags = MOUSEEVENTF_RIGHTDOWN;
+    inputs[1].type = INPUT_MOUSE;
+    inputs[1].mi.dwFlags = MOUSEEVENTF_RIGHTUP;
+    SendInput(2, inputs, sizeof(INPUT));
 }
 
 void WeChatHelper::updateHole(HWND hwnd, POINT center)

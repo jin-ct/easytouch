@@ -71,8 +71,6 @@ private:
     void startInertia();
     void sendWheelToWeChat(int delta, const POINT &screenPt);
     void sendWheelViaMouseInput(int delta); // 通过 SendInput 注入鼠标滚轮
-    void postMouseToWeChat(UINT msg, const POINT &screenPt, WPARAM wParam);
-    void postMouseToHwnd(HWND h, UINT msg, const POINT &screenPt, WPARAM wParam);
     void onLongPressTimeout();
     void updateHole(HWND hwnd, POINT center); // 设置非命中区域中心点 (小矩形事件穿透区域)
 
