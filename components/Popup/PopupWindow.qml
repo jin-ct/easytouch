@@ -18,6 +18,10 @@ Window {
     property int popupWidth: 0
     property int popupHeight: 0
 
+    property bool isHideByHook: false
+
+    signal windowHide()
+
     Component.onCompleted: {
         Global.funs.setWindowNoActivate(popup)
     }
@@ -25,8 +29,10 @@ Window {
     Connections {
         target: Global.funs
         function onMousePressed(pos) {
-            if (popup.visible && !Global.funs.isRectContains(Qt.rect(popup.x, popup.y, popup.width, popup.height), pos))
+            if (popup.visible && !Global.funs.isRectContains(Qt.rect(popup.x, popup.y, popup.width, popup.height), pos)) {
+                isHideByHook = true;
                 popup.hideOrShow()
+            }
         }
     }
 
@@ -76,8 +82,17 @@ Window {
         easing.type: Easing.OutInQuad
 
         onStopped: {
-            if (popup.opacity === 0)
+            if (popup.opacity === 0) {
                 popup.visible = false
+                if (!isHideByHook) {
+                    windowHide()
+                } else {
+                    setTimeout(() => {   // 延时销毁对象防止重复触发
+                        isHideByHook = false
+                        windowHide()
+                    }, 50)
+                }
+            }
         }
     }
 

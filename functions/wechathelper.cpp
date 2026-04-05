@@ -187,6 +187,8 @@ void WeChatHelper::updateOverlayVisibility()
             if (!m_overlayVisible) {
                 ShowWindow(m_overlay, SW_SHOWNOACTIVATE);
                 overlayUpdateHole(true);
+                SetWindowPos(m_overlay, HWND_NOTOPMOST, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE);  // 重新置顶
+                SetWindowPos(m_overlay, HWND_TOPMOST, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE);
                 if (!m_updateHoleTimer.isActive())
                     m_updateHoleTimer.start(updateHoleInterval);
                 m_overlayVisible = true;
@@ -210,6 +212,8 @@ void WeChatHelper::updateOverlayVisibility()
             if (!m_overlayVisible) {
                 ShowWindow(m_overlay, SW_SHOWNOACTIVATE);
                 overlayUpdateHole(true);
+                SetWindowPos(m_overlay, HWND_NOTOPMOST, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE);  // 重新置顶
+                SetWindowPos(m_overlay, HWND_TOPMOST, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE);
                 if (!m_updateHoleTimer.isActive())
                     m_updateHoleTimer.start(updateHoleInterval);
                 m_overlayVisible = true;

@@ -118,6 +118,26 @@ void Functions::disableTouchFeedback(QWindow *window)
     }
 }
 
+void Functions::resetWindowStayOnTop(QWindow *window)
+{
+    if (!window) return;
+    HWND hwnd = (HWND)window->winId();
+    SetWindowPos(hwnd, HWND_NOTOPMOST, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+    SetWindowPos(hwnd, HWND_TOPMOST, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+}
+
+void Functions::ensureWinodowTopMost(QWindow *window)
+{
+    if (!window) return;
+    HWND hwnd = (HWND)window->winId();
+    LONG exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+    if (!(exStyle & WS_EX_TOPMOST))
+    {
+        SetWindowPos(hwnd, HWND_TOPMOST, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+    }
+    SetWindowPos(hwnd, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+}
+
 void Functions::closeTopWindow()
 {
     INPUT inputs[4] = {};

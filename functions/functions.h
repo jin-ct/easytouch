@@ -25,6 +25,8 @@ public:
     Q_INVOKABLE void setWindowNoActivate(QWindow* window);
     Q_INVOKABLE void setOwner(QWindow *child, QWindow *owner);
     Q_INVOKABLE void disableTouchFeedback(QWindow* window);
+    Q_INVOKABLE void resetWindowStayOnTop(QWindow* window);
+    Q_INVOKABLE void ensureWinodowTopMost(QWindow* window);
 
     Q_INVOKABLE void closeTopWindow();
     Q_INVOKABLE void openDrive();

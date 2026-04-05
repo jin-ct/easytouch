@@ -21,6 +21,7 @@ ApplicationWindow {
         property alias isAutoStart: settingsPage.isAutoStart
         property alias isAutoShowBtns: settingsPage.isAutoShowBtns
         property alias isShowWinodwOpacityAnimation: settingsPage.isShowWinodwOpacityAnimation
+        property alias isStayTopEnhanced: settingsPage.isStayTopEnhanced
         property alias isSendOpenUsb: settingsPage.isSendOpenUsb
         property alias isAutoUpdate: settingsPage.isAutoUpdate
         property alias isWeChatTouchHelperEnable: settingsPage.isWeChatTouchHelperEnable
@@ -85,6 +86,14 @@ ApplicationWindow {
         onLoaded: {
             console.log("windowFocusHelperLoaded")
         }
+        Connections {
+            target: windowFocusHelperLoader.item
+            function onNewWindowCreated() {
+                if (toolWindows.status === Loader.Ready) {
+                    toolWindows.item.updateWindows()
+                }
+            }
+        }
     }
 
     // 窗口创建完成
@@ -122,7 +131,7 @@ ApplicationWindow {
         }
         onStatusChanged: {
             if (status === Loader.Null && toolWindows.status === Loader.Ready)
-                toolWindows.item.m_penPopup.reset()
+                toolWindows.item.penPopupReset()
         }
     }
 

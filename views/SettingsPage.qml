@@ -18,6 +18,7 @@ Window {
     property alias isAutoStart: autoStart.checked
     property alias isAutoShowBtns: autoShowBtns.checked
     property alias isShowWinodwOpacityAnimation: showWinodwOpacityAnimation.checked
+    property alias isStayTopEnhanced: stayTopEnhanced.checked
     property alias isSendOpenUsb: sendOpenUsb.checked
     property alias isAutoUpdate: autoUpdate.checked
     property alias isWeChatTouchHelperEnable: weChatTouchHelperSwich.checked
@@ -163,6 +164,16 @@ Window {
                         checked: true
                         switchControl.onClicked: {
                             console.log("SettingChanged: (showWinodwOpacityAnimation)checked=", checked)
+                        }
+                    }
+
+                    SettingsSwitchCard {
+                        id: stayTopEnhanced
+                        title: "置顶增强"
+                        description: "通过定时器触发让工具栏和相关窗口置于最顶层"
+                        checked: true
+                        switchControl.onClicked: {
+                            console.log("SettingChanged: (stayTopEnhanced)checked=", checked)
                         }
                     }
 

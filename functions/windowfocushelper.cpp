@@ -168,6 +168,7 @@ LRESULT CALLBACK WindowFocusHelper::shellWndProc(HWND hwnd, UINT msg, WPARAM wPa
     if (self && msg == self->m_msgShellHook && self->m_msgShellHook != 0) {
         if (wParam == HSHELL_WINDOWCREATED) {
             qDebug() << "HSHELL_WINDOWCREATED";
+            emit self->newWindowCreated();
             HWND newHwnd = reinterpret_cast<HWND>(lParam);
             if (isFocusableWindow(newHwnd) && !isWindowInWhitelist(newHwnd)) {
                 // 若当前前景是白名单内软件则时延迟设焦

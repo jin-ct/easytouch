@@ -20,6 +20,7 @@ public:
     // 否则直接以传入矩形作为镜像区域，跳过遮罩框选
     Q_INVOKABLE void start(const QVariant &sourceRect = QVariant(), const QVariant &mirrorRect = QVariant(), int saveId = -1);
     Q_INVOKABLE bool isStarted();
+    Q_INVOKABLE void allWindowsToTop();
     Q_INVOKABLE void stopAll();
 
 signals:

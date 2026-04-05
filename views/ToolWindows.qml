@@ -22,7 +22,8 @@ Item {
 
     property bool isShowDoubelWindow: true
 
-    property alias m_penPopup: penPopup
+    property alias rightW: rightWindow
+    property alias leftW: leftWindow
 
     Settings {
         id: scrMoveSaveData
@@ -70,7 +71,35 @@ Item {
             if (settings.isShowWinodwOpacityAnimation)
                 windowsOpacityTimer.start()
         }, 6000)
+
+        if (settings.isStayTopEnhanced)
+            ensureWindowOnTopTimer.start()
+
         console.log("ToolWindowsCompleted")
+    }
+
+    // 当更新窗口时 (重新置顶)
+    function updateWindows() {
+        Global.funs.ensureWinodowTopMost(leftWindow)
+        Global.funs.ensureWinodowTopMost(rightWindow)
+        screenMove.allWindowsToTop()
+        if (scrMoveSaveDialog.status === Loader.Ready)
+            Global.funs.ensureWinodowTopMost(scrMoveSaveDialog.item)
+    }
+
+    function penPopupReset() {
+        if (penPopup.status === Loader.Ready)
+            penPopup.item.reset()
+    }
+
+    // 顶置增强
+    Timer {
+        id: ensureWindowOnTopTimer
+        interval: 2000
+        repeat: true
+        onTriggered: {
+            updateWindows()
+        }
     }
 
     // 按钮列表数据
@@ -111,41 +140,113 @@ Item {
     }
 
     // 工具栏的弹出层
-    VolumePopup {
+    Loader {
         id: volumePopup
+        property int pointX: 0
+        property int pointY: 0
+        function show(pointX, pointY) {
+            if (status !== Loader.Ready){
+                volumePopup.pointX = pointX
+                volumePopup.pointY = pointY
+                volumePopup.source = "../components/Popup/VolumePopup.qml"
+            }
+        }
+        onLoaded: {
+            volumePopup.item.hideOrShow(pointX, pointY)
+        }
+        Connections {
+            target: volumePopup.item
+            function onWindowHide() {
+                volumePopup.source = ""
+            }
+        }
     }
-    PenPopup {
+    Loader {
         id: penPopup
-        onSelectedColorChanged: {
-            if (whileboard.status === Loader.Ready) {
-                console.log("whileboard-onSelectedColorChanged", selectedColor)
-                whileboard.item.penColor = selectedColor
+        property int pointX: 0
+        property int pointY: 0
+        function show(pointX, pointY) {
+            if (status !== Loader.Ready){
+                penPopup.pointX = pointX
+                penPopup.pointY = pointY
+                penPopup.source = "../components/Popup/PenPopup.qml"
             }
         }
-        onSelectedWidthChanged: {
-            if (whileboard.status === Loader.Ready) {
-                console.log("whileboard-onSelectedWidthChanged", selectedWidth)
-                whileboard.item.penWidth = selectedWidth
+        onLoaded: {
+            penPopup.item.hideOrShow(pointX, pointY)
+        }
+        Connections {
+            target: penPopup.item
+            function onWindowHide() {
+                penPopup.source = ""
+            }
+            function onSelectedColorChanged() {
+                if (whileboard.status === Loader.Ready) {
+                    console.log("whileboard-onSelectedColorChanged", penPopup.item.selectedColor)
+                    whileboard.item.penColor = penPopup.item.selectedColor
+                }
+            }
+            function onSelectedWidthChanged() {
+                if (whileboard.status === Loader.Ready) {
+                    console.log("whileboard-onSelectedWidthChanged", penPopup.item.selectedWidth)
+                    whileboard.item.penWidth = penPopup.item.selectedWidth
+                }
             }
         }
     }
-    EraserPopup {
+    Loader {
         id: eraserPopup
-        onClear: {
-            if (whileboard.status === Loader.Ready) {
-                console.log("whileboard-onClear")
-                whileboard.item.clear()
-                // 清空后切换回画笔
-                whileboard.item.switchToPen()
-                toolModel.setProperty(0, "checked", true)
-                toolModel.setProperty(1, "checked", false)
+        property int pointX: 0
+        property int pointY: 0
+        function show(pointX, pointY) {
+            if (status !== Loader.Ready){
+                eraserPopup.pointX = pointX
+                eraserPopup.pointY = pointY
+                eraserPopup.source = "../components/Popup/EraserPopup.qml"
+            }
+        }
+        onLoaded: {
+            eraserPopup.item.hideOrShow(pointX, pointY)
+        }
+        Connections {
+            target: eraserPopup.item
+            function onWindowHide() {
+                eraserPopup.source = ""
+            }
+            function onClear() {
+                if (whileboard.status === Loader.Ready) {
+                    console.log("whileboard-onClear")
+                    whileboard.item.clear()
+                    // 清空后切换回画笔
+                    whileboard.item.switchToPen()
+                    toolModel.setProperty(0, "checked", true)
+                    toolModel.setProperty(1, "checked", false)
+                }
             }
         }
     }
-    ScrMoveSaveList {
+    Loader {
         id: scrMoveSaveList
-        screenMovement: screenMove
-        screenMoveSaveList: scrMoveSaveData.screenMoveSaveList
+        property int pointX: 0
+        property int pointY: 0
+        function show(pointX, pointY) {
+            if (status !== Loader.Ready){
+                scrMoveSaveList.pointX = pointX
+                scrMoveSaveList.pointY = pointY
+                scrMoveSaveList.setSource("../components/Popup/ScrMoveSaveList.qml", {
+                            "screenMovement": screenMove,
+                            "screenMoveSaveList": scrMoveSaveData.screenMoveSaveList })
+            }
+        }
+        onLoaded: {
+            scrMoveSaveList.item.hideOrShow(pointX, pointY)
+        }
+        Connections {
+            target: scrMoveSaveList.item
+            function onWindowHide() {
+                scrMoveSaveList.source = ""
+            }
+        }
     }
     // 屏幕移位保存对话框
     Loader {
@@ -443,8 +544,7 @@ Item {
             Global.funs.closeTopWindow()
             break
         case "volume":
-            if (!volumePopup.visible)
-                volumePopup.hideOrShow(pointX, pointY)
+            volumePopup.show(pointX, pointY)
             break
         case "openDrive":
             Global.funs.openDrive()
@@ -474,8 +574,7 @@ Item {
             if(checked) {
                 whileboard.item.switchToPen()
                 if (perState) {
-                    if (!penPopup.visible)
-                        penPopup.hideOrShow(pointX, pointY)
+                    penPopup.show(pointX, pointY)
                 }
             }
             break
@@ -483,8 +582,7 @@ Item {
             if(checked) {
                 whileboard.item.switchToEraser()
                 if (perState) {
-                    if (!eraserPopup.visible)
-                        eraserPopup.hideOrShow(pointX, pointY)
+                    eraserPopup.show(pointX, pointY)
                 }
             }
             break
@@ -503,7 +601,7 @@ Item {
             }
             break
         case "screenMoveLongPressed":
-            scrMoveSaveList.hideOrShow(pointX, pointY)
+            scrMoveSaveList.show(pointX, pointY)
             break
         }
     }

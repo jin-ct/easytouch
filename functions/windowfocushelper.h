@@ -16,6 +16,9 @@ public:
     void stop();
     bool isActive() const { return m_active; }
 
+signals:
+    void newWindowCreated();
+
 private:
     static LRESULT CALLBACK shellWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     static bool isFocusableWindow(HWND hwnd);

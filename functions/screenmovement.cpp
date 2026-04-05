@@ -566,7 +566,17 @@ void ScreenMovement::start(const QVariant &sourceRect, const QVariant &mirrorRec
 
 bool ScreenMovement::isStarted()
 {
-    return m_maskOverlay && m_borderOverlay && m_maskOverlay;
+    return m_borderOverlay && m_mirrorWindow;
+}
+
+void ScreenMovement::allWindowsToTop()
+{
+    if (m_borderOverlay)
+        SetWindowPos((HWND)m_borderOverlay->winId(), HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+    if (m_mirrorWindow)
+        SetWindowPos((HWND)m_mirrorWindow->winId(), HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+    if (m_maskOverlay)
+        SetWindowPos((HWND)m_maskOverlay->winId(), HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
 }
 
 void ScreenMovement::beginSelectMode()

@@ -83,6 +83,7 @@ Item {
         radius: 8
         color: "#f2f2f2"
         border.color: "#cfcfcf"
+        clip: true
 
         // 按钮列表
         ListView {
