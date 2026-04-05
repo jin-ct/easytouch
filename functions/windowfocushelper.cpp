@@ -14,11 +14,12 @@ struct WindowInf
 {
     const wchar_t* exeName;
     const wchar_t* title;
+    const LONG uniqueStyle;
 };
 
 static const WindowInf kForegroundWhitelist[] = {
-    {.exeName = L"explorer.exe", .title = L"文件资源管理器"},
-    {.exeName = L"weixin.exe", .title = L"微信"},
+    {.exeName = L"explorer.exe", .title = L"文件资源管理器", .uniqueStyle = WS_MAXIMIZEBOX | WS_MINIMIZEBOX},
+    {.exeName = L"weixin.exe", .title = L"微信", .uniqueStyle = WS_MAXIMIZEBOX | WS_MINIMIZEBOX},
 };
 static const size_t kForegroundWhitelistCount = sizeof(kForegroundWhitelist) / sizeof(kForegroundWhitelist[0]);
 
@@ -48,12 +49,19 @@ bool WindowFocusHelper::isForegroundInWhitelist()
 {
     HWND fg = GetForegroundWindow();
     if (!fg) return false;
+    return isWindowInWhitelist(fg);
+}
 
+bool WindowFocusHelper::isWindowInWhitelist(HWND hwnd)
+{
     wchar_t title[256] = {};
-    GetWindowText(fg, title, 256);
+    GetWindowText(hwnd, title, 256);
+
+    LONG style = GetWindowLong(hwnd, GWL_STYLE);
+    LONG exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
 
     DWORD pid = 0;
-    GetWindowThreadProcessId(fg, &pid);
+    GetWindowThreadProcessId(hwnd, &pid);
     if (!pid) return false;
 
     HANDLE hProc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
@@ -67,12 +75,13 @@ bool WindowFocusHelper::isForegroundInWhitelist()
         QString m_title = QString::fromWCharArray(title);
         for (size_t i = 0; i < kForegroundWhitelistCount; ++i) {
             if (m_path.contains(QString::fromWCharArray(kForegroundWhitelist[i].exeName).toLower()) &&
-                m_title.contains(QString::fromWCharArray(kForegroundWhitelist[i].title))) {
+                m_title.contains(QString::fromWCharArray(kForegroundWhitelist[i].title)) &&
+                ((style | exStyle) & kForegroundWhitelist[i].uniqueStyle)) {
                 ok = true;
                 break;
             }
         }
-        qDebug() << "新窗口创建时的焦点 (进程路径: " << m_path << ", 窗口标题: " << m_title << ",在窗口列表内: " << ok << ")";
+        qDebug() << "窗口焦点助手触发 (进程路径: " << m_path << ", 窗口标题: " << m_title << ",在窗口列表内: " << ok << ")";
     }
     CloseHandle(hProc);
     return ok;
@@ -160,7 +169,7 @@ LRESULT CALLBACK WindowFocusHelper::shellWndProc(HWND hwnd, UINT msg, WPARAM wPa
         if (wParam == HSHELL_WINDOWCREATED) {
             qDebug() << "HSHELL_WINDOWCREATED";
             HWND newHwnd = reinterpret_cast<HWND>(lParam);
-            if (isFocusableWindow(newHwnd)) {
+            if (isFocusableWindow(newHwnd) && !isWindowInWhitelist(newHwnd)) {
                 // 若当前前景是白名单内软件则时延迟设焦
                 if (isForegroundInWhitelist())
                     self->scheduleFocusToWindow(newHwnd, true);

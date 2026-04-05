@@ -20,6 +20,7 @@ private:
     static LRESULT CALLBACK shellWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     static bool isFocusableWindow(HWND hwnd);
     static bool isForegroundInWhitelist();
+    static bool isWindowInWhitelist(HWND hwnd);
     void scheduleFocusToWindow(HWND hwnd, bool isDelay = false);
     void applyFocusToWindow(HWND hwnd);
 
