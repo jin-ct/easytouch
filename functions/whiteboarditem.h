@@ -6,6 +6,8 @@
 #include <QColor>
 #include <QVector>
 
+class QHoverEvent;
+
 class WhiteboardItem : public QQuickPaintedItem
 {
     Q_OBJECT
@@ -43,6 +45,9 @@ signals:
 
 protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
+    void hoverMoveEvent(QHoverEvent *event) override;
+    void hoverEnterEvent(QHoverEvent *event) override;
+    void hoverLeaveEvent(QHoverEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
@@ -72,6 +77,8 @@ private:
     qreal m_penWidth = 3.0;
     bool m_eraserMode = false;
     qreal m_eraserRadius = 18.0;
+    bool m_showEraserIndicator = false;
+    QPointF m_eraserIndicatorPos;
 };
 
 #endif // WHITEBOARDITEM_H

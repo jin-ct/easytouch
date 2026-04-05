@@ -3,6 +3,7 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QMouseEvent>
+#include <QHoverEvent>
 #include <QTouchEvent>
 #include <QDateTime>
 #include <QDir>
@@ -82,6 +83,50 @@ void WhiteboardItem::paint(QPainter *painter)
         const QRectF sourceRect(0, 0, m_image.width(), m_image.height());
         painter->drawImage(targetRect, m_image, sourceRect);
     }
+
+    if (m_eraserMode && m_showEraserIndicator && m_eraserRadius > 0) {
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        QPen pen(QColor(80, 80, 80, 220), 1, Qt::DashLine);
+        pen.setDashPattern({4, 4});
+        painter->setPen(pen);
+        painter->setBrush(Qt::NoBrush);
+        painter->drawEllipse(m_eraserIndicatorPos, m_eraserRadius, m_eraserRadius);
+    }
+}
+
+void WhiteboardItem::hoverMoveEvent(QHoverEvent *event)
+{
+    if (m_eraserMode) {
+        m_eraserIndicatorPos = event->position();
+        m_showEraserIndicator = true;
+        update();
+        event->accept();
+        return;
+    }
+    QQuickPaintedItem::hoverMoveEvent(event);
+}
+
+void WhiteboardItem::hoverEnterEvent(QHoverEvent *event)
+{
+    if (m_eraserMode) {
+        m_eraserIndicatorPos = event->position();
+        m_showEraserIndicator = true;
+        update();
+        event->accept();
+        return;
+    }
+    QQuickPaintedItem::hoverEnterEvent(event);
+}
+
+void WhiteboardItem::hoverLeaveEvent(QHoverEvent *event)
+{
+    if (m_eraserMode) {
+        m_showEraserIndicator = false;
+        update();
+        event->accept();
+        return;
+    }
+    QQuickPaintedItem::hoverLeaveEvent(event);
 }
 
 void WhiteboardItem::setPenColor(const QColor &color)
@@ -105,7 +150,10 @@ void WhiteboardItem::setEraserMode(bool e)
     if (m_eraserMode == e)
         return;
     m_eraserMode = e;
+    if (!m_eraserMode)
+        m_showEraserIndicator = false;
     emit eraserModeChanged();
+    update();
 }
 
 void WhiteboardItem::setEraserRadius(qreal r)
@@ -114,6 +162,8 @@ void WhiteboardItem::setEraserRadius(qreal r)
         return;
     m_eraserRadius = r;
     emit eraserRadiusChanged();
+    if (m_eraserMode && m_showEraserIndicator)
+        update();
 }
 
 void WhiteboardItem::clear()
@@ -167,6 +217,8 @@ void WhiteboardItem::mousePressEvent(QMouseEvent *event)
     ensureImage();
     const QPointF pt = event->position();
     if (m_eraserMode) {
+        m_eraserIndicatorPos = pt;
+        m_showEraserIndicator = true;
         eraseAt(pt);
         emit pointerMoved(pt.x(), pt.y(), true);
         return;
@@ -185,6 +237,8 @@ void WhiteboardItem::mouseMoveEvent(QMouseEvent *event)
     ensureImage();
     const QPointF pt = event->position();
     if (m_eraserMode) {
+        m_eraserIndicatorPos = pt;
+        m_showEraserIndicator = true;
         eraseAt(pt);
         emit pointerMoved(pt.x(), pt.y(), true);
         return;
@@ -322,7 +376,6 @@ void WhiteboardItem::eraseAt(const QPointF &pt)
 
     update();
 }
-
 qreal WhiteboardItem::speedToWidth(qreal speed) const
 {
     const qreal minFactor = 2.0;
@@ -361,5 +414,6 @@ QPointF WhiteboardItem::catmullRomPoint(const QPointF &p0,
 
     return QPointF(x, y);
 }
+
 
 
