@@ -113,10 +113,10 @@ Item {
             text: "系统音量"; idStr: "volume"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/volume.svg"
         }
         ListElement {
-            text: "批注"; idStr: "pen"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/pen_2.svg"
+            text: "屏幕移位"; idStr: "screenMove"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/screenMove.svg"
         }
         ListElement {
-            text: "屏幕移位"; idStr: "screenMove"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/screenMove.svg"
+            text: "批注"; idStr: "pen"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/pen_2.svg"
         }
         ListElement {
             text: "随机数"; idStr: "random"; checked: false; checkable: false; link: false; exclusive: false; cancelable: true; icon: "qrc:/icon/random.svg"
