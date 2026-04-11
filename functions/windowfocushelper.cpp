@@ -15,11 +15,12 @@ struct WindowInf
     const wchar_t* exeName;
     const wchar_t* title;
     const LONG uniqueStyle;
+    const bool isExceptUStyle;
 };
 
 static const WindowInf kForegroundWhitelist[] = {
-    {.exeName = L"explorer.exe", .title = L"文件资源管理器", .uniqueStyle = WS_MAXIMIZEBOX | WS_MINIMIZEBOX},
-    {.exeName = L"weixin.exe", .title = L"微信", .uniqueStyle = WS_MAXIMIZEBOX | WS_MINIMIZEBOX},
+    {.exeName = L"explorer.exe", .title = L"文件资源管理器", .uniqueStyle = 0, .isExceptUStyle = true},
+    {.exeName = L"weixin.exe", .title = L"微信", .uniqueStyle = WS_MAXIMIZEBOX | WS_MINIMIZEBOX, .isExceptUStyle = true}
 };
 static const size_t kForegroundWhitelistCount = sizeof(kForegroundWhitelist) / sizeof(kForegroundWhitelist[0]);
 
@@ -45,15 +46,10 @@ WindowFocusHelper::~WindowFocusHelper()
     stop();
 }
 
-bool WindowFocusHelper::isForegroundInWhitelist()
-{
-    HWND fg = GetForegroundWindow();
-    if (!fg) return false;
-    return isWindowInWhitelist(fg);
-}
-
 bool WindowFocusHelper::isWindowInWhitelist(HWND hwnd)
 {
+    if (!hwnd) return false;
+
     wchar_t title[256] = {};
     GetWindowText(hwnd, title, 256);
 
@@ -74,9 +70,10 @@ bool WindowFocusHelper::isWindowInWhitelist(HWND hwnd)
         QString m_path = QString::fromWCharArray(path).toLower();
         QString m_title = QString::fromWCharArray(title);
         for (size_t i = 0; i < kForegroundWhitelistCount; ++i) {
+            bool isHaveUniqueStyle = (style | exStyle) & kForegroundWhitelist[i].uniqueStyle;
             if (m_path.contains(QString::fromWCharArray(kForegroundWhitelist[i].exeName).toLower()) &&
                 m_title.contains(QString::fromWCharArray(kForegroundWhitelist[i].title)) &&
-                ((style | exStyle) & kForegroundWhitelist[i].uniqueStyle)) {
+                (kForegroundWhitelist[i].isExceptUStyle ? !isHaveUniqueStyle : isHaveUniqueStyle)) {
                 ok = true;
                 break;
             }
@@ -171,8 +168,9 @@ LRESULT CALLBACK WindowFocusHelper::shellWndProc(HWND hwnd, UINT msg, WPARAM wPa
             emit self->newWindowCreated();
             HWND newHwnd = reinterpret_cast<HWND>(lParam);
             if (isFocusableWindow(newHwnd) && !isWindowInWhitelist(newHwnd)) {
+                HWND fg = GetForegroundWindow();
                 // 若当前前景是白名单内软件则时延迟设焦
-                if (isForegroundInWhitelist())
+                if (isWindowInWhitelist(fg) || newHwnd == fg)
                     self->scheduleFocusToWindow(newHwnd, true);
             }
         }
