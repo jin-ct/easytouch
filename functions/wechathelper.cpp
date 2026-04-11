@@ -11,7 +11,7 @@ static const int kScrollDragThreshold = 12;
 static const int kLongPressMs = 500;
 static const float kWheelDeltaScale = 3;         // 滚轮 delta = dy * scale，与滑动距离成正比
 static const int kWheelDeltaMax = 360;           // 单次最大 delta，避免速度突变
-static const float kVelocityThresholdMin = 2.0;  // 触发惯性的速度阈值
+static const float kVelocityThresholdMin = 1.2;  // 触发惯性的速度阈值
 static const double kVelocityThresholdMax = 360; // 惯性计算的最大速度值，避免速度突变
 static const float kMaxVelocityScale = 0.95;     // 惯性的最大速度占输入速度比例
 static const float kVelocityScale = 0.90;        // 惯性单次变化比例
