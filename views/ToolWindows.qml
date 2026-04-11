@@ -27,7 +27,7 @@ Item {
 
     Settings {
         id: scrMoveSaveData
-        location: "file:///" + getAppDir() + "\\config\\screenMove.ini"
+        location: "file:///" + appDir + "\\config\\screenMove.ini"
         category: "ScreenMoveSaveDatas"
         property var screenMoveSaveList: []
     }
@@ -442,10 +442,6 @@ Item {
        timer_2.repeat = false;
        timer_2.triggered.connect(cb);
        timer_2.restart();
-    }
-    function getAppDir() {
-        var appPath = Qt.application.arguments[0]
-        return appPath.substring(0, appPath.lastIndexOf("\\"))
     }
     function handleWindowHeightChange(from, to, isRightWindows) {
         if (to > from) {

@@ -15,7 +15,7 @@ ApplicationWindow {
     // 设置保存
     Settings {
         id: settings
-        location: "file:///" + getAppDir() + "\\config\\settings.ini"
+        location: "file:///" + appDir + "\\config\\settings.ini"
         category: "Basic"
         property alias isShowToolBar: settingsPage.isShowToolBar
         property alias isAutoStart: settingsPage.isAutoStart
@@ -166,10 +166,6 @@ ApplicationWindow {
        timer.repeat = false;
        timer.triggered.connect(cb);
        timer.restart();
-    }
-    function getAppDir() {
-        var appPath = Qt.application.arguments[0]
-        return appPath.substring(0, appPath.lastIndexOf("\\"))
     }
     function showMessageBox(title, message, okBtnClickedCb = () =>{} , cancelBtnClickedCb = () =>{}) {
         const comp = Qt.createComponent("components/Dialog/MessageBoxDialog.qml")

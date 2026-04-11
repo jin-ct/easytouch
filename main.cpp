@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QDebug>
 #include <Windows.h>
+#include <QQmlContext>
 
 #include "functions/functions.h"
 #include "functions/fullscreenwatcher.h"
@@ -51,6 +52,8 @@ int main(int argc, char *argv[])
             return mgr;
         }
     );
+
+    engine.rootContext()->setContextProperty("appDir", qApp->applicationDirPath());
 
     QObject::connect(
         &engine,
