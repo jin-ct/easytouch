@@ -1,10 +1,32 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(CMAKE_EXE_LINKER_FLAGS "-static -s")
-
 add_library(WMF::WMF INTERFACE IMPORTED)
 
 project(easytouch VERSION 0.1 LANGUAGES CXX)
+
+# 获取版本号
+execute_process(
+    COMMAND git describe --tags --abbrev=0
+    OUTPUT_VARIABLE GIT_TAG
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+string(REGEX REPLACE "^v" "" GIT_TAG ${GIT_TAG})
+
+string(REPLACE "." ";" VERSION_LIST ${GIT_TAG})
+list(GET VERSION_LIST 0 MAJOR)
+list(GET VERSION_LIST 1 MINOR)
+list(GET VERSION_LIST 2 PATCH)
+
+set(APP_VERSION_STR ${GIT_TAG})
+set(APP_VERSION_NUM "${MAJOR},${MINOR},${PATCH},0")
+
+configure_file(
+    ${CMAKE_SOURCE_DIR}/app.rc.in
+    ${CMAKE_BINARY_DIR}/app.rc
+)
+
+set(CMAKE_EXE_LINKER_FLAGS "-static -s")
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -21,13 +43,13 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 qt_standard_project_setup(REQUIRES 6.5)
 
 qt_add_executable(appeasytouch
-    main.cpp res.qrc app.rc
+    main.cpp res.qrc ${CMAKE_BINARY_DIR}/app.rc
 )
 
 qt_add_qml_module(appeasytouch
     URI easytouch
     VERSION 1.0
-    RESOURCES res.qrc app.rc
+    RESOURCES res.qrc
     SOURCES globalmanager.h globalmanager.cpp
     SOURCES QtLogger.cpp QtLogger.h
     SOURCES functions/fullscreenwatcher.h functions/fullscreenwatcher.cpp
@@ -60,6 +82,7 @@ qt_add_qml_module(appeasytouch
     QML_FILES components/Dialog/ScrMoveSaveDialog.qml
     QML_FILES components/Dialog/MessageBoxDialog.qml
     RESOURCES qtquickcontrols2.conf
+    RESOURCES app.rc.in
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

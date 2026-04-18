@@ -1,10 +1,13 @@
 #include <windows.h>
 
+#define APP_VERSION_STR "@APP_VERSION_STR@"
+#define APP_VERSION_NUM @APP_VERSION_NUM@
+
 IDI_ICON1 ICON DISCARDABLE "icon.ico"
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,7,0
- PRODUCTVERSION 1,0,7,0
+ FILEVERSION APP_VERSION_NUM
+ PRODUCTVERSION APP_VERSION_NUM
  FILEFLAGSMASK 0x3fL
  FILEFLAGS 0x0L
  FILEOS 0x40004L
@@ -16,9 +19,9 @@ BEGIN
         BLOCK "040904B0"
         BEGIN
             VALUE "FileDescription", "易触控\0"
-            VALUE "FileVersion", "1.0.7\0"
+            VALUE "FileVersion", APP_VERSION_STR
             VALUE "ProductName", "易触控\0"
-            VALUE "ProductVersion", "1.0.7\0"
+            VALUE "ProductVersion", APP_VERSION_STR
             VALUE "LegalCopyright", "© 2026 jin-ct\0"
         END
     END
