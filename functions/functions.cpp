@@ -191,10 +191,10 @@ bool Functions::ejectDrive()
     }
 
     if (success) {
-        if (!isSignalsEmit) emit usbRemoved();
-        isSignalsEmit = true;
+        if (!isUsbSignalsEmit) emit usbRemoved();
+        isUsbSignalsEmit = true;
         QTimer::singleShot(500, this, [=](){
-            isSignalsEmit = false;
+            isUsbSignalsEmit = false;
         });
         isUsbInserted = false;
     }
@@ -327,6 +327,16 @@ QVariant Functions::windowMapFromGlobal(QWindow *window, const QVariant &pos)
     return QVariant(window->mapFromGlobal(pos.toPoint()));
 }
 
+void Functions::addMouseHookIgnoreAreas(const QVariant &rect, QVariant idStr)
+{
+    mouseHookIgnoreAreas.insert(idStr.toString(), rect.toRect());
+}
+
+void Functions::removeMouseHookIgnoreAreas(QVariant idStr)
+{
+    mouseHookIgnoreAreas.remove(idStr.toString());
+}
+
 bool Functions::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result)
 {
     // U盘事件
@@ -351,11 +361,11 @@ void Functions::checkUsbDrives(bool inserted)
                 UINT type = GetDriveTypeW(reinterpret_cast<LPCWSTR>(usbDrivePath.utf16()));
                 if (type == DRIVE_REMOVABLE) {
                     usbDrivePaths.append(usbDrivePath);
-                    if (!isSignalsEmit) emit usbInserted();
+                    if (!isUsbSignalsEmit) emit usbInserted();
                     isUsbInserted = true;
-                    isSignalsEmit = true;
+                    isUsbSignalsEmit = true;
                     QTimer::singleShot(500, this, [=](){
-                        isSignalsEmit = false;
+                        isUsbSignalsEmit = false;
                     });
                 }
             }
@@ -367,10 +377,10 @@ void Functions::checkUsbDrives(bool inserted)
             }
         }
         if (usbDrivePaths.empty()) {
-            if (!isSignalsEmit) emit usbRemoved();
-            isSignalsEmit = true;
+            if (!isUsbSignalsEmit) emit usbRemoved();
+            isUsbSignalsEmit = true;
             QTimer::singleShot(500, this, [=](){
-                isSignalsEmit = false;
+                isUsbSignalsEmit = false;
             });
             isUsbInserted = false;
         }
@@ -379,6 +389,9 @@ void Functions::checkUsbDrives(bool inserted)
 
 void Functions::installHook()
 {
+    if (g_mouseHook) {
+        return;
+    }
     g_mouseHook = SetWindowsHookEx(
         WH_MOUSE_LL,
         LowLevelMouseProc,
@@ -391,6 +404,8 @@ void Functions::installHook()
 void Functions::uninstallHook()
 {
     UnhookWindowsHookEx(g_mouseHook);
+    g_mouseHook = nullptr;
+    mouseHookIgnoreAreas.clear();
     qDebug() << "WindowsMouseHookUninstalled";
 }
 
@@ -418,6 +433,11 @@ void Functions::onMouse(int eventType)
     switch (eventType) {
     case 0:   // 鼠标按下
         const QPoint globalPos = QCursor::pos();
+        // 若在忽略区域直接退出
+        for (auto i = mouseHookIgnoreAreas.cbegin(), end = mouseHookIgnoreAreas.cend(); i != end; ++i) {
+            if (isRectContains(QVariant(i.value()), globalPos))
+                return;
+        }
         emit mousePressed(QVariant(globalPos));
         break;
     }

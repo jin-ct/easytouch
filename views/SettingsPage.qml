@@ -17,6 +17,7 @@ Window {
     property alias isShowToolBar: showToolBar.checked
     property alias isAutoStart: autoStart.checked
     property alias isAutoShowBtns: autoShowBtns.checked
+    property alias isAutoHideBtns: autoHideBtns.checked
     property alias isShowWinodwOpacityAnimation: showWinodwOpacityAnimation.checked
     property alias isStayTopEnhanced: stayTopEnhanced.checked
     property alias isSendOpenUsb: sendOpenUsb.checked
@@ -192,6 +193,16 @@ Window {
                         checked: true
                         switchControl.onClicked: {
                             console.log("SettingChanged: (autoShowBtns)checked=", checked)
+                        }
+                    }
+
+                    SettingsSwitchCard {
+                        id: autoHideBtns
+                        title: "自动收起工具栏"
+                        description: "当点击工具栏窗口以外区域时自带收起工具栏"
+                        checked: false
+                        switchControl.onClicked: {
+                            console.log("SettingChanged: (autoHideBtns)checked=", checked)
                         }
                     }
 

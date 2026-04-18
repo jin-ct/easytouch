@@ -13,13 +13,15 @@ ApplicationWindow {
     flags:  Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
 
     // 设置保存
+    property bool isSettingsLoaded: false
     Settings {
         id: settings
         location: "file:///" + appDir + "\\config\\settings.ini"
         category: "Basic"
-        property alias isShowToolBar: settingsPage.isShowToolBar
         property alias isAutoStart: settingsPage.isAutoStart
+        property alias isAutoHideBtns: settingsPage.isAutoHideBtns
         property alias isAutoShowBtns: settingsPage.isAutoShowBtns
+        property alias isShowToolBar: settingsPage.isShowToolBar
         property alias isShowWinodwOpacityAnimation: settingsPage.isShowWinodwOpacityAnimation
         property alias isStayTopEnhanced: settingsPage.isStayTopEnhanced
         property alias isSendOpenUsb: settingsPage.isSendOpenUsb
@@ -27,6 +29,8 @@ ApplicationWindow {
         property alias isWeChatTouchHelperEnable: settingsPage.isWeChatTouchHelperEnable
         property alias isWindowFocusHelperEnable: settingsPage.isWindowFocusHelperEnable
         property alias penSavePath: settingsPage.penSavePath
+
+        Component.onCompleted: isSettingsLoaded = true
     }
 
     // cpp通信
@@ -149,7 +153,7 @@ ApplicationWindow {
     // 工具栏窗口
     Loader {
         id: toolWindows
-        source: settings.isShowToolBar ? "views/ToolWindows.qml" : ""
+        source: (isSettingsLoaded && settings.isShowToolBar) ? "views/ToolWindows.qml" : ""
     }
 
     // =============== 窗口（结束） ===============

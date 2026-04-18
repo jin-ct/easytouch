@@ -78,6 +78,24 @@ Item {
         console.log("ToolWindowsCompleted")
     }
 
+    // 处理自动收起工具栏
+    Connections {
+        target: Global.funs
+        function onMousePressed(pos) {
+            if (settings.isAutoHideBtns) {
+                if (!Global.funs.isRectContains(Qt.rect(leftWindow.x, leftWindow.y, leftWindow.width, leftWindow.height), pos) &&
+                    !Global.funs.isRectContains(Qt.rect(rightWindow.x, rightWindow.y, rightWindow.width, rightWindow.height), pos))
+                {
+                    if (!leftContent.isFolded)
+                        leftContent.isFolded = true
+                    if (!rightContent.isFolded)
+                        rightContent.isFolded = true
+                    Global.funs.uninstallHook()
+                }
+            }
+        }
+    }
+
     // 当更新窗口时 (重新置顶)
     function updateWindows() {
         Global.funs.ensureWinodowTopMost(leftWindow)
@@ -305,6 +323,10 @@ Item {
                 handleWindowHeightChange(rightWindow.height, root.rightWindowHeight, true)
                 height = rightWindowHeight
                 backgroundOpacity = isFolded ? 0.5 : 1
+                if (settings.isAutoHideBtns && !isFolded) {
+                    Global.funs.addMouseHookIgnoreAreas(Qt.rect(rightWindow.x, rightWindow.y, rightWindow.width, rightWindow.height), "toolWindowRight")
+                    Global.funs.installHook()
+                }
             }
         }
     }
@@ -340,6 +362,10 @@ Item {
                 handleWindowHeightChange(leftWindow.height, root.leftWindowHeight, false)
                 height = leftWindowHeight
                 backgroundOpacity = isFolded ? 0.5 : 1
+                if (settings.isAutoHideBtns && !isFolded) {
+                    Global.funs.installHook()
+                    Global.funs.addMouseHookIgnoreAreas(Qt.rect(leftWindow.x, leftWindow.y, leftWindow.width, leftWindow.height), "toolWindowLeft")
+                }
             }
         }
     }

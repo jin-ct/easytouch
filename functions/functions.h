@@ -15,6 +15,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QHash>
+#include <QMap>
 
 class Functions : public QObject
 {
@@ -37,14 +38,15 @@ public:
     Q_INVOKABLE void setMute(bool mute);
     Q_INVOKABLE bool setAutoStart(bool enable);
 
-    // 弹出层
+    // 鼠标钩子忽略区域
     Q_INVOKABLE bool isRectContains(const QVariant &rect, const QVariant &point);
     Q_INVOKABLE QVariant windowMapFromGlobal(QWindow *window, const QVariant &pos);
+    Q_INVOKABLE void addMouseHookIgnoreAreas(const QVariant &rect, QVariant idStr);
+    Q_INVOKABLE void removeMouseHookIgnoreAreas(QVariant idStr);
 
     bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result);
 
     // 系统鼠标钩子
-    // 系统钩子
     Q_INVOKABLE void installHook();
     Q_INVOKABLE void uninstallHook();
     static LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -66,13 +68,15 @@ private:
     void checkUsbDrives(bool inserted);
     QStringList usbDrivePaths;
     bool isUsbInserted = false;
-    bool isSignalsEmit = false;
+    bool isUsbSignalsEmit = false;
 
     // 仅用于恢复系统触摸反馈设置（HKCU）
     bool touchFeedbackSaved = false;
     QString prevContactVisualization;
     QString prevGestureVisualization;
 
+    // 鼠标钩子忽略区域
+    QMap<QString, QRect> mouseHookIgnoreAreas;
 };
 
 #endif // FUNCTIONS_H
