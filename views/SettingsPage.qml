@@ -178,7 +178,7 @@ Window {
                     SettingsSwitchCard {
                         id: showToolBar
                         title: "显示侧边工具栏"
-                        description: "是否显示侧边工具栏（重启生效）"
+                        description: "是否显示侧边工具栏"
                         checked: true
                         switchControl.onClicked: {
                             console.log("SettingChanged: (isShowToolBar)checked=", checked)

@@ -99,9 +99,6 @@ ApplicationWindow {
     // 窗口创建完成
     Component.onCompleted: {
         Global.funs.setWindowNoActivate(windows)
-        if (settings.isShowToolBar) {
-            toolWindows.show()
-        }
         if (settings.isAutoUpdate)
             Global.updateHelper.checkForUpdates("jin-ct", "easytouch")
         console.log("windowsCompleted")
@@ -152,9 +149,7 @@ ApplicationWindow {
     // 工具栏窗口
     Loader {
         id: toolWindows
-        function show() {
-            source = "views/ToolWindows.qml"
-        }
+        source: settings.isShowToolBar ? "views/ToolWindows.qml" : ""
     }
 
     // =============== 窗口（结束） ===============
