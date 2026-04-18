@@ -124,13 +124,17 @@ Window {
                         }
                     }
 
-                    SettingsSwitchCard {
-                        id: showToolBar
-                        title: "显示侧边工具栏"
-                        description: "是否显示侧边工具栏"
-                        checked: true
-                        switchControl.onClicked: {
-                            console.log("SettingChanged: (isShowToolBar)checked=", checked)
+                    Text {
+                        text: "常规"
+                        topPadding: 4
+                        font.pixelSize: 12
+                        color: "#409EFF"
+
+                        anchors {
+                            left: parent.left
+                            leftMargin: 28
+                            right: parent.right
+                            rightMargin: 28
                         }
                     }
 
@@ -144,6 +148,40 @@ Window {
                         }
                         switchControl.onClicked: {
                             console.log("SettingChanged: (autoStart)checked=", checked)
+                        }
+                    }
+
+                    SettingsSwitchCard {
+                        id: autoUpdate
+                        title: "自动更新"
+                        description: "软件启动时自动从远程仓库检查并获取最新发布版"
+                        checked: true
+                        switchControl.onClicked: {
+                            console.log("SettingChanged: (autoUpdate)checked=", checked)
+                        }
+                    }
+
+                    Text {
+                        text: "工具栏设置"
+                        topPadding: 4
+                        font.pixelSize: 12
+                        color: "#409EFF"
+
+                        anchors {
+                            left: parent.left
+                            leftMargin: 28
+                            right: parent.right
+                            rightMargin: 28
+                        }
+                    }
+
+                    SettingsSwitchCard {
+                        id: showToolBar
+                        title: "显示侧边工具栏"
+                        description: "是否显示侧边工具栏（重启生效）"
+                        checked: true
+                        switchControl.onClicked: {
+                            console.log("SettingChanged: (isShowToolBar)checked=", checked)
                         }
                     }
 
@@ -177,6 +215,20 @@ Window {
                         }
                     }
 
+                    Text {
+                        text: "触控优化功能开关"
+                        topPadding: 4
+                        font.pixelSize: 12
+                        color: "#409EFF"
+
+                        anchors {
+                            left: parent.left
+                            leftMargin: 28
+                            right: parent.right
+                            rightMargin: 28
+                        }
+                    }
+
                     SettingsSwitchCard {
                         id: sendOpenUsb
                         title: "发送“打开U盘”通知"
@@ -184,16 +236,6 @@ Window {
                         checked: true
                         switchControl.onClicked: {
                             console.log("SettingChanged: (sendOpenUsb)checked=", checked)
-                        }
-                    }
-
-                    SettingsSwitchCard {
-                        id: autoUpdate
-                        title: "自动更新"
-                        description: "软件启动时自动从远程仓库检查并获取最新发布版"
-                        checked: true
-                        switchControl.onClicked: {
-                            console.log("SettingChanged: (autoUpdate)checked=", checked)
                         }
                     }
 
@@ -214,6 +256,20 @@ Window {
                         checked: true
                         switchControl.onClicked: {
                             console.log("SettingChanged: (windowFocusHelperSwich)checked=", checked)
+                        }
+                    }
+
+                    Text {
+                        text: "其他"
+                        topPadding: 4
+                        font.pixelSize: 12
+                        color: "#409EFF"
+
+                        anchors {
+                            left: parent.left
+                            leftMargin: 28
+                            right: parent.right
+                            rightMargin: 28
                         }
                     }
 
