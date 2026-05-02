@@ -35,6 +35,7 @@ Item {
         color: "#eaeaea"
         border.color: dragHandleMouseArea.pressed ? "#B8B8B8" : "#c8c8c8"
         z: 99
+        scale: dragHandleMouseArea.pressed ? 0.98 : 1
 
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
@@ -69,7 +70,10 @@ Item {
                 }
                 buttonTriggered("mainIconClick", false, false, parent.mapToGlobal(0, 0).x + parent.width/2, parent.mapToGlobal(0, 0).y + parent.height/2)
             }
+        }
 
+        Behavior on scale {
+            NumberAnimation { duration: 88 }
         }
     }
 

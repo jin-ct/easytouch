@@ -166,6 +166,8 @@ Item {
                 volumePopup.pointX = pointX
                 volumePopup.pointY = pointY
                 volumePopup.source = "../components/Popup/VolumePopup.qml"
+            } else {
+                volumePopup.item.hideOrShow(pointX, pointY)
             }
         }
         onLoaded: {
@@ -187,6 +189,8 @@ Item {
                 penPopup.pointX = pointX
                 penPopup.pointY = pointY
                 penPopup.source = "../components/Popup/PenPopup.qml"
+            } else {
+                penPopup.item.hideOrShow(pointX, pointY)
             }
         }
         onLoaded: {
@@ -220,6 +224,8 @@ Item {
                 eraserPopup.pointX = pointX
                 eraserPopup.pointY = pointY
                 eraserPopup.source = "../components/Popup/EraserPopup.qml"
+            } else {
+                eraserPopup.item.hideOrShow(pointX, pointY)
             }
         }
         onLoaded: {
@@ -253,6 +259,8 @@ Item {
                 scrMoveSaveList.setSource("../components/Popup/ScrMoveSaveList.qml", {
                             "screenMovement": screenMove,
                             "screenMoveSaveList": scrMoveSaveData.screenMoveSaveList })
+            } else {
+                scrMoveSaveList.item.hideOrShow(pointX, pointY)
             }
         }
         onLoaded: {

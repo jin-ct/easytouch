@@ -51,6 +51,7 @@ qt_add_qml_module(appeasytouch
     VERSION 1.0
     RESOURCES res.qrc
     SOURCES globalmanager.h globalmanager.cpp
+    SOURCES configmanager.h configmanager.cpp
     SOURCES QtLogger.cpp QtLogger.h
     SOURCES functions/fullscreenwatcher.h functions/fullscreenwatcher.cpp
     SOURCES functions/notificationhelper.h functions/notificationhelper.cpp

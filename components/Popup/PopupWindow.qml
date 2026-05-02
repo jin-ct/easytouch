@@ -55,7 +55,7 @@ Window {
             heartPointY = pointY
         if (!popup.visible) {
             popup.visible = true
-            Global.mouseHook.addMouseHookIgnoreAreas(Qt.rect(popup.x, popup.y, popup.width, popup.height), "Popup")
+            Global.mouseHook.addIgnoreAreas(Qt.rect(popup.x, popup.y, popup.width, popup.height), "Popup")
         }
 
         windowAnimation.start()

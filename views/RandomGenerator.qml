@@ -15,7 +15,7 @@ Window {
     // 保存范围值
     Settings {
         id: settings
-        location: "file:///" + getAppDir() + "\\config\\settings.ini"
+        location: "file:///" + appDir + "\\config\\settings.ini"
         category: "Random"
         property alias minNum: minField.value
         property alias maxNum: maxField.value

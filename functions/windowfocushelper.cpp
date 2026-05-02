@@ -153,7 +153,6 @@ LRESULT CALLBACK WindowFocusHelper::shellWndProc(HWND hwnd, UINT msg, WPARAM wPa
 {
     WindowFocusHelper* self = nullptr;
     if (msg == WM_NCCREATE) {
-        qDebug() << "WM_NCCREATE";
         CREATESTRUCTW* cs = reinterpret_cast<CREATESTRUCTW*>(lParam);
         self = reinterpret_cast<WindowFocusHelper*>(cs->lpCreateParams);
         if (self)
