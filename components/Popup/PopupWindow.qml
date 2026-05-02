@@ -61,6 +61,14 @@ Window {
         windowAnimation.start()
     }
 
+    function resetIgnoreAreas() {
+        Global.mouseHook.removeIgnoreAreas("Popup")
+        Global.mouseHook.addIgnoreAreas(Qt.rect(popup.x, popup.y, popup.width, popup.height), "Popup")
+    }
+
+    onHeightChanged: resetIgnoreAreas()
+    onWidthChanged: resetIgnoreAreas()
+
     Rectangle {
         id: background
         anchors.fill: parent

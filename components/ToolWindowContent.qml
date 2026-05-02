@@ -35,7 +35,7 @@ Item {
         color: "#eaeaea"
         border.color: dragHandleMouseArea.pressed ? "#B8B8B8" : "#c8c8c8"
         z: 99
-        scale: dragHandleMouseArea.pressed ? 0.98 : 1
+        scale: dragHandleMouseArea.pressed ? 0.96 : 1
 
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
