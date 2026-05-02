@@ -61,6 +61,7 @@ qt_add_qml_module(appeasytouch
     SOURCES functions/wechathelper.h functions/wechathelper.cpp
     SOURCES functions/windowfocushelper.h functions/windowfocushelper.cpp
     SOURCES functions/screenmovement.h functions/screenmovement.cpp
+    SOURCES functions/mousehook.h functions/mousehook.cpp
     QML_FILES Main.qml
     QML_FILES views/ToolWindows.qml
     QML_FILES views/SettingsPage.qml

@@ -27,7 +27,7 @@ Window {
     }
 
     Connections {
-        target: Global.funs
+        target: Global.mouseHook
         function onMousePressed(pos) {
             if (popup.visible) {
                 isHideByHook = true;
@@ -55,10 +55,7 @@ Window {
             heartPointY = pointY
         if (!popup.visible) {
             popup.visible = true
-            Global.funs.addMouseHookIgnoreAreas(Qt.rect(popup.x, popup.y, popup.width, popup.height), "Popup")
-            Global.funs.installHook()
-        } else {
-            Global.funs.uninstallHook()
+            Global.mouseHook.addMouseHookIgnoreAreas(Qt.rect(popup.x, popup.y, popup.width, popup.height), "Popup")
         }
 
         windowAnimation.start()

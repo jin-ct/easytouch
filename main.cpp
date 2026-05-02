@@ -13,6 +13,7 @@
 #include "functions/wechathelper.h"
 #include "functions/windowfocushelper.h"
 #include "functions/screenmovement.h"
+#include "functions/mousehook.h"
 
 #include "globalmanager.h"
 #include "QtLogger.h"
@@ -32,6 +33,10 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // 在主线程初始化MouseHook并启动/停止线程
+    MouseHook::instance()->start();
+    QObject::connect(&app, &QApplication::aboutToQuit, MouseHook::instance(), &MouseHook::stop);
+
     QQmlApplicationEngine engine;
 
     qmlRegisterType<Functions>("Functions", 1, 0, "Functions");
@@ -43,6 +48,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<WeChatHelper>("Functions", 1, 0, "WeChatHelper");
     qmlRegisterType<WindowFocusHelper>("Functions", 1, 0, "WindowFocusHelper");
     qmlRegisterType<ScreenMovement>("Functions", 1, 0, "ScreenMovement");
+    qmlRegisterType<MouseHook>("Functions", 1, 0, "MouseHook");
 
     qmlRegisterSingletonType<GlobalManager>(
         "Functions", 1, 0, "Global",

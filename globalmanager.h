@@ -6,6 +6,7 @@
 #include "functions/filehelper.h"
 #include "functions/notificationhelper.h"
 #include "functions/updatehelper.h"
+#include "functions/mousehook.h"
 
 class GlobalManager : public QObject
 {
@@ -14,6 +15,7 @@ class GlobalManager : public QObject
     Q_PROPERTY(FileHelper* fileHelper READ fileHelper NOTIFY fileHelperChanged)
     Q_PROPERTY(NotificationHelper* notification READ notification NOTIFY notificationChanged)
     Q_PROPERTY(UpdateHelper* updateHelper READ updateHelper NOTIFY updateHelperChanged)
+    Q_PROPERTY(MouseHook* mouseHook READ mouseHook NOTIFY mouseHookChanged)
 public:
     explicit GlobalManager(QObject *parent = nullptr);
 
@@ -21,12 +23,14 @@ public:
     FileHelper* fileHelper() const { return m_fileHelper; }
     NotificationHelper* notification() const { return m_notification; }
     UpdateHelper* updateHelper() const { return m_updateHelper; }
+    MouseHook* mouseHook() const { return MouseHook::instance(); }
 
 signals:
     void funsChanged();
     void fileHelperChanged();
     void notificationChanged();
     void updateHelperChanged();
+    void mouseHookChanged();
 
 private:
     Functions *m_funs;

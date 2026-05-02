@@ -38,24 +38,11 @@ public:
     Q_INVOKABLE void setMute(bool mute);
     Q_INVOKABLE bool setAutoStart(bool enable);
 
-    // 鼠标钩子忽略区域
+    // 工具函数
     Q_INVOKABLE bool isRectContains(const QVariant &rect, const QVariant &point);
     Q_INVOKABLE QVariant windowMapFromGlobal(QWindow *window, const QVariant &pos);
-    Q_INVOKABLE void addMouseHookIgnoreAreas(const QVariant &rect, QVariant idStr);
-    Q_INVOKABLE void removeMouseHookIgnoreAreas(QVariant idStr);
 
     bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result);
-
-    // 系统鼠标钩子
-    Q_INVOKABLE void installHook();
-    Q_INVOKABLE void uninstallHook();
-    static LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam);
-
-    static Functions *instance;
-    static HHOOK g_mouseHook;
-
-public slots:
-    void onMouse(int eventType); // 0 - 鼠标按下
 
 signals:
     void usbInserted();
@@ -75,8 +62,6 @@ private:
     QString prevContactVisualization;
     QString prevGestureVisualization;
 
-    // 鼠标钩子忽略区域
-    QMap<QString, QRect> mouseHookIgnoreAreas;
 };
 
 #endif // FUNCTIONS_H

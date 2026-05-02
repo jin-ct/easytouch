@@ -80,7 +80,7 @@ Item {
 
     // 处理自动收起工具栏
     Connections {
-        target: Global.funs
+        target: Global.mouseHook
         function onMousePressed(pos) {
             if (settings.isAutoHideBtns) {
                 if (!Global.funs.isRectContains(Qt.rect(leftWindow.x, leftWindow.y, leftWindow.width, leftWindow.height), pos) &&
@@ -90,7 +90,6 @@ Item {
                         leftContent.isFolded = true
                     if (!rightContent.isFolded)
                         rightContent.isFolded = true
-                    Global.funs.uninstallHook()
                 }
             }
         }
@@ -324,8 +323,7 @@ Item {
                 height = rightWindowHeight
                 backgroundOpacity = isFolded ? 0.5 : 1
                 if (settings.isAutoHideBtns && !isFolded) {
-                    Global.funs.addMouseHookIgnoreAreas(Qt.rect(rightWindow.x, rightWindow.y, rightWindow.width, rightWindow.height), "toolWindowRight")
-                    Global.funs.installHook()
+                    Global.mouseHook.addIgnoreAreas(Qt.rect(rightWindow.x, rightWindow.y, rightWindow.width, rightWindow.height), "toolWindowRight")
                 }
             }
         }
@@ -363,8 +361,7 @@ Item {
                 height = leftWindowHeight
                 backgroundOpacity = isFolded ? 0.5 : 1
                 if (settings.isAutoHideBtns && !isFolded) {
-                    Global.funs.installHook()
-                    Global.funs.addMouseHookIgnoreAreas(Qt.rect(leftWindow.x, leftWindow.y, leftWindow.width, leftWindow.height), "toolWindowLeft")
+                    Global.mouseHook.addIgnoreAreas(Qt.rect(leftWindow.x, leftWindow.y, leftWindow.width, leftWindow.height), "toolWindowLeft")
                 }
             }
         }

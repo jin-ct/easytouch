@@ -19,10 +19,6 @@
 #include <WinUser.h>
 #include <windowsx.h>
 
-// 用于系统钩子
-Functions* Functions::instance = nullptr;
-HHOOK Functions::g_mouseHook = nullptr;
-
 
 //=== 用于全局安装 nativeEventFilter ===
 class EventFilter : public QAbstractNativeEventFilter {
@@ -39,7 +35,6 @@ Functions::Functions(QObject *parent)
     : QObject{parent}
 {
     qApp->installNativeEventFilter(new EventFilter(this));
-    instance = this;
 }
 
 Functions::~Functions()
@@ -327,16 +322,6 @@ QVariant Functions::windowMapFromGlobal(QWindow *window, const QVariant &pos)
     return QVariant(window->mapFromGlobal(pos.toPoint()));
 }
 
-void Functions::addMouseHookIgnoreAreas(const QVariant &rect, QVariant idStr)
-{
-    mouseHookIgnoreAreas.insert(idStr.toString(), rect.toRect());
-}
-
-void Functions::removeMouseHookIgnoreAreas(QVariant idStr)
-{
-    mouseHookIgnoreAreas.remove(idStr.toString());
-}
-
 bool Functions::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result)
 {
     // U盘事件
@@ -384,61 +369,5 @@ void Functions::checkUsbDrives(bool inserted)
             });
             isUsbInserted = false;
         }
-    }
-}
-
-void Functions::installHook()
-{
-    if (g_mouseHook) {
-        return;
-    }
-    g_mouseHook = SetWindowsHookEx(
-        WH_MOUSE_LL,
-        LowLevelMouseProc,
-        GetModuleHandle(nullptr),
-        0
-    );
-    qDebug() << "WindowsMouseHookInstalled";
-}
-
-void Functions::uninstallHook()
-{
-    UnhookWindowsHookEx(g_mouseHook);
-    g_mouseHook = nullptr;
-    mouseHookIgnoreAreas.clear();
-    qDebug() << "WindowsMouseHookUninstalled";
-}
-
-LRESULT Functions::LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
-{
-    if (nCode == HC_ACTION) {
-        const MSLLHOOKSTRUCT* info = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-
-        if (wParam == WM_LBUTTONDOWN) {
-            if (Functions::instance)
-                QMetaObject::invokeMethod(
-                    Functions::instance,
-                    "onMouse",
-                    Qt::QueuedConnection,
-                    0  // eventType: 鼠标按下
-                );
-        }
-    }
-
-    return CallNextHookEx(Functions::g_mouseHook, nCode, wParam, lParam);
-}
-
-void Functions::onMouse(int eventType)
-{
-    switch (eventType) {
-    case 0:   // 鼠标按下
-        const QPoint globalPos = QCursor::pos();
-        // 若在忽略区域直接退出
-        for (auto i = mouseHookIgnoreAreas.cbegin(), end = mouseHookIgnoreAreas.cend(); i != end; ++i) {
-            if (isRectContains(QVariant(i.value()), globalPos))
-                return;
-        }
-        emit mousePressed(QVariant(globalPos));
-        break;
     }
 }
