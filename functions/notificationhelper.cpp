@@ -10,7 +10,7 @@
 
 namespace {
 
-constexpr int kTouchOrLostCursorDistPx = 160; // 光标离图标超过此距离时视为触控/漂移，先把光标移到图标再弹出
+constexpr int kTouchOrLostCursorDistPx = 10; // 光标离图标超过此距离时视为触控/漂移，先把光标移到图标再弹出
 
 int distSquaredPointToRect(const QPoint &p, const QRect &r)
 {
