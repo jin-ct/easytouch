@@ -49,7 +49,7 @@ LRESULT MouseHook::LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                     MouseHook::instance(),
                     "onMouse",
                     Qt::QueuedConnection,
-                    0  // eventType: 鼠标按下
+                    QEvent::MouseButtonPress
                     );
             break;
         case WM_MOUSEMOVE:
@@ -58,7 +58,7 @@ LRESULT MouseHook::LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                     MouseHook::instance(),
                     "onMouse",
                     Qt::QueuedConnection,
-                    1  // eventType: 鼠标移动
+                    QEvent::MouseMove
                     );
             break;
         }
@@ -67,12 +67,12 @@ LRESULT MouseHook::LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
     return CallNextHookEx(MouseHook::g_mouseHook, nCode, wParam, lParam);
 }
 
-void MouseHook::onMouse(int eventType)
+void MouseHook::onMouse(QEvent::Type eventType)
 {
     setHasMouseEvent();
     QPoint pos = QCursor::pos();
     switch (eventType) {
-    case 0:   // 鼠标按下
+    case QEvent::MouseButtonPress:
         emit mousePressedUnfiltered(QVariant(pos));
         // 若在忽略区域直接退出
         for (auto i = ignoreAreas.cbegin(), end = ignoreAreas.cend(); i != end; ++i) {
@@ -81,7 +81,7 @@ void MouseHook::onMouse(int eventType)
         }
         emit mousePressed(QVariant(pos));
         break;
-    case 1:   // 鼠标移动
+    case QEvent::MouseMove:
         emit mouseMoved(QVariant(pos));
         break;
     }

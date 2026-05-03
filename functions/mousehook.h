@@ -8,6 +8,7 @@
 #include <QRect>
 #include <QVariant>
 #include <QMutex>
+#include <QEvent>
 
 class MouseHook : public QThread
 {
@@ -25,7 +26,7 @@ public:
     bool hasMouseEvent = false;
 
 public slots:
-    void onMouse(int eventType); // 0-鼠标按下  1-鼠标移动
+    void onMouse(QEvent::Type eventType);
 
 signals:
     void mousePressedUnfiltered(QVariant pos);
