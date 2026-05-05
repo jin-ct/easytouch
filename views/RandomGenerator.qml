@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtCore
+import Functions 1.0
 import "../components"
 
 Window {
@@ -11,15 +12,6 @@ Window {
     width: 480
     color: "transparent"
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
-
-    // 保存范围值
-    Settings {
-        id: settings
-        location: "file:///" + appDir + "\\config\\settings.ini"
-        category: "Random"
-        property alias minNum: minField.value
-        property alias maxNum: maxField.value
-    }
 
     Rectangle {
         id: root
@@ -81,8 +73,13 @@ Window {
                                 height: 36
                                 from: -9999999
                                 to: 9999999
-                                value: 1
+                                value: Config.memory.get("RandomGenerator.minNum")
                                 editable: true
+
+                                onValueChanged: {
+                                    Config.memory.set("RandomGenerator.minNum", value, false)
+                                    Config.memory.writeConfigFileDebounced()
+                                }
 
                                 background: Rectangle {
                                     radius: 6
@@ -121,8 +118,13 @@ Window {
                                 height: 36
                                 from: -9999999
                                 to: 9999999
-                                value: 100
+                                value: Config.memory.get("RandomGenerator.maxNum")
                                 editable: true
+
+                                onValueChanged: {
+                                    Config.memory.set("RandomGenerator.maxNum", value, false)
+                                    Config.memory.writeConfigFileDebounced()
+                                }
 
                                 background: Rectangle {
                                     radius: 6

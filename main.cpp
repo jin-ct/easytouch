@@ -14,8 +14,10 @@
 #include "functions/windowfocushelper.h"
 #include "functions/screenmovement.h"
 #include "functions/mousehook.h"
+#include "functions/configfilemanager.h"
 
 #include "globalmanager.h"
+#include "configmanager.h"
 #include "QtLogger.h"
 
 int main(int argc, char *argv[])
@@ -49,12 +51,23 @@ int main(int argc, char *argv[])
     qmlRegisterType<WindowFocusHelper>("Functions", 1, 0, "WindowFocusHelper");
     qmlRegisterType<ScreenMovement>("Functions", 1, 0, "ScreenMovement");
     qmlRegisterType<MouseHook>("Functions", 1, 0, "MouseHook");
+    qmlRegisterType<ConfigFileManager>("Functions", 1, 0, "ConfigFileManager");
 
     qmlRegisterSingletonType<GlobalManager>(
         "Functions", 1, 0, "Global",
         [](QQmlEngine *engine, QJSEngine *) -> QObject* {
             auto mgr = new GlobalManager();
             mgr->setParent(engine);
+            GlobalManager::instance = mgr;
+            return mgr;
+        }
+    );
+    qmlRegisterSingletonType<ConfigManager>(
+        "Functions", 1, 0, "Config",
+        [](QQmlEngine *engine, QJSEngine *) -> QObject* {
+            auto mgr = new ConfigManager();
+            mgr->setParent(engine);
+            ConfigManager::instance = mgr;
             return mgr;
         }
     );
@@ -67,7 +80,9 @@ int main(int argc, char *argv[])
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
-    engine.loadFromModule("easytouch", "Main");
+
+    // 配置文件加载完成后再加载Main.qml
+    engine.loadFromModule("easytouch", "Splash");
 
     return app.exec();
 }

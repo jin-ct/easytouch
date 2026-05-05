@@ -27,11 +27,11 @@ Window {
     function save() {
         if (!input.text)
             return
-        saved([{
+        saved({
             name: input.text,
             sourceRect: {x: sourceRect.x, y: sourceRect.y, width: sourceRect.width, height: sourceRect.height},
             mirrorRect: {x: mirrorRect.x, y: mirrorRect.y, width: mirrorRect.width, height: mirrorRect.height}
-        }])
+        })
     }
     Component.onCompleted: {
         dialog.height = content.childrenRect.height + titleBar.height + 24

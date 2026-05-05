@@ -25,13 +25,6 @@ Item {
     property alias rightW: rightWindow
     property alias leftW: leftWindow
 
-    Settings {
-        id: scrMoveSaveData
-        location: "file:///" + appDir + "\\config\\screenMove.ini"
-        category: "ScreenMoveSaveDatas"
-        property var screenMoveSaveList: []
-    }
-
     ScreenMovement {
         id: screenMove
         onSaveRequested: (sourceRect, mirrorRect) => {
@@ -40,11 +33,9 @@ Item {
         }
         onDeleteRequested: (btnId) => {
             showMessageBox("删除记录", "你确定要删除该记录吗？", () => {
-                var data = scrMoveSaveData.screenMoveSaveList
-                data.splice(btnId, 1)
-                scrMoveSaveData.screenMoveSaveList = data
+                let success = Config.screenMovement.remove("List[" + btnId + "]")
                 screenMove.stopAll()
-                console.log("ScreenMoveSaveDataDeleted:", btnId)
+                console.log("ScreenMoveSaveDataDeleted:", success, btnId)
             })
         }
     }
@@ -57,23 +48,22 @@ Item {
         leftWindow.x = windowHorizontalMargin
         rightWindow.height = rightWindowHeight
         leftWindow.height = leftWindowHeight
-        if (settings.isAutoShowBtns) {
-            rightContent.backgroundOpacity = 1
-            leftContent.backgroundOpacity = 1
-            rightContent.isFolded = false
-            leftContent.isFolded = false
-        }
         Global.funs.setWindowNoActivate(rightWindow)
         Global.funs.setWindowNoActivate(leftWindow)
         setTimeout(() => {
             rightWindowOpacity.drop()
             leftWindowOpacity.drop()
-            if (settings.isShowWinodwOpacityAnimation)
+            if (Config.settings.data.ToolBar.ShowWindowOpacityAnimation)
                 windowsOpacityTimer.start()
         }, 6000)
-
-        if (settings.isStayTopEnhanced)
+        if (Config.settings.data.ToolBar.StayTopEnhanced)
             ensureWindowOnTopTimer.start()
+        if (Config.settings.data.ToolBar.AutoShowBtns) {
+            rightContent.backgroundOpacity = 1
+            leftContent.backgroundOpacity = 1
+            rightContent.isFolded = false
+            leftContent.isFolded = false
+        }
 
         console.log("ToolWindowsCompleted")
     }
@@ -82,7 +72,7 @@ Item {
     Connections {
         target: Global.mouseHook
         function onMousePressed(pos) {
-            if (settings.isAutoHideBtns) {
+            if (Config.settings.data.ToolBar.AutoHideBtns) {
                 if (!Global.funs.isRectContains(Qt.rect(leftWindow.x, leftWindow.y, leftWindow.width, leftWindow.height), pos) &&
                     !Global.funs.isRectContains(Qt.rect(rightWindow.x, rightWindow.y, rightWindow.width, rightWindow.height), pos))
                 {
@@ -258,7 +248,7 @@ Item {
                 scrMoveSaveList.pointY = pointY
                 scrMoveSaveList.setSource("../components/Popup/ScrMoveSaveList.qml", {
                             "screenMovement": screenMove,
-                            "screenMoveSaveList": scrMoveSaveData.screenMoveSaveList })
+                            "screenMoveSaveList": Config.screenMovement.data.List })
             } else {
                 scrMoveSaveList.item.hideOrShow(pointX, pointY)
             }
@@ -292,9 +282,8 @@ Item {
                 if (!val) scrMoveSaveDialog.source = ""
             }
             function onSaved(newData) {
-                scrMoveSaveData.screenMoveSaveList =
-                        scrMoveSaveData.screenMoveSaveList.concat(newData)
-                console.log("ScreenMoveSaved: ", scrMoveSaveDialog.sourceRect, scrMoveSaveDialog.mirrorRect)
+                let success = Config.screenMovement.add("List", newData)
+                console.log("ScreenMoveSaved: ", success, scrMoveSaveDialog.sourceRect, scrMoveSaveDialog.mirrorRect, )
             }
         }
     }
@@ -330,7 +319,7 @@ Item {
                 handleWindowHeightChange(rightWindow.height, root.rightWindowHeight, true)
                 height = rightWindowHeight
                 backgroundOpacity = isFolded ? 0.5 : 1
-                if (settings.isAutoHideBtns && !isFolded) {
+                if (Config.settings.data.ToolBar.AutoHideBtns && !isFolded) {
                     Global.mouseHook.addIgnoreAreas(Qt.rect(rightWindow.x, rightWindow.y, rightWindow.width, rightWindow.height), "toolWindowRight")
                 }
             }
@@ -368,7 +357,7 @@ Item {
                 handleWindowHeightChange(leftWindow.height, root.leftWindowHeight, false)
                 height = leftWindowHeight
                 backgroundOpacity = isFolded ? 0.5 : 1
-                if (settings.isAutoHideBtns && !isFolded) {
+                if (Config.settings.data.ToolBar.AutoHideBtns && !isFolded) {
                     Global.mouseHook.addIgnoreAreas(Qt.rect(leftWindow.x, leftWindow.y, leftWindow.width, leftWindow.height), "toolWindowLeft")
                 }
             }
@@ -616,7 +605,8 @@ Item {
         case "savePen":
             rightWindow.opacity = 0.2  // 截屏时降透明度
             leftWindow.opacity = 0.2
-            whileboard.item.exportPng(Global.fileHelper.getNowDateTimeNameFilePath(settings.penSavePath, "png", true))
+            let path = Global.fileHelper.getNowDateTimeNameFilePath(Config.settings.data.Drawpad.SavePath, "png", true)
+            whileboard.item.exportPng(path)
             closePen()
             riseWindows()
             break

@@ -63,6 +63,7 @@ qt_add_qml_module(appeasytouch
     SOURCES functions/windowfocushelper.h functions/windowfocushelper.cpp
     SOURCES functions/screenmovement.h functions/screenmovement.cpp
     SOURCES functions/mousehook.h functions/mousehook.cpp
+    SOURCES functions/configfilemanager.h functions/configfilemanager.cpp
     QML_FILES Main.qml
     QML_FILES views/ToolWindows.qml
     QML_FILES views/SettingsPage.qml
@@ -85,6 +86,7 @@ qt_add_qml_module(appeasytouch
     QML_FILES components/Dialog/MessageBoxDialog.qml
     RESOURCES qtquickcontrols2.conf
     RESOURCES app.rc.in
+    QML_FILES Splash.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

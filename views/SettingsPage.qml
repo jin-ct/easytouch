@@ -13,18 +13,18 @@ Window {
     color: "transparent"
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
 
-    // 各设置选项数据
-    property alias isShowToolBar: showToolBar.checked
-    property alias isAutoStart: autoStart.checked
-    property alias isAutoShowBtns: autoShowBtns.checked
-    property alias isAutoHideBtns: autoHideBtns.checked
-    property alias isShowWinodwOpacityAnimation: showWinodwOpacityAnimation.checked
-    property alias isStayTopEnhanced: stayTopEnhanced.checked
-    property alias isSendOpenUsb: sendOpenUsb.checked
-    property alias isAutoUpdate: autoUpdate.checked
-    property alias isWeChatTouchHelperEnable: weChatTouchHelperSwich.checked
-    property alias isWindowFocusHelperEnable: windowFocusHelperSwich.checked
-    property alias penSavePath: penSavePathSetting.description
+    Connections {
+        target: Config.settings
+        function onConfigChanged(path, value) {
+            if (!Config.settings.readReady)
+                return
+            switch(path) {
+            case "AutoStart":
+                Global.funs.setAutoStart(value)
+                break;
+            }
+        }
+    }
 
     Rectangle {
         id: root
@@ -143,9 +143,10 @@ Window {
                         id: autoStart
                         title: "开机自启动"
                         description: "Windows 登录后自动启动易触控"
-                        checked: false
+                        checked: Config.settings.data.AutoStart
                         switchControl.onCheckedChanged: {
-                            Global.funs.setAutoStart(checked)
+                            if (checked !== Config.settings.data.AutoStart)
+                                Config.settings.set("AutoStart", checked)
                         }
                         switchControl.onClicked: {
                             console.log("SettingChanged: (autoStart)checked=", checked)
@@ -156,7 +157,11 @@ Window {
                         id: autoUpdate
                         title: "自动更新"
                         description: "软件启动时自动从远程仓库检查并获取最新发布版"
-                        checked: true
+                        checked: Config.settings.data.AutoUpdate
+                        switchControl.onCheckedChanged: {
+                            if (checked !== Config.settings.data.AutoUpdate)
+                                Config.settings.set("AutoUpdate", checked)
+                        }
                         switchControl.onClicked: {
                             console.log("SettingChanged: (autoUpdate)checked=", checked)
                         }
@@ -180,7 +185,11 @@ Window {
                         id: showToolBar
                         title: "显示侧边工具栏"
                         description: "是否显示侧边工具栏"
-                        checked: true
+                        checked: Config.settings.data.ToolBar.Enable
+                        switchControl.onCheckedChanged: {
+                            if (checked !== Config.settings.data.ToolBar.Enable)
+                                Config.settings.set("ToolBar.Enable", checked)
+                        }
                         switchControl.onClicked: {
                             console.log("SettingChanged: (isShowToolBar)checked=", checked)
                         }
@@ -190,7 +199,11 @@ Window {
                         id: autoShowBtns
                         title: "自动展开工具栏"
                         description: "软件启动时左右侧工具栏按钮自动展开"
-                        checked: true
+                        checked: Config.settings.data.ToolBar.AutoShowBtns
+                        switchControl.onCheckedChanged: {
+                            if (checked !== Config.settings.data.ToolBar.AutoShowBtns)
+                                Config.settings.set("ToolBar.AutoShowBtns", checked)
+                        }
                         switchControl.onClicked: {
                             console.log("SettingChanged: (autoShowBtns)checked=", checked)
                         }
@@ -200,7 +213,11 @@ Window {
                         id: autoHideBtns
                         title: "自动收起工具栏"
                         description: "当点击工具栏窗口以外区域时自带收起工具栏"
-                        checked: false
+                        checked: Config.settings.data.ToolBar.AutoHideBtns
+                        switchControl.onCheckedChanged: {
+                            if (checked !== Config.settings.data.ToolBar.AutoHideBtns)
+                                Config.settings.set("ToolBar.AutoHideBtns", checked)
+                        }
                         switchControl.onClicked: {
                             console.log("SettingChanged: (autoHideBtns)checked=", checked)
                         }
@@ -210,9 +227,13 @@ Window {
                         id: showWinodwOpacityAnimation
                         title: "窗口透明度闪烁"
                         description: "窗口透明度周期性闪烁"
-                        checked: true
+                        checked: Config.settings.data.ToolBar.ShowWindowOpacityAnimation
+                        switchControl.onCheckedChanged: {
+                            if (checked !== Config.settings.data.ToolBar.ShowWindowOpacityAnimation)
+                                Config.settings.set("ToolBar.ShowWindowOpacityAnimation", checked)
+                        }
                         switchControl.onClicked: {
-                            console.log("SettingChanged: (showWinodwOpacityAnimation)checked=", checked)
+                            console.log("SettingChanged: (ShowWindowOpacityAnimation)checked=", checked)
                         }
                     }
 
@@ -220,7 +241,11 @@ Window {
                         id: stayTopEnhanced
                         title: "置顶增强"
                         description: "通过定时器触发让工具栏和相关窗口置于最顶层"
-                        checked: true
+                        checked: Config.settings.data.ToolBar.StayTopEnhanced
+                        switchControl.onCheckedChanged: {
+                            if (checked !== Config.settings.data.ToolBar.StayTopEnhanced)
+                                Config.settings.set("ToolBar.StayTopEnhanced", checked)
+                        }
                         switchControl.onClicked: {
                             console.log("SettingChanged: (stayTopEnhanced)checked=", checked)
                         }
@@ -244,7 +269,11 @@ Window {
                         id: sendOpenUsb
                         title: "发送“打开U盘”通知"
                         description: "插入U盘时发送“点击打开U盘”的系统通知"
-                        checked: true
+                        checked: Config.settings.data.USBDriveHelper.Enable
+                        switchControl.onCheckedChanged: {
+                            if (checked !== Config.settings.data.USBDriveHelper.Enable)
+                                Config.settings.set("USBDriveHelper.Enable", checked)
+                        }
                         switchControl.onClicked: {
                             console.log("SettingChanged: (sendOpenUsb)checked=", checked)
                         }
@@ -254,7 +283,11 @@ Window {
                         id: weChatTouchHelperSwich
                         title: "微信触控优化"
                         description: "针对微信4.0不支持触控问题优化（微信窗口顶置时失效，可用于临时关闭）"
-                        checked: true
+                        checked: Config.settings.data.WeChatTouchHelper.Enable
+                        switchControl.onCheckedChanged: {
+                            if (checked !== Config.settings.data.WeChatTouchHelper.Enable)
+                                Config.settings.set("WeChatTouchHelper.Enable", checked)
+                        }
                         switchControl.onClicked: {
                             console.log("SettingChanged: (weChatTouchHelperSwich)checked=", checked)
                         }
@@ -264,7 +297,11 @@ Window {
                         id: windowFocusHelperSwich
                         title: "窗口焦点助手"
                         description: "保障新窗口获取焦点，防止触控下多次点击导致新窗口焦点被抢占"
-                        checked: true
+                        checked: Config.settings.data.WindowFocusHelper.Enable
+                        switchControl.onCheckedChanged: {
+                            if (checked !== Config.settings.data.WindowFocusHelper.Enable)
+                                Config.settings.set("WindowFocusHelper.Enable", checked)
+                        }
                         switchControl.onClicked: {
                             console.log("SettingChanged: (windowFocusHelperSwich)checked=", checked)
                         }
@@ -288,12 +325,12 @@ Window {
                     SettingsButtonCard {
                         id: penSavePathSetting
                         title: "屏幕批注保存位置"
-                        description: Global.fileHelper.desktopFolder() + "/屏幕批注"  // 当前位置（默认为桌面下屏幕批注目录）
+                        description: Config.settings.data.Drawpad.SavePath // 当前位置
                         text: "选择目录"
                         button.onClicked: {
-                            let newPath = Global.fileHelper.openFolderDialog("选择屏幕批注保存目录", penSavePath)
+                            let newPath = Global.fileHelper.openFolderDialog("选择屏幕批注保存目录", Config.settings.get("Drawpad.SavePath"))
                             if (newPath) {
-                                penSavePath = newPath
+                                Config.settings.set("Drawpad.SavePath", newPath)
                                 console.log("penSavePathChanged: ", penSavePath)
                             }
                         }

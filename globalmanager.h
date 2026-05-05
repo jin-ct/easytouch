@@ -25,6 +25,8 @@ public:
     UpdateHelper* updateHelper() const { return m_updateHelper; }
     MouseHook* mouseHook() const { return MouseHook::instance(); }
 
+    static GlobalManager* instance;  // 自身指针，注册全局单例对象时赋值
+
 signals:
     void funsChanged();
     void fileHelperChanged();

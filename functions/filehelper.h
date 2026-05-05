@@ -9,9 +9,9 @@ class FileHelper : public QObject
 public:
     explicit FileHelper(QObject *parent = nullptr);
 
-    Q_INVOKABLE QVariant openFolderDialog(const QVariant &title, const QVariant &initialDir);
-    Q_INVOKABLE QVariant desktopFolder() const;
-    Q_INVOKABLE QVariant getNowDateTimeNameFilePath(const QVariant &path, const QVariant &extName, const QVariant &isDebounce);
+    Q_INVOKABLE static QVariant openFolderDialog(const QVariant &title, const QVariant &initialDir);
+    Q_INVOKABLE static QVariant desktopFolder();
+    Q_INVOKABLE static QVariant getNowDateTimeNameFilePath(const QVariant &path, const QVariant &extName, const QVariant &isDebounce);
 
 signals:
 };

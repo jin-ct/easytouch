@@ -12,34 +12,13 @@ ApplicationWindow {
     id: windows
     flags:  Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
 
-    // 设置保存
-    property bool isSettingsLoaded: false
-    Settings {
-        id: settings
-        location: "file:///" + appDir + "\\config\\settings.ini"
-        category: "Basic"
-        property alias isAutoStart: settingsPage.isAutoStart
-        property alias isAutoHideBtns: settingsPage.isAutoHideBtns
-        property alias isAutoShowBtns: settingsPage.isAutoShowBtns
-        property alias isShowToolBar: settingsPage.isShowToolBar
-        property alias isShowWinodwOpacityAnimation: settingsPage.isShowWinodwOpacityAnimation
-        property alias isStayTopEnhanced: settingsPage.isStayTopEnhanced
-        property alias isSendOpenUsb: settingsPage.isSendOpenUsb
-        property alias isAutoUpdate: settingsPage.isAutoUpdate
-        property alias isWeChatTouchHelperEnable: settingsPage.isWeChatTouchHelperEnable
-        property alias isWindowFocusHelperEnable: settingsPage.isWindowFocusHelperEnable
-        property alias penSavePath: settingsPage.penSavePath
-
-        Component.onCompleted: isSettingsLoaded = true
-    }
-
     // cpp通信
     Connections {
         target: Global.funs
         function onUsbInserted() {
             if (toolWindows.status === Loader.Ready)
                 toolWindows.item.showUsbBtn()
-            if (settings.isSendOpenUsb)
+            if (Config.settings.data.USBDriveHelper.Enable)
                 Global.notification.showNotification("openUsb", "点击打开U盘", "轻触此处打开U盘")
             console.log("newUsbInserted")
         }
@@ -75,7 +54,7 @@ ApplicationWindow {
     }
     Loader {
         id: weChatHelperLoader
-        sourceComponent: settings.isWeChatTouchHelperEnable ? weChatHelper : undefined
+        sourceComponent: Config.settings.data.WeChatTouchHelper.Enable ? weChatHelper : undefined
         onLoaded: {
             console.log("weChatHelperLoaded")
         }
@@ -86,12 +65,13 @@ ApplicationWindow {
     }
     Loader {
         id: windowFocusHelperLoader
-        sourceComponent: settings.isWindowFocusHelperEnable ? windowFocusHelper : undefined
+        sourceComponent: Config.settings.data.WindowFocusHelper.Enable ? windowFocusHelper : undefined
         onLoaded: {
             console.log("windowFocusHelperLoaded")
         }
         Connections {
             target: windowFocusHelperLoader.item
+            // 新窗口出现时更新工具栏窗口置顶
             function onNewWindowCreated() {
                 if (toolWindows.status === Loader.Ready) {
                     toolWindows.item.updateWindows()
@@ -103,17 +83,26 @@ ApplicationWindow {
     // 窗口创建完成
     Component.onCompleted: {
         Global.funs.setWindowNoActivate(windows)
-        if (settings.isAutoUpdate)
+        if (Config.settings.data.AutoUpdate)
             Global.updateHelper.checkForUpdates("jin-ct", "easytouch")
+
         console.log("windowsCompleted")
     }
 
     // =============== 窗口 ===============
 
     // 设置窗口
-    SettingsPage {
+    Loader {
         id: settingsPage
-        visible: false
+        function show() {
+            source = "views/SettingsPage.qml"
+        }
+        Connections {
+            target: settingsPage.item
+            function onVisibleChanged(val) {
+                if (!val) settingsPage.source = ""
+            }
+        }
     }
 
     // 批注窗口
@@ -153,7 +142,7 @@ ApplicationWindow {
     // 工具栏窗口
     Loader {
         id: toolWindows
-        source: (isSettingsLoaded && settings.isShowToolBar) ? "views/ToolWindows.qml" : ""
+        source: Config.settings.data.ToolBar.Enable ? "views/ToolWindows.qml" : ""
     }
 
     // =============== 窗口（结束） ===============

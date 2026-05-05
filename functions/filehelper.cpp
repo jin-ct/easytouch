@@ -25,7 +25,7 @@ QVariant FileHelper::openFolderDialog(const QVariant &title, const QVariant &ini
     return QVariant(selected);
 }
 
-QVariant FileHelper::desktopFolder() const
+QVariant FileHelper::desktopFolder()
 {
     return QVariant(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation));
 }

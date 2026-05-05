@@ -1,5 +1,7 @@
 #include "globalmanager.h"
 
+GlobalManager* GlobalManager::instance = nullptr;
+
 GlobalManager::GlobalManager(QObject *parent)
     : QObject{parent}
 {
