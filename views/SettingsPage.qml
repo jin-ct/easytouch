@@ -96,6 +96,7 @@ Window {
                             }
 
                             Column {
+                                id: info
                                 anchors.left: logoImage.right
                                 anchors.leftMargin: 16
                                 anchors.right: parent.right
@@ -176,6 +177,16 @@ Window {
                         comboBox.onActivated: {
                             Config.settings.set("UpdateChannel", comboBox.currentValue)
                             console.log("SettingChanged: (UpdateChannel)selected=", currentText)
+                        }
+                    }
+
+                    SettingsButtonCard {
+                        id: updateBtn
+                        title: "检查更新"
+                        description: "手动检查更新"
+                        text: "检查更新"
+                        button.onClicked: {
+                            Global.updateHelper.checkForUpdates("jin-ct", "easytouch")
                         }
                     }
 
