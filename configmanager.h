@@ -29,6 +29,7 @@ private:
     void registerConfig(const QString &path, const QVariant defaultVal, ConfigFileManager* mgr);
     bool isChangedInRegistering{false};
     void handleConfigLoad(ConfigFileManager* mgr);
+    void compatibleOldConfigFile();
     int ConfigLoadedCount{0};
 };
 
