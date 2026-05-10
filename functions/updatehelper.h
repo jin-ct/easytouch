@@ -8,6 +8,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QVector>
 
 class UpdateHelper : public QObject
 {
@@ -28,14 +29,19 @@ signals:
     void networkError();
 
 private slots:
-    void onReleaseInfoReceived();
+    void onReleasesListReceived();
     void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void onDownloadFinished();
     void onDownloadError(QNetworkReply::NetworkError error);
 
 private:
-    void parseReleaseInfo(const QByteArray &data);
-    bool compareVersions(const QString &currentVersion, const QString &latestVersion);
+    void requestReleasesPage();
+    void finalizeReleasesAndCompare();
+    QString updateChannelSuffix() const;
+    QString semverFromChannelTag(const QString &tagName, const QString &channelSuffix) const;
+    static int compareSemver(const QString &a, const QString &b);
+    QString findWin64AssetUrl(const QJsonObject &release) const;
+    bool compareVersions(const QString &currentVersion, const QString &latestSemver);
     void downloadUpdate(const QString &downloadUrl);
     void extractZip(const QString &zipPath, const QString &extractPath);
     bool extractUsingShellAPI(const QString &zipPath, const QString &extractPath);
@@ -53,6 +59,10 @@ private:
     QString extractPath;
     QString repoOwner;
     QString repoName;
+    int m_releasesListPage = 1;
+    static const int m_releaseListPerPage = 100;
+    QVector<QJsonObject> m_releasesAccumulated;
+    bool m_usingGitHubApi = false;
 };
 
 #endif // UPDATEHELPER_H

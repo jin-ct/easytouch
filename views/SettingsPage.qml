@@ -167,6 +167,18 @@ Window {
                         }
                     }
 
+                    SettingsComboCard {
+                        id: updatChannel
+                        title: "更新通道"
+                        description: "检查更新版本通道，测试版(beta)通常功能较新但可能存在稳定性问题"
+                        model: ["release",  "beta"]
+                        comboBox.currentIndex: Config.settings.get("UpdateChannel") === "release" ? 0 : 1
+                        comboBox.onActivated: {
+                            Config.settings.set("UpdateChannel", comboBox.currentValue)
+                            console.log("SettingChanged: (UpdateChannel)selected=", currentText)
+                        }
+                    }
+
                     Text {
                         text: "工具栏设置"
                         topPadding: 4

@@ -18,6 +18,7 @@
 #include <Shlwapi.h>
 #include <comdef.h>
 #include <comutil.h>
+#include "../configmanager.h"
 
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "comsuppw.lib")
@@ -70,26 +71,34 @@ void UpdateHelper::checkForUpdates(const QString &repoOwner, const QString &repo
     this->repoOwner = repoOwner;
     this->repoName = repoName;
 
-    QString giteeApiHost = "https://gitee.com/api/v5";
-    QString githubApiHost = "https://api.github.com";
+    m_releasesListPage = 1;
+    m_releasesAccumulated.clear();
+    m_usingGitHubApi = isRetrying;
 
-    QString apiUrl = QString("%1/repos/%2/%3/releases/latest")
-                     .arg(isRetrying ? githubApiHost : giteeApiHost, repoOwner, repoName);
+    requestReleasesPage();
+}
+
+void UpdateHelper::requestReleasesPage()
+{
+    QString baseHost = m_usingGitHubApi ? QStringLiteral("https://api.github.com")
+                                        : QStringLiteral("https://gitee.com/api/v5");
+    QString apiUrl = QStringLiteral("%1/repos/%2/%3/releases?page=%4&per_page=%5")
+                         .arg(baseHost, repoOwner, repoName)
+                         .arg(m_releasesListPage)
+                         .arg(m_releaseListPerPage);
 
     QNetworkRequest request(apiUrl);
     request.setRawHeader("User-Agent", "EasyTouch-Updater/1.0");
     request.setRawHeader("Accept", "application/vnd.github.v3+json");
 
-    // 配置 SSL，忽略证书错误（用于更新检查）
     QSslConfiguration sslConfig = request.sslConfiguration();
     sslConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
     request.setSslConfiguration(sslConfig);
 
     currentReply = networkManager->get(request);
-    connect(currentReply, &QNetworkReply::finished, this, &UpdateHelper::onReleaseInfoReceived);
+    connect(currentReply, &QNetworkReply::finished, this, &UpdateHelper::onReleasesListReceived);
     connect(currentReply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::errorOccurred),
             this, &UpdateHelper::onDownloadError);
-    // 忽略 SSL 错误
     connect(currentReply, &QNetworkReply::sslErrors, this, [this](const QList<QSslError> &errors) {
         Q_UNUSED(errors);
         if (currentReply) {
@@ -98,7 +107,7 @@ void UpdateHelper::checkForUpdates(const QString &repoOwner, const QString &repo
     });
 }
 
-void UpdateHelper::onReleaseInfoReceived()
+void UpdateHelper::onReleasesListReceived()
 {
     if (!currentReply) {
         emit updateError("网络请求失败");
@@ -120,11 +129,6 @@ void UpdateHelper::onReleaseInfoReceived()
     currentReply->deleteLater();
     currentReply = nullptr;
 
-    parseReleaseInfo(data);
-}
-
-void UpdateHelper::parseReleaseInfo(const QByteArray &data)
-{
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data, &error);
 
@@ -134,43 +138,132 @@ void UpdateHelper::parseReleaseInfo(const QByteArray &data)
         return;
     }
 
-    QJsonObject release = doc.object();
-    QString tagName = release["tag_name"].toString();
-
-    if (tagName.isEmpty()) {
-        emit updateError("未找到版本标签" + data);
+    if (!doc.isArray()) {
+        QJsonObject errObj = doc.object();
+        QString msg = errObj[QStringLiteral("message")].toString();
+        if (msg.isEmpty()) {
+            msg = QStringLiteral("接口返回格式异常（期望 Release 数组）");
+        }
+        emit updateError(msg);
         emit updateCheckFinished(false);
         return;
     }
 
-    // 移除 "v" 前缀
-    QString version = tagName.startsWith("v") ? tagName.mid(1) : tagName;
-    latestVersion = version;
-
-    // 查找名为 "easytouch-win-64.zip" 的资源文件
-    QJsonArray assets = release["assets"].toArray();
-    QString downloadUrlFound;
-
-    for (const QJsonValue &assetValue : assets) {
-        QJsonObject asset = assetValue.toObject();
-        QString name = asset["name"].toString();
-        if (name == "easytouch-win-64.zip" || name.contains("easytouch-win-64.zip")) {
-            downloadUrlFound = asset["browser_download_url"].toString();
-            break;
+    const QJsonArray page = doc.array();
+    const int pageSize = page.size();
+    for (const QJsonValue &v : page) {
+        if (v.isObject()) {
+            m_releasesAccumulated.append(v.toObject());
         }
     }
 
-    if (downloadUrlFound.isEmpty()) {
-        emit updateError("未找到 easytouch-win-64.zip 文件");
+    if (pageSize >= m_releaseListPerPage) {
+        m_releasesListPage++;
+        requestReleasesPage();
+        return;
+    }
+
+    finalizeReleasesAndCompare();
+}
+
+QString UpdateHelper::updateChannelSuffix() const
+{
+    QString ch = QStringLiteral("release");
+    if (ConfigManager::instance && ConfigManager::instance->settings)
+        ch = ConfigManager::instance->settings->get(QStringLiteral("UpdateChannel")).toString().toLower().trimmed();
+    if (ch == QStringLiteral("beta"))
+        return QStringLiteral("beta");
+    return QStringLiteral("release");
+}
+
+QString UpdateHelper::semverFromChannelTag(const QString &tagName, const QString &channelSuffix) const
+{
+    const QString suf = QLatin1Char('-') + channelSuffix;
+    QString t = tagName.trimmed();
+    if (!t.contains("-"))
+        t.append("-release");
+    if (!t.endsWith(suf, Qt::CaseInsensitive))
+        return QString();
+    QString core = t.left(t.size() - suf.size()).trimmed();
+    if (core.startsWith(QLatin1Char('v'), Qt::CaseInsensitive))
+        core = core.mid(1).trimmed();
+    return core;
+}
+
+int UpdateHelper::compareSemver(const QString &a, const QString &b)
+{
+    QStringList ap = a.split(QLatin1Char('.'));
+    QStringList bp = b.split(QLatin1Char('.'));
+    const int n = qMax(ap.size(), bp.size());
+    while (ap.size() < n)
+        ap.append(QStringLiteral("0"));
+    while (bp.size() < n)
+        bp.append(QStringLiteral("0"));
+    for (int i = 0; i < n; ++i) {
+        const int ai = ap[i].toInt();
+        const int bi = bp[i].toInt();
+        if (ai < bi)
+            return -1;
+        if (ai > bi)
+            return 1;
+    }
+    return 0;
+}
+
+QString UpdateHelper::findWin64AssetUrl(const QJsonObject &release) const
+{
+    const QJsonArray assets = release[QStringLiteral("assets")].toArray();
+    for (const QJsonValue &assetValue : assets) {
+        const QJsonObject asset = assetValue.toObject();
+        const QString name = asset[QStringLiteral("name")].toString();
+        if (!name.endsWith(QStringLiteral("win-64.zip"), Qt::CaseInsensitive))
+            continue;
+        QString url = asset[QStringLiteral("browser_download_url")].toString();
+        if (url.isEmpty())
+            url = asset[QStringLiteral("direct_link_url")].toString();
+        if (!url.isEmpty())
+            return url;
+    }
+    return QString();
+}
+
+void UpdateHelper::finalizeReleasesAndCompare()
+{
+    const QString channel = updateChannelSuffix();
+    QString bestSemver;
+    QJsonObject bestRelease;
+
+    for (const QJsonObject &rel : m_releasesAccumulated) {
+        if (rel[QStringLiteral("draft")].toBool())
+            continue;
+        const QString tagName = rel[QStringLiteral("tag_name")].toString();
+        const QString semver = semverFromChannelTag(tagName, channel);
+        if (semver.isEmpty())
+            continue;
+        if (bestSemver.isEmpty() || compareSemver(semver, bestSemver) > 0) {
+            bestSemver = semver;
+            bestRelease = rel;
+        }
+    }
+
+    if (bestSemver.isEmpty()) {
+        emit updateError(QStringLiteral("未找到符合当前更新通道（%1）的发行版").arg(channel));
         emit updateCheckFinished(false);
         return;
     }
 
+    const QString downloadUrlFound = findWin64AssetUrl(bestRelease);
+    if (downloadUrlFound.isEmpty()) {
+        emit updateError(QStringLiteral("未找到以 win-64.zip 结尾的安装包"));
+        emit updateCheckFinished(false);
+        return;
+    }
+
+    latestVersion = bestSemver;
     downloadUrl = downloadUrlFound;
 
-    // 比较版本号
-    QString currentVersion = getCurrentVersion();
-    bool needsUpdate = compareVersions(currentVersion, latestVersion);
+    const QString currentVersion = getCurrentVersion();
+    const bool needsUpdate = compareVersions(currentVersion, latestVersion);
 
     if (needsUpdate) {
         emit updateAvailable(latestVersion, downloadUrl);
@@ -185,28 +278,9 @@ void UpdateHelper::startDownload(const QString &downloadUrl)
     downloadUpdate(downloadUrl);
 }
 
-bool UpdateHelper::compareVersions(const QString &currentVersion, const QString &latestVersion)
+bool UpdateHelper::compareVersions(const QString &currentVersion, const QString &latestSemver)
 {
-    QStringList currentParts = currentVersion.split('.');
-    QStringList latestParts = latestVersion.split('.');
-
-    // 确保两个版本号都有相同数量的部分
-    int maxParts = qMax(currentParts.size(), latestParts.size());
-    while (currentParts.size() < maxParts) currentParts.append("0");
-    while (latestParts.size() < maxParts) latestParts.append("0");
-
-    for (int i = 0; i < maxParts; ++i) {
-        int current = currentParts[i].toInt();
-        int latest = latestParts[i].toInt();
-
-        if (latest > current) {
-            return true;
-        } else if (latest < current) {
-            return false;
-        }
-    }
-
-    return false; // 版本相同
+    return compareSemver(latestSemver, currentVersion) > 0;
 }
 
 void UpdateHelper::downloadUpdate(const QString &downloadUrl)
