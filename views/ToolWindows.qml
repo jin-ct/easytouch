@@ -73,9 +73,11 @@ Item {
         target: Global.mouseHook
         function onMousePressed(pos) {
             if (Config.settings.data.ToolBar.AutoHideBtns) {
-                if (!Global.funs.isRectContains(Qt.rect(leftWindow.x, leftWindow.y, leftWindow.width, leftWindow.height), pos) &&
-                    !Global.funs.isRectContains(Qt.rect(rightWindow.x, rightWindow.y, rightWindow.width, rightWindow.height), pos))
-                {
+                // 52为主图标直径，点击主图标区域不再触发收起（防止重复收起）
+                var leftBtnsRect = Qt.rect(leftWindow.x, leftWindow.y, leftWindow.width, 52)
+                var rightBtnsRect = Qt.rect(rightWindow.x, rightWindow.y, rightWindow.width, 52)
+                if (!Global.funs.isRectContains(leftBtnsRect, pos) &&
+                    !Global.funs.isRectContains(rightBtnsRect, pos)) {
                     if (!leftContent.isFolded)
                         leftContent.isFolded = true
                     if (!rightContent.isFolded)
@@ -320,7 +322,9 @@ Item {
                 height = rightWindowHeight
                 backgroundOpacity = isFolded ? 0.5 : 1
                 if (Config.settings.data.ToolBar.AutoHideBtns && !isFolded) {
-                    Global.mouseHook.addIgnoreAreas(Qt.rect(rightWindow.x, rightWindow.y, rightWindow.width, rightWindow.height), "toolWindowRight")
+                    // 52为主图标直径，主图标区域也触发
+                    var rect = Qt.rect(rightWindow.x, rightWindow.y + 52, rightWindow.width, rightWindow.height - 52)
+                    Global.mouseHook.addIgnoreAreas(rect, "toolWindowRight")
                 }
             }
         }
@@ -358,7 +362,9 @@ Item {
                 height = leftWindowHeight
                 backgroundOpacity = isFolded ? 0.5 : 1
                 if (Config.settings.data.ToolBar.AutoHideBtns && !isFolded) {
-                    Global.mouseHook.addIgnoreAreas(Qt.rect(leftWindow.x, leftWindow.y, leftWindow.width, leftWindow.height), "toolWindowLeft")
+                    // 52为主图标直径，主图标区域也触发
+                    var rect = Qt.rect(leftWindow.x, leftWindow.y + 52, leftWindow.width, leftWindow.height - 52)
+                    Global.mouseHook.addIgnoreAreas(rect, "toolWindowLeft")
                 }
             }
         }
