@@ -37,6 +37,7 @@ UpdateHelper::UpdateHelper(QObject *parent)
         startDownload(downloadUrl);
     });
     connect(this, &UpdateHelper::updateCheckFinished, this, [=](bool hasUpdate){
+        this->hasUpdate = hasUpdate;
         qDebug() << "updateCheckFinished: " << hasUpdate;
     });
     connect(this, &UpdateHelper::updateError, this, [=](const QString &error){

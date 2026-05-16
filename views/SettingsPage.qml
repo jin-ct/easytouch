@@ -183,7 +183,11 @@ Window {
                     SettingsButtonCard {
                         id: updateBtn
                         title: "检查更新"
-                        description: "手动检查更新"
+                        description: Global.updateHelper.latestVersion === ""
+                                     ? "未检查更新"
+                                     : (Global.updateHelper.hasUpdate
+                                        ? "有新版本 (" + Global.updateHelper.latestVersion + "), 现在开始更新"
+                                        : "当前版本已为最新")
                         text: "检查更新"
                         button.onClicked: {
                             Global.updateHelper.checkForUpdates("jin-ct", "easytouch")

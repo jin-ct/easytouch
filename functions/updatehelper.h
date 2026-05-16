@@ -13,6 +13,8 @@
 class UpdateHelper : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool hasUpdate MEMBER hasUpdate NOTIFY updateCheckFinished)
+    Q_PROPERTY(QString latestVersion MEMBER latestVersion NOTIFY updateCheckFinished)
 public:
     explicit UpdateHelper(QObject *parent = nullptr);
     ~UpdateHelper();
@@ -53,16 +55,17 @@ private:
 
     QNetworkAccessManager *networkManager;
     QNetworkReply *currentReply;
-    QString latestVersion;
+    QString latestVersion{""};
     QString downloadUrl;
     QString zipFilePath;
     QString extractPath;
     QString repoOwner;
     QString repoName;
-    int m_releasesListPage = 1;
-    static const int m_releaseListPerPage = 100;
+    int m_releasesListPage{1};
+    static const int m_releaseListPerPage{100};
     QVector<QJsonObject> m_releasesAccumulated;
-    bool m_usingGitHubApi = false;
+    bool m_usingGitHubApi{false};
+    bool hasUpdate{false};
 };
 
 #endif // UPDATEHELPER_H
