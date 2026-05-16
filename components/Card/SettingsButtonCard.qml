@@ -17,7 +17,7 @@ SettingsCard {
 
         background: Rectangle {
             radius: 4
-            color: actionButton.down ? "#337ecc" : "#409EFF"
+            color: actionButton.enabled ? (actionButton.down ? "#337ecc" : "#409EFF") : "#7A7A7A"
         }
 
         contentItem: Text {

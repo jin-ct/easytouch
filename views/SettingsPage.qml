@@ -26,6 +26,14 @@ Window {
         }
     }
 
+    Connections {
+        target: Global.updateHelper
+        function onUpdateCheckFinished() {
+            updateBtn.button.enabled = true
+            updateBtn.text = "检查更新"
+        }
+    }
+
     Rectangle {
         id: root
 
@@ -184,13 +192,15 @@ Window {
                         id: updateBtn
                         title: "检查更新"
                         description: Global.updateHelper.latestVersion === ""
-                                     ? "未检查更新"
+                                     ? "未检查更新，或检查失败"
                                      : (Global.updateHelper.hasUpdate
                                         ? "有新版本 (" + Global.updateHelper.latestVersion + "), 现在开始更新"
                                         : "当前版本已为最新")
                         text: "检查更新"
                         button.onClicked: {
                             Global.updateHelper.checkForUpdates("jin-ct", "easytouch")
+                            button.enabled = false
+                            text = "检查中"
                         }
                     }
 
