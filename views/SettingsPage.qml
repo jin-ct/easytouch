@@ -317,6 +317,20 @@ Window {
                     }
 
                     SettingsSwitchCard {
+                        id: launchingHelperSwich
+                        title: "软件启动提示助手（实验性）"
+                        description: "软件启动时显示启动提示"
+                        checked: Config.settings.data.LaunchingHelper.Enable
+                        switchControl.onCheckedChanged: {
+                            if (checked !== Config.settings.data.LaunchingHelper.Enable)
+                                Config.settings.set("LaunchingHelper.Enable", checked)
+                        }
+                        switchControl.onClicked: {
+                            console.log("SettingChanged: (LaunchingHelperSwich)checked=", checked)
+                        }
+                    }
+
+                    SettingsSwitchCard {
                         id: weChatTouchHelperSwich
                         title: "微信触控优化"
                         description: "针对微信4.0不支持触控问题优化（微信窗口顶置时失效，可用于临时关闭）"
