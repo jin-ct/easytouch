@@ -2,43 +2,54 @@
 #define GLOBALMANAGER_H
 
 #include <QObject>
+
 #include "functions/functions.h"
 #include "functions/filehelper.h"
 #include "functions/notificationhelper.h"
 #include "functions/updatehelper.h"
 #include "functions/mousehook.h"
+#include "functions/wechathelper.h"
+#include "functions/windowfocushelper.h"
+#include "functions/launchinghelper.h"
 
 class GlobalManager : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(Functions* funs READ functions NOTIFY funsChanged)
-    Q_PROPERTY(FileHelper* fileHelper READ fileHelper NOTIFY fileHelperChanged)
-    Q_PROPERTY(NotificationHelper* notification READ notification NOTIFY notificationChanged)
-    Q_PROPERTY(UpdateHelper* updateHelper READ updateHelper NOTIFY updateHelperChanged)
-    Q_PROPERTY(MouseHook* mouseHook READ mouseHook NOTIFY mouseHookChanged)
+    Q_PROPERTY(MouseHook* mouseHook READ mouseHook NOTIFY objChanged)
+    Q_PROPERTY(Functions* funs MEMBER funs NOTIFY objChanged)
+    Q_PROPERTY(FileHelper* fileHelper MEMBER fileHelper NOTIFY objChanged)
+    Q_PROPERTY(NotificationHelper* notification MEMBER notification NOTIFY objChanged)
+    Q_PROPERTY(UpdateHelper* updateHelper MEMBER updateHelper NOTIFY objChanged)
+
+    Q_PROPERTY(WeChatHelper* weChatHelper MEMBER weChatHelper NOTIFY funSwitched)
+    Q_PROPERTY(WindowFocusHelper* windowFocusHelper MEMBER windowFocusHelper NOTIFY funSwitched)
+    Q_PROPERTY(LaunchingHelper* launchingHelper MEMBER launchingHelper NOTIFY funSwitched)
 public:
     explicit GlobalManager(QObject *parent = nullptr);
 
-    Functions* functions() const { return m_funs; }
-    FileHelper* fileHelper() const { return m_fileHelper; }
-    NotificationHelper* notification() const { return m_notification; }
-    UpdateHelper* updateHelper() const { return m_updateHelper; }
     MouseHook* mouseHook() const { return MouseHook::instance(); }
 
     static GlobalManager* instance;  // 自身指针，注册全局单例对象时赋值
 
+public slots:
+    void handleConfigChanged();
+
 signals:
-    void funsChanged();
-    void fileHelperChanged();
-    void notificationChanged();
-    void updateHelperChanged();
-    void mouseHookChanged();
+    void objChanged();
+    void funSwitched();
 
 private:
-    Functions *m_funs;
-    FileHelper *m_fileHelper;
-    NotificationHelper *m_notification;
-    UpdateHelper *m_updateHelper;
+    template <typename T>
+    void switchFun(T* &ptr, bool enable);
+
+    Functions* funs{};
+    FileHelper* fileHelper{};
+    NotificationHelper* notification{};
+    UpdateHelper* updateHelper{};
+
+    WeChatHelper* weChatHelper{};
+    WindowFocusHelper* windowFocusHelper{};
+    LaunchingHelper* launchingHelper{};
 
 };
 

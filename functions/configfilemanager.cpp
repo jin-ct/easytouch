@@ -32,8 +32,10 @@ QVariant ConfigFileManager::readConfigFile()
 {
     config = readJsonFile(fileName).toVariantMap();
     readReady = true;
-    emit fileRead();
-    emit configChanged();
+    QTimer::singleShot(0, this, [this](){
+        emit fileRead();
+        emit configChanged();
+    });
     return config;
 }
 

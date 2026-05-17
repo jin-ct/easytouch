@@ -45,6 +45,7 @@ WeChatHelper::WeChatHelper(QObject *parent)
 
     QObject::connect(&m_updateHoleTimer, &QTimer::timeout, this, [this](){overlayUpdateHole();});
     QObject::connect(&m_holeSideTimer, &QTimer::timeout, this, &WeChatHelper::overlayUpdateHoleSide);
+    emit loaded();
 }
 
 WeChatHelper::~WeChatHelper()

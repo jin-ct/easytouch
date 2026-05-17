@@ -64,7 +64,7 @@ public:
     bool readReady = false;
 
 signals:
-    void configChanged(const QVariant path = "", const QVariant value = QVariant());
+    void configChanged(const QVariant &path = "", const QVariant value = QVariant());
     void fileRead();
 
 private:

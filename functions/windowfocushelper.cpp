@@ -220,6 +220,7 @@ bool WindowFocusHelper::start()
     }
 
     m_active = true;
+    emit started();
     return true;
 }
 

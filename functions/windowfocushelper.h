@@ -17,6 +17,7 @@ public:
     bool isActive() const { return m_active; }
 
 signals:
+    void started();
     void newWindowCreated();
 
 private:

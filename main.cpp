@@ -15,6 +15,7 @@
 #include "functions/screenmovement.h"
 #include "functions/mousehook.h"
 #include "functions/configfilemanager.h"
+#include "functions/launchinghelper.h"
 
 #include "globalmanager.h"
 #include "configmanager.h"
@@ -52,6 +53,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<ScreenMovement>("Functions", 1, 0, "ScreenMovement");
     qmlRegisterType<MouseHook>("Functions", 1, 0, "MouseHook");
     qmlRegisterType<ConfigFileManager>("Functions", 1, 0, "ConfigFileManager");
+    qmlRegisterType<LaunchingHelper>("Functions", 1, 0, "LaunchingHelper");
 
     qmlRegisterSingletonType<GlobalManager>(
         "Functions", 1, 0, "Global",

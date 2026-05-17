@@ -48,34 +48,37 @@ ApplicationWindow {
             Global.notification.showNotification("update", "有新版本的易触控" + "（" + version + "）", "现在开始更新易触控")
         }
     }
-    Component {
-        id: weChatHelper
-        WeChatHelper {}
-    }
-    Loader {
-        id: weChatHelperLoader
-        sourceComponent: Config.settings.data.WeChatTouchHelper.Enable ? weChatHelper : undefined
-        onLoaded: {
-            console.log("weChatHelperLoaded")
+    Connections {
+        enabled: Global.weChatHelper
+        target: Global.weChatHelper
+        function onLoaded() {
+            console.log("WeChatHelper已加载")
         }
     }
-    Component {
-        id: windowFocusHelper
-        WindowFocusHelper {}
-    }
-    Loader {
-        id: windowFocusHelperLoader
-        sourceComponent: Config.settings.data.WindowFocusHelper.Enable ? windowFocusHelper : undefined
-        onLoaded: {
-            console.log("windowFocusHelperLoaded")
+    Connections {
+        enabled: Global.windowFocusHelper
+        target: Global.windowFocusHelper
+        // 新窗口出现时更新工具栏窗口置顶
+        function onNewWindowCreated() {
+            if (toolWindows.status === Loader.Ready) {
+                toolWindows.item.updateWindows()
+            }
         }
-        Connections {
-            target: windowFocusHelperLoader.item
-            // 新窗口出现时更新工具栏窗口置顶
-            function onNewWindowCreated() {
-                if (toolWindows.status === Loader.Ready) {
-                    toolWindows.item.updateWindows()
-                }
+        function onStarted() {
+            console.log("WindowFocusHelper已加载")
+        }
+    }
+    Connections {
+        enabled: Global.launchingHelper
+        target: Global.launchingHelper
+        function onLoaded() {
+            console.log("LaunchingHelper已加载")
+        }
+        function onProcessStartedWithInfo(exeName, exeIcon, cursorPos) {
+            var splashWindow = Qt.createComponent("views/SplashWindow.qml");
+            if (splashWindow.status === Component.Ready) {
+                var obj = splashWindow.createObject(null, { exeName: exeName, exeIcon: exeIcon, cursorPos: cursorPos });
+                obj.destroy(10000)  // 最长显示10s
             }
         }
     }

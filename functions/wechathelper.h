@@ -15,6 +15,9 @@ public:
     explicit WeChatHelper(QObject *parent = nullptr);
     ~WeChatHelper();
 
+signals:
+    void loaded();
+
 private:
     enum class InputState {
         Idle,

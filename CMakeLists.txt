@@ -64,11 +64,13 @@ qt_add_qml_module(appeasytouch
     SOURCES functions/screenmovement.h functions/screenmovement.cpp
     SOURCES functions/mousehook.h functions/mousehook.cpp
     SOURCES functions/configfilemanager.h functions/configfilemanager.cpp
+    SOURCES functions/launchinghelper.h functions/launchinghelper.cpp
     QML_FILES Main.qml
     QML_FILES views/ToolWindows.qml
     QML_FILES views/SettingsPage.qml
     QML_FILES views/Whileboard.qml
     QML_FILES views/RandomGenerator.qml
+    QML_FILES views/SplashWindow.qml
     QML_FILES components/ToolWindowContent.qml
     QML_FILES components/WindowTitleBar.qml
     QML_FILES components/Popup/VolumePopup.qml
