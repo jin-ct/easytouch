@@ -4,7 +4,11 @@
 #include <QFileInfo>
 #include <unordered_set>
 #include <shellapi.h>
+#include <shlobj.h>
+#include <initguid.h>
+#include <commoncontrols.h>
 #include <QCursor>
+#include "qmlimageprovider.h"
 
 static const int kPollingIntervalMs = 20;
 
@@ -79,7 +83,7 @@ void WINAPI LaunchingMonitor::WinEventCallback(
     if (it->second.imagePath.empty() || it->second.imagePath == L"[Unknown]") {
         std::wstring p = GetProcessImagePathRetryW(pid);
         if (!p.empty()) it->second.imagePath = p;
-        it->second.icon = LaunchingMonitor::instance->getExeIcon(p);
+        it->second.icon_imgIndex = QmlImageProvider::instance()->addImg(LaunchingMonitor::instance->getExeIcon(p));
     }
 
     // 设置窗口标题
@@ -90,7 +94,9 @@ void WINAPI LaunchingMonitor::WinEventCallback(
     it->second.windowShownSignaled = true;
     emit LaunchingMonitor::instance->windowShown(pid);
     QTimer::singleShot(1000, LaunchingMonitor::instance, [=](){  // 1秒后删除该项数据
+        QMutexLocker locker(&LaunchingMonitor::instance->m_mutex);
         LaunchingMonitor::instance->g_procs.erase(pid);
+        QmlImageProvider::instance()->removeImg(it->second.icon_imgIndex);
     });
 }
 
@@ -227,6 +233,12 @@ void LaunchingMonitor::SignalProcessStarted(DWORD pid, DWORD parentPid) {
             st.windowShownSignaled = false;
             st.windowTitle = L"";
             emit processStarted(pid);
+
+            QTimer::singleShot(60000, this, [=](){  // 数据最多保留 60s
+                QMutexLocker locker(&LaunchingMonitor::instance->m_mutex);
+                LaunchingMonitor::instance->g_procs.erase(pid);
+                QmlImageProvider::instance()->removeImg(st.icon_imgIndex);
+            });
         }
         return;
     }
@@ -240,26 +252,55 @@ void LaunchingMonitor::SignalProcessStarted(DWORD pid, DWORD parentPid) {
     st.startedSignaled = true;
     st.windowShownSignaled = false;
     st.windowTitle = L"";
-    st.icon = getExeIcon(path);
+    st.icon_imgIndex = QmlImageProvider::instance()->addImg(LaunchingMonitor::instance->getExeIcon(path));
 
     emit processStarted(pid);
+
+    QTimer::singleShot(60000, this, [=](){  // 数据最多保留 60s
+        QMutexLocker locker(&LaunchingMonitor::instance->m_mutex);
+        LaunchingMonitor::instance->g_procs.erase(pid);
+        QmlImageProvider::instance()->removeImg(st.icon_imgIndex);
+    });
 }
 
 QImage LaunchingMonitor::getExeIcon(std::wstring path)
 {
-    HICON largeIcon = nullptr;
+    // HICON largeIcon = nullptr;
 
-    // 提取第一个大图标
-    ExtractIconExW(
+    // // 提取第一个大图标
+    // ExtractIconExW(
+    //     path.c_str(),
+    //     0,
+    //     &largeIcon,
+    //     nullptr,
+    //     1
+    //     );
+
+    SHFILEINFOW sfi{};
+    SHGetFileInfoW(
         path.c_str(),
         0,
-        &largeIcon,
-        nullptr,
-        1
+        &sfi,
+        sizeof(sfi),
+        SHGFI_SYSICONINDEX
         );
 
-    QImage ico = QImage::fromHICON(largeIcon);
-    DestroyIcon(largeIcon);
+    IImageList* imageList = nullptr;
+    SHGetImageList(
+        SHIL_JUMBO,
+        IID_IImageList,
+        (void**)&imageList
+        );
+
+    HICON hIcon = nullptr;
+    imageList->GetIcon(
+        sfi.iIcon,
+        ILD_NORMAL,
+        &hIcon
+        );
+
+    QImage ico = QImage::fromHICON(hIcon);
+    DestroyIcon(hIcon);
     return ico;
 }
 
@@ -275,13 +316,19 @@ LaunchingHelper::LaunchingHelper(QObject *parent)
     connect(&monitorThread, &QThread::started, monitor, &LaunchingMonitor::process, Qt::QueuedConnection);
 
     connect(this, &LaunchingHelper::processStarted, this, [=](DWORD pid){
-        QString exeName = QString::fromStdWString(monitor->getProcState(pid).imagePath).split("\\").last();
-        emit processStartedWithInfo(exeName, monitor->getProcState(pid).icon, QCursor::pos());
+        auto st = monitor->getProcState(pid);
+        QString exeName = QString::fromStdWString(st.imagePath).split("\\").last();
+        QPoint cursor = QCursor::pos();
+        qsizetype iconId = st.icon_imgIndex;
+        emit processStartedWithInfo(exeName, QString::number(iconId), cursor);
+        qDebug() << "软件启动提示 (进程名称:" << exeName << "图标Id:" << iconId << "光标:" << cursor << ")";
     });
     connect(this, &LaunchingHelper::windowShown, this, [=](DWORD pid){
-        QString exeName = QString::fromStdWString(monitor->getProcState(pid).imagePath).split("\\").last();
         auto st = monitor->getProcState(pid);
-        emit windowShownWithInfo(QString::fromStdWString(st.windowTitle), exeName, st.icon, QCursor::pos());
+        QString exeName = QString::fromStdWString(st.imagePath).split("\\").last();
+        QPoint cursor = QCursor::pos();
+        emit windowShownWithInfo(QString::fromStdWString(st.windowTitle), exeName, QString::number(st.icon_imgIndex), cursor);
+        qDebug() << "软件启动窗口显示 (进程名称:" << exeName << "窗口标题:" << st.windowTitle << "光标:" << cursor << ")";
     });
 
     monitorThread.start();

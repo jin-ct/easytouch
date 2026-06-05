@@ -74,10 +74,10 @@ ApplicationWindow {
         function onLoaded() {
             console.log("LaunchingHelper已加载")
         }
-        function onProcessStartedWithInfo(exeName, exeIcon, cursorPos) {
+        function onProcessStartedWithInfo(exeName, exeIconId, cursorPos) {
             var splashWindow = Qt.createComponent("views/SplashWindow.qml");
             if (splashWindow.status === Component.Ready) {
-                var obj = splashWindow.createObject(null, { exeName: exeName, exeIcon: exeIcon, cursorPos: cursorPos });
+                var obj = splashWindow.createObject(null, { exeName: exeName, exeIconId: exeIconId, cursorPos: cursorPos });
                 obj.destroy(10000)  // 最长显示10s
             }
         }

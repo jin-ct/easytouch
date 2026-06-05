@@ -39,6 +39,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 COMPONENTS Core5Compat REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -89,6 +90,7 @@ qt_add_qml_module(appeasytouch
     RESOURCES qtquickcontrols2.conf
     RESOURCES app.rc.in
     QML_FILES Splash.qml
+    SOURCES functions/qmlimageprovider.h functions/qmlimageprovider.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -112,6 +114,7 @@ target_link_libraries(appeasytouch PRIVATE dwmapi)
 target_link_libraries(appeasytouch PRIVATE Qt6::Widgets)
 target_link_libraries(appeasytouch PRIVATE Qt6::Core)
 target_link_libraries(appeasytouch PRIVATE Qt6::Core)
+target_link_libraries(appeasytouch PUBLIC Qt6::Core5Compat)
 
 include(GNUInstallDirs)
 install(TARGETS appeasytouch

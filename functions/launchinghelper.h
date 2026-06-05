@@ -16,7 +16,7 @@ struct ProcState {
     DWORD parentPid{0};
     bool startedSignaled{false};
     bool windowShownSignaled{false};
-    QImage icon{};
+    qsizetype icon_imgIndex{};
     std::wstring windowTitle{};
 };
 
@@ -58,10 +58,10 @@ private:
     QImage getExeIcon(std::wstring path);
 
     QMutex m_mutex;
-    std::unordered_map<DWORD, ProcState> g_procs;
+    std::unordered_map<DWORD, ProcState> g_procs{};
     HWINEVENTHOOK g_winEventHook{nullptr};
-    std::unordered_map<DWORD, DWORD> known; // pid -> parentPid
-    QTimer* pollingTimer;
+    std::unordered_map<DWORD, DWORD> known{}; // pid -> parentPid
+    QTimer* pollingTimer{};
 };
 
 class LaunchingHelper : public QObject
@@ -75,8 +75,8 @@ signals:
     void loaded();
     void windowShown(DWORD pid);
     void processStarted(DWORD pid);
-    void windowShownWithInfo(QVariant windowTile, QVariant exeName, QVariant exeIcon, QVariant cursorPos);
-    void processStartedWithInfo(QVariant exeName, QVariant exeIcon, QVariant cursorPos);
+    void windowShownWithInfo(QVariant windowTile, QVariant exeName, QVariant exeIconId, QVariant cursorPos);
+    void processStartedWithInfo(QVariant exeName, QVariant exeIconId, QVariant cursorPos);
 
 private:
     QThread monitorThread;
