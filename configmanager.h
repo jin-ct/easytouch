@@ -10,13 +10,15 @@ class ConfigManager : public QObject
     Q_PROPERTY(ConfigFileManager* settings MEMBER settings NOTIFY managerChanged)
     Q_PROPERTY(ConfigFileManager* memory MEMBER memory NOTIFY managerChanged)
     Q_PROPERTY(ConfigFileManager* screenMovement MEMBER screenMovement NOTIFY managerChanged)
+    Q_PROPERTY(ConfigFileManager* launchingHelperCfg MEMBER launchingHelperCfg NOTIFY managerChanged)
 
 public:
     explicit ConfigManager(QObject *parent = nullptr);
 
-    ConfigFileManager* settings;
-    ConfigFileManager* memory;
-    ConfigFileManager* screenMovement;
+    ConfigFileManager* settings{};
+    ConfigFileManager* memory{};
+    ConfigFileManager* screenMovement{};
+    ConfigFileManager* launchingHelperCfg{};
 
     static ConfigManager* instance;  // 自身指针，注册全局单例对象时赋值
 

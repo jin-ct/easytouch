@@ -21,6 +21,7 @@ Window {
 
         function onWindowShownWithInfo(windowTile, exeName, exeIcon, cursorPos) {
             if (exeName === win.exeName) {
+                floatingTips.opacity = 0;
                 main.opacity = 0;
             }
         }
@@ -34,13 +35,49 @@ Window {
         opacity: 0.96
         anchors.centerIn: parent
 
-        Text {
-            text: "易触控提醒: " + exeName + " 正在启动"
-            font.pixelSize: 11
-            color: "#6E6E6E"
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 12
-            anchors.horizontalCenter: parent.horizontalCenter
+        Window {
+            id: floatingTips
+            visible: true
+            height: floatingTipsRow.height
+            width: floatingTipsRow.width
+            color: "transparent"
+            flags: Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.FramelessWindowHint | Qt.Tool
+            x: win.width / 2 - floatingTips.width / 2
+            y: main.y + main.height - (floatingTips.height + 12)
+
+            Row {
+                id: floatingTipsRow
+                anchors.centerIn: parent
+                spacing: 10
+
+                Text {
+                    id: tipText
+                    text: "易触控检测到" + exeName + " 正在启动"
+                    font.pixelSize: 11
+                    color: "#6E6E6E"
+                }
+
+                Text {
+                    text: "不再显示"
+                    color: disableBtn.pressed ? "#337ecc" : "#409EFF"
+                    font.pixelSize: 11
+                    MouseArea {
+                        id: disableBtn
+                        anchors.fill: parent
+                        onClicked: {
+                            Global.launchingHelper.disableHelperForItem(win.exeName)
+                            floatingTips.opacity = 0;
+                            main.opacity = 0;
+                        }
+                    }
+                }
+            }
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 160
+                }
+            }
         }
 
         Column {

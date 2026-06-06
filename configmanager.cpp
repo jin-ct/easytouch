@@ -8,7 +8,7 @@
 
 ConfigManager* ConfigManager::instance = nullptr;
 
-static const int kConfigMgrCount = 3;
+static const int kConfigMgrCount = 4;
 
 ConfigManager::ConfigManager(QObject *parent)
     : QObject{parent}
@@ -41,6 +41,11 @@ ConfigManager::ConfigManager(QObject *parent)
     screenMovement = new ConfigFileManager("data/screenMovement.json", this);
     handleConfigLoad(screenMovement);
     registerConfig("List", QVariantList(), screenMovement);
+
+    // 软件启动提示助手数据保存
+    launchingHelperCfg = new ConfigFileManager("data/launchingHelper.json", this);
+    handleConfigLoad(launchingHelperCfg);
+    registerConfig("Apps", QVariantList(), launchingHelperCfg);
 
     // 兼容旧配置文件
     connect(this, &ConfigManager::allConfigLoaded, this, [=](){

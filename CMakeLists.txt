@@ -39,7 +39,6 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 COMPONENTS Core5Compat REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -114,7 +113,6 @@ target_link_libraries(appeasytouch PRIVATE dwmapi)
 target_link_libraries(appeasytouch PRIVATE Qt6::Widgets)
 target_link_libraries(appeasytouch PRIVATE Qt6::Core)
 target_link_libraries(appeasytouch PRIVATE Qt6::Core)
-target_link_libraries(appeasytouch PUBLIC Qt6::Core5Compat)
 
 include(GNUInstallDirs)
 install(TARGETS appeasytouch

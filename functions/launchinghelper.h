@@ -10,6 +10,8 @@
 #include <QMutex>
 #include <QTimer>
 #include <QImage>
+#include <QMap>
+#include <QElapsedTimer>
 
 struct ProcState {
     std::wstring imagePath{};
@@ -20,6 +22,15 @@ struct ProcState {
     std::wstring windowTitle{};
 };
 
+struct AppInfoItem
+{
+    bool enableHelper{true};
+    QString appName{""};
+    int duration{0};  // 从监测到进程到显示窗口所用时间
+    bool isShowWindow{false};
+    QString exePath;
+};
+
 class LaunchingMonitor : public QObject
 {
     Q_OBJECT
@@ -28,6 +39,7 @@ public:
     void process();
 
     ProcState getProcState(DWORD pid = 0);
+    int getProcsCount();
 
     static void WINAPI WinEventCallback(
         HWINEVENTHOOK /*hWinEventHook*/,
@@ -71,6 +83,8 @@ public:
     explicit LaunchingHelper(QObject *parent = nullptr);
     ~LaunchingHelper();
 
+    Q_INVOKABLE void disableHelperForItem(const QVariant &exeName);
+
 signals:
     void loaded();
     void windowShown(DWORD pid);
@@ -79,8 +93,14 @@ signals:
     void processStartedWithInfo(QVariant exeName, QVariant exeIconId, QVariant cursorPos);
 
 private:
+    void loadAppList();
+    void saveAppList();
+    void addAppItem(const QString &exeName, const AppInfoItem &item);
+
     QThread monitorThread;
     LaunchingMonitor* monitor{nullptr};
+    QMap<QString, AppInfoItem> appList;
+    QElapsedTimer launchingRecordTimer;
 };
 
 #endif // LAUNCHINGHELPER_H

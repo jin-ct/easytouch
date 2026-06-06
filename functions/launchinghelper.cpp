@@ -9,6 +9,7 @@
 #include <commoncontrols.h>
 #include <QCursor>
 #include "qmlimageprovider.h"
+#include "../configmanager.h"
 
 static const int kPollingIntervalMs = 20;
 
@@ -52,6 +53,13 @@ ProcState LaunchingMonitor::getProcState(DWORD pid)
     QMutex mutex;
     QMutexLocker locker(&mutex);
     return g_procs[pid];
+}
+
+int LaunchingMonitor::getProcsCount()
+{
+    QMutex mutex;
+    QMutexLocker locker(&mutex);
+    return g_procs.size();
 }
 
 void WINAPI LaunchingMonitor::WinEventCallback(
@@ -265,17 +273,6 @@ void LaunchingMonitor::SignalProcessStarted(DWORD pid, DWORD parentPid) {
 
 QImage LaunchingMonitor::getExeIcon(std::wstring path)
 {
-    // HICON largeIcon = nullptr;
-
-    // // 提取第一个大图标
-    // ExtractIconExW(
-    //     path.c_str(),
-    //     0,
-    //     &largeIcon,
-    //     nullptr,
-    //     1
-    //     );
-
     SHFILEINFOW sfi{};
     SHGetFileInfoW(
         path.c_str(),
@@ -318,6 +315,22 @@ LaunchingHelper::LaunchingHelper(QObject *parent)
     connect(this, &LaunchingHelper::processStarted, this, [=](DWORD pid){
         auto st = monitor->getProcState(pid);
         QString exeName = QString::fromStdWString(st.imagePath).split("\\").last();
+
+        // 处理软件列表数据
+        if (appList.find(exeName) == appList.end()) {
+            AppInfoItem info;
+            info.exePath = QString::fromStdWString(st.imagePath);
+            addAppItem(exeName, info);
+        }
+        // 判断是否需要显示提示窗口
+        if (!appList[exeName].enableHelper)
+            return;
+        // 当只有一个正在启动的软件时才重置定时器
+        if (monitor->getProcsCount() == 0)
+            launchingRecordTimer.start();
+        // 记录开始时间，后续加上结束时间即为时间间隔
+        appList[exeName].duration = - launchingRecordTimer.elapsed();
+
         QPoint cursor = QCursor::pos();
         qsizetype iconId = st.icon_imgIndex;
         emit processStartedWithInfo(exeName, QString::number(iconId), cursor);
@@ -327,9 +340,23 @@ LaunchingHelper::LaunchingHelper(QObject *parent)
         auto st = monitor->getProcState(pid);
         QString exeName = QString::fromStdWString(st.imagePath).split("\\").last();
         QPoint cursor = QCursor::pos();
-        emit windowShownWithInfo(QString::fromStdWString(st.windowTitle), exeName, QString::number(st.icon_imgIndex), cursor);
+        QString windowTitle = QString::fromStdWString(st.windowTitle);
+
+        // 处理软件列表数据
+        AppInfoItem info = appList[exeName];
+        info.isShowWindow = true;
+        info.duration += launchingRecordTimer.elapsed();
+        // 如果窗口标题在 5 个字符以内就认为这是软件名称
+        if (windowTitle.length() <= 5)
+            info.appName = windowTitle;
+        addAppItem(exeName, info);
+
+        emit windowShownWithInfo(windowTitle, exeName, QString::number(st.icon_imgIndex), cursor);
         qDebug() << "软件启动窗口显示 (进程名称:" << exeName << "窗口标题:" << st.windowTitle << "光标:" << cursor << ")";
     });
+
+    // 加载软件信息列表
+    loadAppList();
 
     monitorThread.start();
     emit loaded();
@@ -344,4 +371,58 @@ LaunchingHelper::~LaunchingHelper()
         monitor = nullptr;
     }
     qDebug() << "LaunchingMonitor线程已退出";
+}
+
+void LaunchingHelper::disableHelperForItem(const QVariant &exeName)
+{
+    appList[exeName.toString()].enableHelper = false;
+    saveAppList();
+}
+
+void LaunchingHelper::loadAppList()
+{
+    ConfigFileManager* cfg = ConfigManager::instance->launchingHelperCfg;
+    if (!cfg->readReady)
+        return;
+
+    QVariantList list = cfg->get("Apps").toList();
+    if (list.empty())
+        return;
+
+    for (auto it = list.begin(); it != list.end() ; it++) {
+        QVariantMap data = it->toMap();
+        AppInfoItem item;
+        item.enableHelper = data["enableHelper"].toBool();
+        item.appName = data["appName"].toString();
+        item.duration = data["duration"].toInt();
+        item.isShowWindow = data["isShowWindow"].toBool();
+        item.exePath = data["exePath"].toString();
+        appList[data["exeName"].toString()] = item;
+    }
+}
+
+void LaunchingHelper::saveAppList()
+{
+    if (appList.empty())
+        return;
+
+    ConfigFileManager* cfg = ConfigManager::instance->launchingHelperCfg;
+    cfg->clearList("Apps");
+    for (auto it = appList.begin(); it != appList.end() ; it++) {
+        QVariantMap item;
+        item["exeName"] = it.key();
+        item["enableHelper"] = it.value().enableHelper;
+        item["appName"] = it.value().appName;
+        item["duration"] = it.value().duration;
+        item["isShowWindow"] = it.value().isShowWindow;
+        item["exePath"] = it.value().exePath;
+        cfg->add("Apps", item, false);
+    }
+    ConfigManager::instance->launchingHelperCfg->writeConfigFile();
+}
+
+void LaunchingHelper::addAppItem(const QString &exeName, const AppInfoItem &item)
+{
+    appList[exeName] = item;
+    saveAppList();
 }
