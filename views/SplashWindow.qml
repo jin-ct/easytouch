@@ -52,7 +52,7 @@ Window {
 
                 Text {
                     id: tipText
-                    text: "易触控检测到" + exeName + " 正在启动"
+                    text: "易触控检测到 " + exeName + " 正在启动"
                     font.pixelSize: 11
                     color: "#6E6E6E"
                 }
