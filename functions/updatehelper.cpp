@@ -113,14 +113,14 @@ void UpdateHelper::onReleasesListReceived()
     if (!currentReply) {
         emit updateError("网络请求失败");
         emit networkError();
-        emit updateCheckFinished(false);
+        emit updateCheckFinished(false, false);
         return;
     }
 
     if (currentReply->error() != QNetworkReply::NoError) {
         emit updateError(QString("网络错误: %1").arg(currentReply->errorString()));
         emit networkError();
-        emit updateCheckFinished(false);
+        emit updateCheckFinished(false, false);
         currentReply->deleteLater();
         currentReply = nullptr;
         return;
@@ -135,7 +135,7 @@ void UpdateHelper::onReleasesListReceived()
 
     if (error.error != QJsonParseError::NoError) {
         emit updateError(QString("解析JSON失败: %1").arg(error.errorString()));
-        emit updateCheckFinished(false);
+        emit updateCheckFinished(false, false);
         return;
     }
 
@@ -146,7 +146,7 @@ void UpdateHelper::onReleasesListReceived()
             msg = QStringLiteral("接口返回格式异常（期望 Release 数组）");
         }
         emit updateError(msg);
-        emit updateCheckFinished(false);
+        emit updateCheckFinished(false, false);
         return;
     }
 
@@ -249,14 +249,14 @@ void UpdateHelper::finalizeReleasesAndCompare()
 
     if (bestSemver.isEmpty()) {
         emit updateError(QStringLiteral("未找到符合当前更新通道（%1）的发行版").arg(channel));
-        emit updateCheckFinished(false);
+        emit updateCheckFinished(false, false);
         return;
     }
 
     const QString downloadUrlFound = findWin64AssetUrl(bestRelease);
     if (downloadUrlFound.isEmpty()) {
         emit updateError(QStringLiteral("未找到以 win-64.zip 结尾的安装包"));
-        emit updateCheckFinished(false);
+        emit updateCheckFinished(false, false);
         return;
     }
 

@@ -28,9 +28,16 @@ Window {
 
     Connections {
         target: Global.updateHelper
-        function onUpdateCheckFinished() {
+        function onUpdateCheckFinished(hasUpdate, success) {
             updateBtn.button.enabled = true
             updateBtn.text = "检查更新"
+            if (success)
+                updateBtn.description = hasUpdate
+                                        ? "有新版本 (" + Global.updateHelper.latestVersion + "), 现在开始更新"
+                                        : "当前版本已为最新"
+        }
+        function onUpdateError(err) {
+            updateBtn.description = "检查失败：" + err
         }
     }
 
@@ -192,7 +199,7 @@ Window {
                         id: updateBtn
                         title: "检查更新"
                         description: Global.updateHelper.latestVersion === ""
-                                     ? "未检查更新，或检查失败"
+                                     ? "未检查更新"
                                      : (Global.updateHelper.hasUpdate
                                         ? "有新版本 (" + Global.updateHelper.latestVersion + "), 现在开始更新"
                                         : "当前版本已为最新")

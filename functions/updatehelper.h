@@ -25,7 +25,7 @@ public:
 
 signals:
     void updateAvailable(const QString &version, const QString &downloadUrl);
-    void updateCheckFinished(bool hasUpdate);
+    void updateCheckFinished(bool hasUpdate, bool success = true);
     void updateProgress(qint64 bytesReceived, qint64 bytesTotal);
     void updateError(const QString &error);
     void networkError();
