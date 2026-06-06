@@ -90,7 +90,7 @@ signals:
     void windowShown(DWORD pid);
     void processStarted(DWORD pid);
     void windowShownWithInfo(QVariant windowTile, QVariant exeName, QVariant exeIconId, QVariant cursorPos);
-    void processStartedWithInfo(QVariant exeName, QVariant exeIconId, QVariant cursorPos);
+    void processStartedWithInfo(QVariant exeName, QVariant exeIconId, QVariant cursorPos, int duration = 0);
 
 private:
     void loadAppList();

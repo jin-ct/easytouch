@@ -13,6 +13,7 @@
 class MouseHook : public QThread
 {
     Q_OBJECT
+    Q_PROPERTY(bool hasMouseEvent MEMBER hasMouseEvent NOTIFY mousePressed)
 public:
     MouseHook();
     static MouseHook* instance();

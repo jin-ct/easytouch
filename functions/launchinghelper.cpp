@@ -322,6 +322,7 @@ LaunchingHelper::LaunchingHelper(QObject *parent)
             info.exePath = QString::fromStdWString(st.imagePath);
             addAppItem(exeName, info);
         }
+        int perDuration = appList[exeName].duration;
         // 判断是否需要显示提示窗口
         if (!appList[exeName].enableHelper)
             return;
@@ -333,7 +334,7 @@ LaunchingHelper::LaunchingHelper(QObject *parent)
 
         QPoint cursor = QCursor::pos();
         qsizetype iconId = st.icon_imgIndex;
-        emit processStartedWithInfo(exeName, QString::number(iconId), cursor);
+        emit processStartedWithInfo(exeName, QString::number(iconId), cursor, perDuration);
         qDebug() << "软件启动提示 (进程名称:" << exeName << "图标Id:" << iconId << "光标:" << cursor << ")";
     });
     connect(this, &LaunchingHelper::windowShown, this, [=](DWORD pid){

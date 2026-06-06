@@ -13,6 +13,7 @@ Window {
 
     property string exeName: ""
     property string exeIconId: ""
+    property int duration: 0
     property point cursorPos: Qt.point(Screen.width/2, Screen.height/2)
 
     Connections {
@@ -82,7 +83,7 @@ Window {
 
         Column {
             anchors.centerIn: parent
-            spacing: 36
+            spacing: 12
 
             Image {
                 cache: false
@@ -91,6 +92,18 @@ Window {
                 mipmap:true
                 width: 60
                 height: 60
+            }
+
+            Rectangle {   // 空白占位
+                height: 1
+                width: 1
+            }
+
+            Text {
+                text: "正在启动"
+                font.pixelSize: 14
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "#363636"
             }
 
             Rectangle {
@@ -156,6 +169,14 @@ Window {
                         easing.type: Easing.InOutQuad
                     }
                 }
+            }
+
+            Text {
+                text: "该软件启动较慢，请耐心等待"
+                visible: Global.mouseHook.hasMouseEvent && win.duration > 6000  // 大于 6s 认为启动较慢 (若未记录启动时间则 duration <= 0, 不影响判断)
+                font.pixelSize: 13
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "#FF7F27"
             }
         }
 
