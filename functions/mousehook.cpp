@@ -3,7 +3,7 @@
 #include <QCursor>
 #include <QMutexLocker>
 
-static const int kHasMouseEventKeepDuration = 150;
+static const int kHasMouseEventKeepDuration = 250;
 
 Q_GLOBAL_STATIC(MouseHook, mouseHookInstance)
 
@@ -12,6 +12,10 @@ HHOOK MouseHook::g_mouseHook = nullptr;
 MouseHook::MouseHook()
 {
     qDebug() << "MouseHook线程启动";
+    // 恢复 hasMouseEvent 变量
+    connect(&recordTimer, &QTimer::timeout, this, [this](){
+        hasMouseEvent = false;
+    });
 }
 
 MouseHook *MouseHook::instance()
@@ -126,7 +130,5 @@ bool MouseHook::isRectContains(const QRect &rect, const QPoint &point)
 void MouseHook::setHasMouseEvent()
 {
     hasMouseEvent = true;
-    QTimer::singleShot(kHasMouseEventKeepDuration, this, [this](){
-        hasMouseEvent = false;
-    });
+    recordTimer.start(kHasMouseEventKeepDuration);
 }

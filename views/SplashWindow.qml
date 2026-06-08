@@ -14,7 +14,8 @@ Window {
     property string exeName: ""
     property string exeIconId: ""
     property int duration: 0
-    property point cursorPos: Qt.point(Screen.width/2, Screen.height/2)
+    property point cursorPos: Qt.point(0, 0)
+    property point cursorPosDefault: Qt.point(Screen.width/2, Screen.height*3/4)
 
     Connections {
         enabled: Global.launchingHelper
@@ -28,17 +29,30 @@ Window {
         }
     }
 
+    Component.onCompleted: {
+        // 若未检测到鼠标事件则将弹出点调至默认点
+        if (!Global.mouseHook.hasMouseEvent) {
+            main.x = (cursorPosDefault.x - main.width/2)
+            main.y = (cursorPosDefault.x - main.width/2)
+        }
+        mainAnimationScale.start()
+        mainAnimationX.start()
+        mainAnimationY.start()
+    }
+
     Rectangle {
         id: main
         width: 480
         height: 320
         radius: 10
         opacity: 0.96
-        anchors.centerIn: parent
+        scale: 0.0
+        x: (cursorPos.x - main.width/2)
+        y: (cursorPos.y - main.height/2)
 
         Window {
             id: floatingTips
-            visible: true
+            visible: false
             height: floatingTipsRow.height
             width: floatingTipsRow.width
             color: "transparent"
@@ -173,7 +187,7 @@ Window {
 
             Text {
                 text: "该软件启动较慢，请耐心等待"
-                visible: Global.mouseHook.hasMouseEvent && win.duration > 6000  // 大于 6s 认为启动较慢 (若未记录启动时间则 duration <= 0, 不影响判断)
+                visible:  win.duration > 6000  // 大于 6s 认为启动较慢 (若未记录启动时间则 duration <= 0, 不影响判断)
                 font.pixelSize: 13
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: "#FF7F27"
@@ -190,5 +204,33 @@ Window {
             }
         }
 
+        PropertyAnimation {
+            id: mainAnimationScale
+            target: main
+            property: "scale"
+            from: 0.0
+            to: 1.0
+            duration: 260
+            easing.type: Easing.InOutQuad
+            onFinished: {
+                floatingTips.visible = true
+            }
+        }
+        PropertyAnimation {
+            id: mainAnimationX
+            target: main
+            property: "x"
+            to: (Screen.width - main.width)/2
+            duration: 260
+            easing.type: Easing.InOutQuad
+        }
+        PropertyAnimation {
+            id: mainAnimationY
+            target: main
+            property: "y"
+            to: (Screen.height - main.height)/2
+            duration: 260
+            easing.type: Easing.InOutQuad
+        }
     }
 }

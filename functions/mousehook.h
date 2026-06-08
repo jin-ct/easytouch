@@ -48,6 +48,7 @@ private:
     static HHOOK g_mouseHook;
     QMutex mutex;
     QMap<QString, QRect> ignoreAreas;
+    QTimer recordTimer;
 };
 
 #endif // MOUSEHOOK_H
