@@ -107,70 +107,75 @@ Item {
             interactive: true
 
             header: Rectangle { height: 36 }
-            delegate: Rectangle {
-                id: btn
-                width: 42
+            delegate: Item {
                 height: 38
-                radius: 6
-                x: (listView.width - width) / 2
+                width: listView.width
 
-                color: (model.checked && model.checkable) ? "#4f8cff" : "#ffffff"
-                border.color: (model.checked && model.checkable) ? "#2f6fe0" : "#cfcfcf"
-                border.width: 1
+                Rectangle {
+                    id: btn
+                    width: 42
+                    height: 38
+                    radius: 6
+                    anchors.horizontalCenter: parent.horizontalCenter
 
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 3
+                    color: (model.checked && model.checkable) ? "#4f8cff" : "#ffffff"
+                    border.color: (model.checked && model.checkable) ? "#2f6fe0" : "#cfcfcf"
+                    border.width: 1
 
-                    Image {
-                        width: 16; height: 16;
-                        source: model.icon
-                        mipmap:true
-                        anchors.horizontalCenter: parent.horizontalCenter
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: 3
 
-                        MultiEffect {
-                            visible: model.checkable
-                            anchors.fill: parent
-                            source: parent
-                            colorization: 1.0
-                            colorizationColor: (model.checked && model.checkable) ? "#ffffff" : "#525252"
+                        Image {
+                            width: 16; height: 16;
+                            source: model.icon
+                            mipmap:true
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            MultiEffect {
+                                visible: model.checkable
+                                anchors.fill: parent
+                                source: parent
+                                colorization: 1.0
+                                colorizationColor: (model.checked && model.checkable) ? "#ffffff" : "#525252"
+                            }
+                        }
+
+                        Text {
+                            text: model.text
+                            font.pixelSize: 8
+                            wrapMode: Text.NoWrap
+                            color: (model.checked && model.checkable) ? "#ffffff" : "#2f2f2f"
+                            horizontalAlignment: Text.AlignHCenter
                         }
                     }
 
-                    Text {
-                        text: model.text
-                        font.pixelSize: 8
-                        wrapMode: Text.NoWrap
-                        color: (model.checked && model.checkable) ? "#ffffff" : "#2f2f2f"
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    onPressedChanged: {
-                        btn.scale = pressed ? 0.94 : 1.0
-                        if (pressed) {
-                            isLongPressing = true
-                            longPressingBtnIndex = index
-                            longPressingBtnPoint =
-                                    {x: parent.mapToGlobal(0, 0).x + parent.width/2, y: parent.mapToGlobal(0, 0).y + parent.height/2}
-                            longPressTimer.start()
-                        } else {
-                            isLongPressing = false
+                    MouseArea {
+                        anchors.fill: parent
+                        onPressedChanged: {
+                            btn.scale = pressed ? 0.94 : 1.0
+                            if (pressed) {
+                                isLongPressing = true
+                                longPressingBtnIndex = index
+                                longPressingBtnPoint =
+                                        {x: parent.mapToGlobal(0, 0).x + parent.width/2, y: parent.mapToGlobal(0, 0).y + parent.height/2}
+                                longPressTimer.start()
+                            } else {
+                                isLongPressing = false
+                            }
+                        }
+                        onClicked: {
+                            if (isLongPressed) {
+                                isLongPressed = false;
+                                return
+                            }
+                            root.handleButtonTap(index, parent.mapToGlobal(0, 0).x + parent.width/2, parent.mapToGlobal(0, 0).y + parent.height/2)
                         }
                     }
-                    onClicked: {
-                        if (isLongPressed) {
-                            isLongPressed = false;
-                            return
-                        }
-                        root.handleButtonTap(index, parent.mapToGlobal(0, 0).x + parent.width/2, parent.mapToGlobal(0, 0).y + parent.height/2)
-                    }
-                }
 
-                Behavior on scale {
-                    NumberAnimation { duration: 88 }
+                    Behavior on scale {
+                        NumberAnimation { duration: 88 }
+                    }
                 }
             }
             footer: Rectangle { height: 16 }

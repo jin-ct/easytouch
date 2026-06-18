@@ -73,7 +73,7 @@ Window {
                 }
 
                 Text {
-                    text: "不再显示"
+                    text: "忽略此进程"
                     color: disableBtn.pressed ? "#337ecc" : "#409EFF"
                     font.pixelSize: 11
                     MouseArea {
