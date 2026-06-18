@@ -166,7 +166,7 @@ jobs:
           -B build ^
           -G "MinGW Makefiles" ^
           -DCMAKE_BUILD_TYPE=Release ^
-          -CMAKE_INSTALL_BINDIR=. ^
+          -DCMAKE_INSTALL_BINDIR=. ^
           -DCMAKE_PREFIX_PATH=C:\QtStatic ^
           -DCMAKE_C_COMPILER_LAUNCHER=sccache ^
           -DCMAKE_CXX_COMPILER_LAUNCHER=sccache

@@ -11,6 +11,10 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+if(NOT GIT_TAG)
+    set(GIT_TAG "1.0.0")
+endif()
+
 string(REGEX REPLACE "^v" "" GIT_TAG ${GIT_TAG})
 
 string(REPLACE "." ";" VERSION_LIST ${GIT_TAG})
