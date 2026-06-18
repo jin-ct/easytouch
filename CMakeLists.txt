@@ -118,6 +118,12 @@ target_link_libraries(appeasytouch PRIVATE Qt6::Widgets)
 target_link_libraries(appeasytouch PRIVATE Qt6::Core)
 target_link_libraries(appeasytouch PRIVATE Qt6::Core)
 
+if(CMAKE_INSTALL_BINDIR STREQUAL ".")
+    set(_INSTALL_DEST "")
+else()
+    set(_INSTALL_DEST ${CMAKE_INSTALL_BINDIR})
+endif()
+
 include(GNUInstallDirs)
 install(TARGETS appeasytouch
     BUNDLE DESTINATION .

@@ -209,10 +209,12 @@ jobs:
           exit 1
         } `
 
-        $targetPath = Join-Path $env:GITHUB_WORKSPACE "easytouch.exe"
-        Move-Item $exe.FullName $targetPath
-    
-        echo "exe=$targetPath" >> $env:GITHUB_OUTPUT
+        $directory = $exe.DirectoryName
+        $newPath = Join-Path $directory "easytouch.exe"
+        
+        Rename-Item -Path $exe.FullName -NewName "easytouch.exe"
+        
+        echo "exe=$newPath" >> $env:GITHUB_OUTPUT
 
     ####################################################################
     # UPX
