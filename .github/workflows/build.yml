@@ -204,13 +204,13 @@ jobs:
           Where-Object { $_.Name -notlike "*Setup*" } |
           Select-Object -First 1
 
-        if (-not $exe) { `
-          Write-Error "No EXE file found" `
-          exit 1 `
+        if (-not $exe) {
+          Write-Error "No EXE file found"
+          exit 1
         } `
 
-        $targetPath = Join-Path $env:GITHUB_WORKSPACE "easytouch.exe" `
-        Move-Item $exe.FullName $targetPath `
+        $targetPath = Join-Path $env:GITHUB_WORKSPACE "easytouch.exe"
+        Move-Item $exe.FullName $targetPath
     
         echo "exe=$targetPath" >> $env:GITHUB_OUTPUT
 
