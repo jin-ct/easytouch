@@ -1,0 +1,294 @@
+name: Build EasyTouch
+
+on:
+  push:
+    branches:
+    - main
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+env:
+  QT_URL: https://github.com/yuanpeirong/buildQt/releases/download/Qt6.8.3_rev0/Qt_6.8.3-static-Release_mingw1310_64.7z
+  MINGW_URL: https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/tools_mingw1310/qt.tools.win64_mingw1310/13.1.0-202407240918mingw1310.7z
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+
+    ####################################################################
+    # Checkout
+    ####################################################################
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    ####################################################################
+    # Version
+    ####################################################################
+
+    - name: Set Version
+      shell: powershell
+      run: |
+        if ("${{ github.ref_type }}" -eq "tag") {
+          echo "APP_VERSION=${{ github.ref_name }}" >> $env:GITHUB_ENV
+        }
+        else {
+          echo "APP_VERSION=dev-${{ github.run_number }}" >> $env:GITHUB_ENV
+        }
+
+    ####################################################################
+    # 7-Zip
+    ####################################################################
+
+    - name: Install 7-Zip
+      shell: powershell
+      run: |
+        choco install 7zip -y
+
+    ####################################################################
+    # Cache Qt
+    ####################################################################
+
+    - name: Cache Qt
+      id: cache-qt
+      uses: actions/cache@v4
+      with:
+        path: C:\QtStatic
+        key: qt-6.8.3-static-mingw1310-v1
+
+    - name: Download Qt
+      if: steps.cache-qt.outputs.cache-hit != 'true'
+      shell: powershell
+      run: |
+        Invoke-WebRequest `
+          -Uri "${env:QT_URL}" `
+          -OutFile qt.7z
+
+        New-Item `
+          -ItemType Directory `
+          -Force `
+          -Path C:\QtStatic
+
+        7z x qt.7z -oC:\QtStatic
+
+    ####################################################################
+    # Cache MinGW
+    ####################################################################
+
+    - name: Cache MinGW
+      id: cache-mingw
+      uses: actions/cache@v4
+      with:
+        path: C:\mingw1310
+        key: mingw1310-13.1.0-v1
+
+    - name: Download MinGW
+      if: steps.cache-mingw.outputs.cache-hit != 'true'
+      shell: powershell
+      run: |
+        Invoke-WebRequest `
+          -Uri "${env:MINGW_URL}" `
+          -OutFile mingw.7z
+
+        New-Item `
+          -ItemType Directory `
+          -Force `
+          -Path C:\mingw1310
+
+        7z x mingw.7z -oC:\mingw1310
+
+    ####################################################################
+    # Setup Qt / MinGW PATH
+    ####################################################################
+
+    - name: Setup Environment
+      shell: powershell
+      run: |
+        $qmake = Get-ChildItem `
+          C:\QtStatic\6.8.3-static\mingw1310_64 `
+          -Recurse `
+          -Filter qmake.exe |
+          Select-Object -First 1
+
+        $mingw = Get-ChildItem `
+          C:\mingw1310\Tools\mingw1310_64 `
+          -Recurse `
+          -Filter g++.exe |
+          Select-Object -First 1
+
+        $qtBin = $qmake.Directory.FullName
+        $mingwBin = $mingw.Directory.FullName
+
+        echo $qtBin >> $env:GITHUB_PATH
+        echo $mingwBin >> $env:GITHUB_PATH
+
+        echo "Qt Bin: $qtBin"
+        echo "MinGW Bin: $mingwBin"
+
+    ####################################################################
+    # Verify
+    ####################################################################
+
+    - name: Verify Toolchain
+      shell: cmd
+      run: |
+        qmake -v
+        g++ --version
+
+    ####################################################################
+    # SCCACHE
+    ####################################################################
+
+    - name: Setup sccache
+      uses: mozilla-actions/sccache-action@v0.0.7
+
+    - name: Cache sccache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/sccache
+        key: sccache-${{ runner.os }}-${{ github.ref_name }}
+        restore-keys: |
+          sccache-${{ runner.os }}-
+
+    ####################################################################
+    # Configure
+    ####################################################################
+
+    - name: Configure
+      shell: cmd
+      run: |
+        cmake ^
+          -B build ^
+          -G "MinGW Makefiles" ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -CMAKE_INSTALL_BINDIR=. ^
+          -DCMAKE_PREFIX_PATH=C:\QtStatic ^
+          -DCMAKE_C_COMPILER_LAUNCHER=sccache ^
+          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+
+    ####################################################################
+    # Build
+    ####################################################################
+
+    - name: Build
+      shell: cmd
+      run: |
+        cmake --build build --parallel
+
+    ####################################################################
+    # Install
+    ####################################################################
+
+    - name: Install
+      shell: cmd
+      run: |
+        cmake --install build --prefix package
+
+    ####################################################################
+    # Locate EXE
+    ####################################################################
+
+    - name: Find EXE
+      id: exe
+      shell: powershell
+      run: |
+        $exe = Get-ChildItem `
+          package `
+          -Recurse `
+          -Filter *.exe |
+          Where-Object { $_.Name -notlike "*Setup*" } |
+          Select-Object -First 1
+
+        if (-not $exe) { `
+          Write-Error "No EXE file found" `
+          exit 1 `
+        } `
+
+        $targetPath = Join-Path $env:GITHUB_WORKSPACE "easytouch.exe" `
+        Move-Item $exe.FullName $targetPath `
+    
+        echo "exe=$targetPath" >> $env:GITHUB_OUTPUT
+
+    ####################################################################
+    # UPX
+    ####################################################################
+
+    - name: Install UPX
+      uses: crazy-max/ghaction-upx@v3
+      with:
+        version: latest
+
+    - name: Compress EXE
+      shell: cmd
+      run: |
+        upx --best --lzma "${{ steps.exe.outputs.exe }}"
+
+    ####################################################################
+    # Inno Setup
+    ####################################################################
+
+    - name: Build Installer
+      uses: Minionguyjpro/Inno-Setup-Action@v1.2.5
+      env:
+        APP_VERSION: ${{ env.APP_VERSION }}
+      with:
+        path: installer/easytouch.iss
+
+    ####################################################################
+    # ZIP Portable
+    ####################################################################
+
+    - name: Create Portable ZIP
+      if: startsWith(github.ref, 'refs/tags/')
+      shell: powershell
+      run: |
+        Compress-Archive `
+          -Path package\* `
+          -DestinationPath easytouch-${{ github.ref_name }}-win-64.zip
+
+    ####################################################################
+    # Rename Installer
+    ####################################################################
+
+    - name: Rename Installer
+      if: startsWith(github.ref, 'refs/tags/')
+      shell: powershell
+      run: |
+        $installer = Get-ChildItem `
+          Output `
+          -Filter *.exe |
+          Select-Object -First 1
+
+        Rename-Item `
+          $installer.FullName `
+          "easytouch-${{ github.ref_name }}-win-64-setup.exe"
+
+    ####################################################################
+    # Upload Artifacts
+    ####################################################################
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: easytouch-build
+        path: |
+          package/**
+          Output/**
+
+    ####################################################################
+    # Draft Release
+    ####################################################################
+
+    - name: Create Draft Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v2
+      with:
+        draft: true
+        files: |
+          easytouch-${{ github.ref_name }}-win-64.zip
+          easytouch-${{ github.ref_name }}-win-64-setup.exe
