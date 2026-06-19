@@ -1,4 +1,4 @@
-name: Build EasyTouch
+name: Build EasyTouch (Windows)
 
 on:
   push:
@@ -42,7 +42,7 @@ jobs:
         }
         else {
           $tags = git tag --list
-          
+
           $versions = $tags | ForEach-Object {
             $_ -replace '^v', '' -replace '-.*$', ''
           } | Where-Object { $_ -match '^\d+(\.\d+)*$' }
@@ -79,6 +79,7 @@ jobs:
       with:
         path: C:\QtStatic
         key: qt-6.8.3-static-mingw1310-v1
+        save-always: true
 
     - name: Download Qt
       if: steps.cache-qt.outputs.cache-hit != 'true'
@@ -105,6 +106,7 @@ jobs:
       with:
         path: C:\mingw1310
         key: mingw1310-13.1.0-v1
+        save-always: true
 
     - name: Download MinGW
       if: steps.cache-mingw.outputs.cache-hit != 'true'
