@@ -42,13 +42,19 @@ jobs:
         }
         else {
           $tags = git tag --list
-          $latestTag = $tags | ForEach-Object {
-            $_ -replace '^v', '' -replace '-.*$', ''
-          } | Sort-Object { [version]$_ } | Select-Object -Last 1
           
-          if ([string]::IsNullOrEmpty($latestTag)) {
-            $latestTag = "0.0.0"
+          $versions = $tags | ForEach-Object {
+            $_ -replace '^v', '' -replace '-.*$', ''
+          } | Where-Object { $_ -match '^\d+(\.\d+)*$' }
+          
+          $sortedVersions = $versions | Sort-Object {
+            $parts = $_.Split('.')
+            for ($i = 0; $i -lt $parts.Length; $i++) {
+              [int]$parts[$i]
+            }
           }
+          
+          $latestTag = $sortedVersions | Select-Object -Last 1
           
           echo "APP_VERSION=$latestTag" >> $env:GITHUB_ENV
           echo "APP_VERSION_TYPE=dev" >> $env:GITHUB_ENV
@@ -294,7 +300,7 @@ jobs:
         name: easytouch-build
         path: |
           package/**
-          Output/**
+          installer/Output/**
 
     ####################################################################
     # Draft Release

@@ -23,7 +23,7 @@ PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=commandline
 OutputDir=Output
 OutputBaseFilename=EasyTouchSetup
-SetupIconFile=../icon/ico.ico
+SetupIconFile=../icon/icon.ico
 SolidCompression=yes
 WizardStyle=modern
 
