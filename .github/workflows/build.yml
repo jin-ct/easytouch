@@ -41,22 +41,13 @@ jobs:
           echo "APP_VERSION_TYPE=release" >> $env:GITHUB_ENV
         }
         else {
-          $tags = git tag --list
+          $tag = git describe --tags --abbrev=0
+          echo "tag: $tag"
 
-          $versions = $tags | ForEach-Object {
-            $_ -replace '^v', '' -replace '-.*$', ''
-          } | Where-Object { $_ -match '^\d+(\.\d+)*$' }
+          $version = $tag -replace '^v', '' -replace '-.*$', ''
+          echo "Cleaned version: $version"
           
-          $sortedVersions = $versions | Sort-Object {
-            $parts = $_.Split('.')
-            for ($i = 0; $i -lt $parts.Length; $i++) {
-              [int]$parts[$i]
-            }
-          }
-          
-          $latestTag = $sortedVersions | Select-Object -Last 1
-          
-          echo "APP_VERSION=$latestTag" >> $env:GITHUB_ENV
+          echo "APP_VERSION=$version" >> $env:GITHUB_ENV
           echo "APP_VERSION_TYPE=dev" >> $env:GITHUB_ENV
         }
 
