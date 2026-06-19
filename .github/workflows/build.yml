@@ -35,10 +35,23 @@ jobs:
       shell: powershell
       run: |
         if ("${{ github.ref_type }}" -eq "tag") {
-          echo "APP_VERSION=${{ github.ref_name }}" >> $env:GITHUB_ENV
+          $tag = "${{ github.ref_name }}"
+          $version = $tag -replace '^v', '' -replace '-.*$', ''
+          echo "APP_VERSION=$version" >> $env:GITHUB_ENV
+          echo "APP_VERSION_TYPE=release" >> $env:GITHUB_ENV
         }
         else {
-          echo "APP_VERSION=dev-${{ github.run_number }}" >> $env:GITHUB_ENV
+          $tags = git tag --list
+          $latestTag = $tags | ForEach-Object {
+            $_ -replace '^v', '' -replace '-.*$', ''
+          } | Sort-Object { [version]$_ } | Select-Object -Last 1
+          
+          if ([string]::IsNullOrEmpty($latestTag)) {
+            $latestTag = "0.0.0"
+          }
+          
+          echo "APP_VERSION=$latestTag" >> $env:GITHUB_ENV
+          echo "APP_VERSION_TYPE=dev" >> $env:GITHUB_ENV
         }
 
     ####################################################################
@@ -238,6 +251,7 @@ jobs:
       uses: Minionguyjpro/Inno-Setup-Action@v1.2.5
       env:
         APP_VERSION: ${{ env.APP_VERSION }}
+        APP_VERSION_TYPE: ${{ env.APP_VERSION_TYPE }}
       with:
         path: installer/easytouch.iss
 
@@ -275,7 +289,7 @@ jobs:
     ####################################################################
 
     - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: easytouch-build
         path: |
