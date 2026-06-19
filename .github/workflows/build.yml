@@ -225,6 +225,22 @@ jobs:
       with:
         version: latest
 
+    - name: Add UPX to PATH
+      shell: powershell
+      run: |
+        $upxPath = Get-ChildItem `
+          "C:\hostedtoolcache\windows\upx" `
+          -Recurse `
+          -Filter upx.exe |
+          Select-Object -First 1
+        
+        if ($upxPath) {
+          echo $upxPath.DirectoryName >> $env:GITHUB_PATH
+        } else {
+          Write-Error "UPX not found in expected location"
+          exit 1
+        }
+
     - name: Compress EXE
       shell: cmd
       run: |
