@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/github/license/jin-ct/easytouch" alt="GitHub License" />
   <img src="https://img.shields.io/github/stars/jin-ct/easytouch" alt="GitHub Repo stars" />
   <img src="https://img.shields.io/github/languages/top/jin-ct/easytouch" alt="GitHub top language" />
-  <a href="https://qm.qq.com/q/S66OzuSjM6"><img src="https://img.shields.io/badge/-935986554-white?logo=qq&label=QQ交流群" alt="QQ交流群" /></a>
+  <a href="https://qm.qq.com/q/S66OzuSjM6"><img src="https://img.shields.io/badge/-935986554-white?logo=qq&label=QQ%e4%ba%a4%e6%b5%81%e7%be%a4" alt="QQ交流群" /></a>
 </p>
 
 ![Banner](docs/img/banner.png)
@@ -58,10 +58,10 @@
 
 ## 贡献与反馈
 
-如果您有意向对易触控做出贡献，欢迎提交[Pull Requests](https://github.com/jin-ct/easytouch/pulls)，
-也欢迎通过[Issues](https://github.com/jin-ct/easytouch/issues)提交 Bug 报告或功能请求。
+如果您有意向对易触控做出贡献，欢迎提交[拉取请求](https://github.com/jin-ct/easytouch/pulls)，
+也欢迎通过[议题](https://github.com/jin-ct/easytouch/issues)提交 Bug 报告或功能请求。
 
-由于我的开发时间有效，但有经常有一些不错的想法，如果您想为项目贡献一些新特性的代码但暂时没有想法时，欢迎到[QQ交流群](https://qm.qq.com/q/S66OzuSjM6)中与我交流。
+由于我的开发时间有限，但有经常有一些不错的想法，如果您想为项目贡献一些新特性的代码但暂时没有想法时，欢迎到[QQ交流群](https://qm.qq.com/q/S66OzuSjM6)中与我交流。
 
 #### 下面是构建项目和开发时的注意事项：
   - 构建项目的Qt版本不低于Qt6, 推荐开发时使用Qt6.8.3
