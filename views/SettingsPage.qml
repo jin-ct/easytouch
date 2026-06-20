@@ -353,8 +353,8 @@ Window {
 
                     SettingsSwitchCard {
                         id: windowFocusHelperSwich
-                        title: "窗口焦点助手"
-                        description: "保障新窗口获取焦点，防止触控下多次点击导致新窗口焦点被抢占"
+                        title: "窗口焦点助手 (Bug较多)"
+                        description: "保障新窗口获取焦点 (若遇到可能是由Alt键未释放引起的触控失灵问题请关闭该功能)"
                         checked: Config.settings.data.WindowFocusHelper.Enable
                         switchControl.onCheckedChanged: {
                             if (checked !== Config.settings.data.WindowFocusHelper.Enable)

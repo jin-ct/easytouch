@@ -26,7 +26,7 @@ ConfigManager::ConfigManager(QObject *parent)
     registerConfig("ToolBar.StayTopEnhanced", true, settings);
     registerConfig("USBDriveHelper.Enable", true, settings);
     registerConfig("WeChatTouchHelper.Enable", true, settings);
-    registerConfig("WindowFocusHelper.Enable", true, settings);
+    registerConfig("WindowFocusHelper.Enable", false, settings);
     registerConfig("LaunchingHelper.Enable", true, settings);
     registerConfig("Drawpad.SavePath", FileHelper::desktopFolder().toString() + "/屏幕批注", settings);
 

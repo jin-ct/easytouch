@@ -112,8 +112,16 @@ void WindowFocusHelper::applyFocusToWindow(HWND hwnd)
 
     // 若仍未成为前景，使用“模拟 Alt 键”解除系统前景锁后再设焦（跨进程可靠）
     if (GetForegroundWindow() != hwnd) {
-        keybd_event(VK_MENU, 0, 0, 0);
-        keybd_event(VK_MENU, 0, KEYEVENTF_KEYUP, 0);
+        INPUT input[2] = {};
+
+        input[0].type = INPUT_KEYBOARD;
+        input[0].ki.wVk = VK_MENU;
+
+        input[1].type = INPUT_KEYBOARD;
+        input[1].ki.wVk = VK_MENU;
+        input[1].ki.dwFlags = KEYEVENTF_KEYUP;
+
+        SendInput(2, input, sizeof(INPUT));
         SetForegroundWindow(hwnd);
     }
 }
