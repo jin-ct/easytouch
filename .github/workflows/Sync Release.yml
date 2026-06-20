@@ -1,0 +1,46 @@
+name: Sync Release To Gitee
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir assets
+
+          gh release download \
+            "${{ github.event.release.tag_name }}" \
+            -D assets
+        
+      - name: Create Gitee Release
+        uses: nicennnnnnnlee/action-gitee-release@master
+        with:
+          gitee_action: create_release
+          gitee_owner: jin-ct
+          gitee_repo: easytouch
+          gitee_token: ${{ secrets.GITEE_TOKEN }}
+          gitee_target_commitish: ${{ github.event.release.target_commitish }}
+          gitee_tag_name: ${{ github.event.release.tag_name }}
+          gitee_release_name: ${{ github.event.release.name }}
+          gitee_release_body: ${{ github.event.release.body }}
+
+      - name: Upload Assets
+        uses: nicennnnnnnlee/action-gitee-release@master
+        with:
+          gitee_action: upload_asset
+          gitee_owner: jin-ct
+          gitee_repo: easytouch
+          gitee_token: ${{ secrets.GITEE_TOKEN }}
+          gitee_tag_name: ${{ github.event.release.tag_name }}
+          gitee_upload_retry_times: 3
+          gitee_files: assets/*

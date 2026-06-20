@@ -1,11 +1,14 @@
-name: Build EasyTouch (Windows)
+name: Build PR (Windows)
 
 on:
-  push:
+  pull_request:
     branches:
-    - main
-    tags:
-      - 'v*'
+      - main
+      - dev
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 permissions:
   contents: write
@@ -36,22 +39,13 @@ jobs:
     - name: Set Version
       shell: powershell
       run: |
-        if ("${{ github.ref_type }}" -eq "tag") {
-          $tag = "${{ github.ref_name }}"
-          $version = $tag -replace '^v', '' -replace '-.*$', ''
-          echo "APP_VERSION=$version" >> $env:GITHUB_ENV
-          echo "APP_VERSION_TYPE=release" >> $env:GITHUB_ENV
-        }
-        else {
-          $tag = git describe --tags --abbrev=0
-          echo "tag: $tag"
+        $tag = git describe --tags --abbrev=0
+        echo "tag: $tag"
 
-          $version = $tag -replace '^v', '' -replace '-.*$', ''
-          echo "Cleaned version: $version"
-          
-          echo "APP_VERSION=$version" >> $env:GITHUB_ENV
-          echo "APP_VERSION_TYPE=dev" >> $env:GITHUB_ENV
-        }
+        $version = $tag -replace '^v', '' -replace '-.*$', ''
+        echo "Cleaned version: $version"
+        
+        echo "APP_VERSION=$version" >> $env:GITHUB_ENV
 
     ####################################################################
     # 7-Zip
@@ -245,47 +239,6 @@ jobs:
         upx --best --lzma "${{ steps.exe.outputs.exe }}"
 
     ####################################################################
-    # Inno Setup
-    ####################################################################
-
-    - name: Build Installer
-      uses: Minionguyjpro/Inno-Setup-Action@v1.2.5
-      env:
-        APP_VERSION: ${{ env.APP_VERSION }}
-        APP_VERSION_TYPE: ${{ env.APP_VERSION_TYPE }}
-      with:
-        path: installer/easytouch.iss
-
-    ####################################################################
-    # ZIP Portable
-    ####################################################################
-
-    - name: Create Portable ZIP
-      if: startsWith(github.ref, 'refs/tags/')
-      shell: powershell
-      run: |
-        Compress-Archive `
-          -Path package\* `
-          -DestinationPath easytouch-${{ github.ref_name }}-win-64.zip
-
-    ####################################################################
-    # Rename Installer
-    ####################################################################
-
-    - name: Rename Installer
-      if: startsWith(github.ref, 'refs/tags/')
-      shell: powershell
-      run: |
-        $installer = Get-ChildItem `
-          Output `
-          -Filter *.exe |
-          Select-Object -First 1
-
-        Rename-Item `
-          $installer.FullName `
-          "easytouch-${{ github.ref_name }}-win-64-setup.exe"
-
-    ####################################################################
     # Upload Artifacts
     ####################################################################
 
@@ -295,17 +248,3 @@ jobs:
         name: easytouch-build
         path: |
           package/**
-          installer/Output/**
-
-    ####################################################################
-    # Draft Release
-    ####################################################################
-
-    - name: Create Draft Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v2
-      with:
-        draft: true
-        files: |
-          easytouch-${{ github.ref_name }}-win-64.zip
-          easytouch-${{ github.ref_name }}-win-64-setup.exe
