@@ -308,4 +308,4 @@ jobs:
         draft: true
         files: |
           easytouch-${{ github.ref_name }}-win-64.zip
-          easytouch-${{ github.ref_name }}-win-64-setup.exe
+          installer/Output/easytouch-${{ github.ref_name }}-win-64-setup.exe
