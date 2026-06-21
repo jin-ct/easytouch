@@ -277,7 +277,7 @@ jobs:
       shell: powershell
       run: |
         $installer = Get-ChildItem `
-          Output `
+          installer/Output `
           -Filter *.exe |
           Select-Object -First 1
 
