@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtCore
+import FluentUI
 import Functions 1.0
 import "./components"
 import "./components/Popup"
@@ -39,7 +40,8 @@ ApplicationWindow {
             Qt.quit()
         }
         function onStartSettings() {
-            settingsPage.show()
+            // settingsPage.show()
+            FluRouter.navigate("/")
         }
     }
     Connections {
@@ -94,19 +96,38 @@ ApplicationWindow {
 
     // =============== 窗口 ===============
 
-    // 设置窗口
-    Loader {
-        id: settingsPage
-        function show() {
-            source = "views/SettingsPage.qml"
+    FluLauncher {
+        id: fluUI
+        Connections{
+            target: FluTheme
+            function onDarkModeChanged(){
+                Config.settings.set("DarkMode", FluTheme.darkMode)
+            }
         }
-        Connections {
-            target: settingsPage.item
-            function onVisibleChanged(val) {
-                if (!val) settingsPage.source = ""
+        Component.onCompleted: {
+            FluApp.init(fluUI)
+            FluApp.windowIcon = "qrc:/icon/icon.svg"
+            FluTheme.darkMode = Config.settings.get("DarkMode")
+            FluTheme.animationEnabled = true
+            FluRouter.routes = {
+                "/": "qrc:/qt/qml/easytouch/views/SettingsPage.qml"
             }
         }
     }
+
+    // 设置窗口
+    // Loader {
+    //     id: settingsPage
+    //     function show() {
+    //         source = "views/SettingsPage.qml"
+    //     }
+    //     Connections {
+    //         target: settingsPage.item
+    //         function onVisibleChanged(val) {
+    //             if (!val) settingsPage.source = ""
+    //         }
+    //     }
+    // }
 
     // 批注窗口
     Loader {

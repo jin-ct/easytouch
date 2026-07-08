@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include <QTimer>
 #include <QJSValue>
+#include "Def.h"
 
 ConfigManager* ConfigManager::instance = nullptr;
 
@@ -29,6 +30,7 @@ ConfigManager::ConfigManager(QObject *parent)
     registerConfig("WindowFocusHelper.Enable", false, settings);
     registerConfig("LaunchingHelper.Enable", true, settings);
     registerConfig("Drawpad.SavePath", FileHelper::desktopFolder().toString() + "/屏幕批注", settings);
+    registerConfig("DarkMode", FluThemeType::DarkMode::Light, settings);
 
     // 数据记忆
     memory = new ConfigFileManager("data/memory.json", this);

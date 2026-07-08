@@ -17,6 +17,7 @@
 #include "functions/configfilemanager.h"
 #include "functions/launchinghelper.h"
 #include "functions/qmlimageprovider.h"
+#include "functions/CircularReveal.h"
 
 #include "globalmanager.h"
 #include "configmanager.h"
@@ -56,6 +57,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<QmlImageProvider>("Functions", 1, 0, "QmlImageProvider");
     qmlRegisterType<ConfigFileManager>("Functions", 1, 0, "ConfigFileManager");
     qmlRegisterType<LaunchingHelper>("Functions", 1, 0, "LaunchingHelper");
+    qmlRegisterType<CircularReveal>("Functions", 1, 0, "CircularReveal");
 
     qmlRegisterSingletonType<GlobalManager>(
         "Functions", 1, 0, "Global",
