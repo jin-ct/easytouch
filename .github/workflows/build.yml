@@ -3,7 +3,8 @@ name: Build EasyTouch (Windows)
 on:
   push:
     branches:
-    - main
+      - main
+      - dev
     tags:
       - 'v*'
 
