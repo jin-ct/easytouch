@@ -87,16 +87,13 @@ qt_add_qml_module(appeasytouch
     QML_FILES components/Popup/PenPopup.qml
     QML_FILES components/Popup/EraserPopup.qml
     QML_FILES components/Popup/ScrMoveSaveList.qml
-    QML_FILES components/Card/SettingsButtonCard.qml
-    QML_FILES components/Card/SettingsCard.qml
-    QML_FILES components/Card/SettingsComboCard.qml
-    QML_FILES components/Card/SettingsSliderCard.qml
-    QML_FILES components/Card/SettingsSwitchCard.qml
-    QML_FILES components/Card/SettingsTextFieldCard.qml
     QML_FILES components/Dialog/ScrMoveSaveDialog.qml
     QML_FILES components/Dialog/MessageBoxDialog.qml
-    QML_FILES components/SettingPages/basic.qml
-    QML_FILES components/SettingPages/about.qml
+    QML_FILES components/SettingItems/SettingItem.qml
+    QML_FILES components/SettingItems/SettingItemExpander.qml
+    QML_FILES components/SettingItems/ExpandedItem.qml
+    QML_FILES components/SettingPages/Basic.qml
+    QML_FILES components/SettingPages/About.qml
     RESOURCES qtquickcontrols2.conf
     RESOURCES app.rc.in
     QML_FILES Splash.qml

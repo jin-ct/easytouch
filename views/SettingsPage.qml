@@ -2,15 +2,14 @@ import QtQuick
 import QtQuick.Controls
 import FluentUI
 import Functions 1.0
-import "../components/Card"
 import "../components"
 
 FluWindow {
     id: win
     title: "易触控设置"
-    width: 1000
-    height: 668
-    minimumWidth: 668
+    width: 960
+    height: 620
+    minimumWidth: 628
     minimumHeight: 320
     launchMode: FluWindowType.SingleTask
     fitsAppBarWindows: true
@@ -29,7 +28,7 @@ FluWindow {
         FluPaneItem{
             title: qsTr("基本设置")
             icon: FluentIcons.Settings
-            url: "qrc:/qt/qml/easytouch/components/SettingPages/basic.qml"
+            url: "qrc:/qt/qml/easytouch/components/SettingPages/Basic.qml"
             onTap:{
                 navigationView.push(url)
             }
@@ -44,7 +43,7 @@ FluWindow {
         FluPaneItem{
             title: qsTr("关于")
             icon: FluentIcons.Info
-            url: "qrc:/qt/qml/easytouch/components/SettingPages/about.qml"
+            url: "qrc:/qt/qml/easytouch/components/SettingPages/About.qml"
             onTap:{
                 navigationView.push(url)
             }
