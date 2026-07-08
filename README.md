@@ -69,10 +69,10 @@
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=jin-ct/easytouch&type=timeline&logscale=&legend=top-left">
+<a href="https://www.star-history.com/?repos=jin-ct%2Feasytouch&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=jin-ct/easytouch&type=timeline&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=jin-ct/easytouch&type=timeline&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=jin-ct/easytouch&type=timeline&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=jin-ct/easytouch&type=date&theme=dark&legend=top-left&sealed_token=Ki-aksdKAYS10DyFBjisMvfccqeMlJNUsNHuSc6m1leDQT6MeK-731dyb50_N8NHVjVZP7yjMg0eeNB1DDDevAH9StaSBAzf7IfNYCmtY76pp6fiM86gH8BhEy6hDeHUe2ymt95xgSbR5Xm_pnhQ5YWkBhAcyZFHtCK_IjfjRgSBa_XTYC7E1p0NEbXk" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=jin-ct/easytouch&type=date&legend=top-left&sealed_token=Ki-aksdKAYS10DyFBjisMvfccqeMlJNUsNHuSc6m1leDQT6MeK-731dyb50_N8NHVjVZP7yjMg0eeNB1DDDevAH9StaSBAzf7IfNYCmtY76pp6fiM86gH8BhEy6hDeHUe2ymt95xgSbR5Xm_pnhQ5YWkBhAcyZFHtCK_IjfjRgSBa_XTYC7E1p0NEbXk" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=jin-ct/easytouch&type=date&legend=top-left&sealed_token=Ki-aksdKAYS10DyFBjisMvfccqeMlJNUsNHuSc6m1leDQT6MeK-731dyb50_N8NHVjVZP7yjMg0eeNB1DDDevAH9StaSBAzf7IfNYCmtY76pp6fiM86gH8BhEy6hDeHUe2ymt95xgSbR5Xm_pnhQ5YWkBhAcyZFHtCK_IjfjRgSBa_XTYC7E1p0NEbXk" />
  </picture>
-</a> 
+</a>
