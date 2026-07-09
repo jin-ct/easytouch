@@ -33,6 +33,22 @@ FluWindow {
                 navigationView.push(url)
             }
         }
+        FluPaneItem{
+            title: qsTr("工具栏")
+            icon: FluentIcons.HolePunchLandscapeRight
+            url: "qrc:/qt/qml/easytouch/components/SettingPages/ToolBar.qml"
+            onTap:{
+                navigationView.push(url)
+            }
+        }
+        FluPaneItem{
+            title: qsTr("触控优化功能")
+            icon: FluentIcons.ViewAll
+            url: "qrc:/qt/qml/easytouch/components/SettingPages/Functions.qml"
+            onTap:{
+                navigationView.push(url)
+            }
+        }
     }
 
     FluObject{

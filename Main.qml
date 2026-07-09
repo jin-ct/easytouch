@@ -84,6 +84,18 @@ ApplicationWindow {
             }
         }
     }
+    Connections {
+        target: Config.settings
+        function onConfigChanged(path, value) {
+            if (!Config.settings.readReady)
+                return
+            switch(path) {
+            case "AutoStart":
+                Global.funs.setAutoStart(value)
+                break;
+            }
+        }
+    }
 
     // 窗口创建完成
     Component.onCompleted: {

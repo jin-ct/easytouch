@@ -94,6 +94,8 @@ qt_add_qml_module(appeasytouch
     QML_FILES components/SettingItems/ExpandedItem.qml
     QML_FILES components/SettingPages/Basic.qml
     QML_FILES components/SettingPages/About.qml
+    QML_FILES components/SettingPages/ToolBar.qml
+    QML_FILES components/SettingPages/Functions.qml
     RESOURCES qtquickcontrols2.conf
     RESOURCES app.rc.in
     QML_FILES Splash.qml

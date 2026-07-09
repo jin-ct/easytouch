@@ -15,6 +15,7 @@ FluExpander {
     property color textColor: FluTheme.fontPrimaryColor
     property color descTextColor: FluTheme.fontSecondaryColor
     property Component controlDelegate
+    property FluLoader controlLoader: null
 
     headerDelegate: Item {
         Layout.fillWidth: true
@@ -72,8 +73,16 @@ FluExpander {
             }
 
             FluLoader {
+                id: control_loader
                 Layout.alignment: Qt.AlignVCenter
                 sourceComponent: root.controlDelegate
+                onStatusChanged: {
+                    if (status === Loader.Ready) {
+                        root.controlLoader = control_loader
+                    } else {
+                        root.controlLoader = null
+                    }
+                }
             }
         }
     }
