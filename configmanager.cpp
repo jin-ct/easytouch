@@ -17,7 +17,7 @@ ConfigManager::ConfigManager(QObject *parent)
     // 常规设置
     settings = new ConfigFileManager("settings.json", this);
     handleConfigLoad(settings);
-    registerConfig("App.Verson", "0.0.0", settings);
+    registerConfig("App.Verson", QCoreApplication::applicationVersion(), settings);
     registerConfig("AutoStart", true, settings);
     registerConfig("AutoUpdate", true, settings);
     registerConfig("UpdateChannel", "release", settings);

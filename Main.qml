@@ -122,7 +122,8 @@ ApplicationWindow {
             FluTheme.darkMode = Config.settings.get("DarkMode")
             FluTheme.animationEnabled = true
             FluRouter.routes = {
-                "/": "qrc:/qt/qml/easytouch/views/SettingsPage.qml"
+                "/": "qrc:/qt/qml/easytouch/views/SettingsPage.qml",
+                "/hotload": "qrc:/qt/qml/easytouch/views/HotloadWindow.qml"
             }
         }
     }

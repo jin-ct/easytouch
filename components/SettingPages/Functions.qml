@@ -11,7 +11,7 @@ FluScrollablePage{
 
     SettingItem {
         title: "发送“打开U盘”通知"
-        iconSource: FluentIcons.Location
+        iconSource: FluentIcons.USB
         description: "插入U盘时发送“点击打开U盘”的系统通知"
         controlDelegate:
             FluToggleSwitch {
@@ -26,7 +26,7 @@ FluScrollablePage{
     }
     SettingItem {
         title: "软件启动提示助手"
-        iconSource: FluentIcons.Location
+        iconSource: FluentIcons.Stop
         description: "软件启动时显示启动提示"
         controlDelegate:
             FluToggleSwitch {
@@ -40,23 +40,23 @@ FluScrollablePage{
             }
     }
     SettingItem {
-        title: "软件启动提示助手"
-        iconSource: FluentIcons.Location
-        description: "软件启动时显示启动提示"
+        title: "微信触控优化"
+        iconSource: FluentIcons.TiltDown
+        description: "针对微信4.x不支持触控问题优化（微信窗口顶置时失效，可用于临时关闭）"
         controlDelegate:
             FluToggleSwitch {
                 Layout.alignment: Qt.AlignVCenter
-                checked: Config.settings.data.LaunchingHelper.Enable
+                checked: Config.settings.data.WeChatTouchHelper.Enable
                 onCheckedChanged: {
-                    if (checked !== Config.settings.data.LaunchingHelper.Enable)
-                        Config.settings.set("LaunchingHelper.Enable", checked)
-                    console.log("SettingChanged: (LaunchingHelper.Enable)checked=", checked)
+                    if (checked !== Config.settings.data.WeChatTouchHelper.Enable)
+                        Config.settings.set("WeChatTouchHelper.Enable", checked)
+                    console.log("SettingChanged: (WeChatTouchHelper.Enable)checked=", checked)
                 }
             }
     }
     SettingItem {
         title: "窗口焦点助手"
-        iconSource: FluentIcons.Location
+        iconSource: FluentIcons.Favicon
         description: "保障新窗口获取焦点 (该功能Bug较多，不建议使用该功能)"
         controlDelegate:
             FluToggleSwitch {

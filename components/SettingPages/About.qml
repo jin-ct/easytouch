@@ -13,8 +13,9 @@ FluScrollablePage{
     SettingItemExpander {
         id: aboutItem
         title: "易触控优化软件"
+        iconSource: FluentIcons.Info
         expand: true
-        description: "优化大屏触控体验 | MIT协议开源 | 作者：Jin"
+        description: "优化大屏触控体验 | MIT 开源许可 | Copyright © 2026 Jin-CT"
         contentHeight: aboutSubItem.implicitHeight
         ColumnLayout {
             id: aboutSubItem
@@ -32,6 +33,27 @@ FluScrollablePage{
                         text: "打开链接"
                         onClicked: {
                             Qt.openUrlExternally("https://github.com/jin-ct/easytouch")
+                        }
+                    }
+            }
+            ExpandedItem {
+                title: "问题反馈"
+                description: "欢迎提交问题反馈和功能请求"
+                controlDelegate:
+                    FluTextButton {
+                        text: "Github Issues"
+                        onClicked: {
+                            Qt.openUrlExternally("https://github.com/jin-ct/easytouch/issues")
+                        }
+                    }
+            }
+            ExpandedItem {
+                title: "开源许可证"
+                controlDelegate:
+                    FluTextButton {
+                        text: "打开链接"
+                        onClicked: {
+                            Qt.openUrlExternally("https://github.com/jin-ct/easytouch/blob/main/LICENSE")
                         }
                     }
             }

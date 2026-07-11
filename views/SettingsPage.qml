@@ -49,6 +49,14 @@ FluWindow {
                 navigationView.push(url)
             }
         }
+        FluPaneItem{
+            title: qsTr("高级")
+            icon: FluentIcons.Code
+            url: "qrc:/qt/qml/easytouch/components/SettingPages/Advanced.qml"
+            onTap:{
+                navigationView.push(url)
+            }
+        }
     }
 
     FluObject{

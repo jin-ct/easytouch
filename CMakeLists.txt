@@ -74,12 +74,14 @@ qt_add_qml_module(appeasytouch
     SOURCES functions/configfilemanager.h functions/configfilemanager.cpp
     SOURCES functions/launchinghelper.h functions/launchinghelper.cpp
     SOURCES functions/CircularReveal.h functions/CircularReveal.cpp
+    SOURCES functions/FileWatcher.h functions/FileWatcher.cpp
     QML_FILES Main.qml
     QML_FILES views/ToolWindows.qml
     QML_FILES views/SettingsPage.qml
     QML_FILES views/Whileboard.qml
     QML_FILES views/RandomGenerator.qml
     QML_FILES views/SplashWindow.qml
+    QML_FILES views/HotloadWindow.qml
     QML_FILES components/ToolWindowContent.qml
     QML_FILES components/WindowTitleBar.qml
     QML_FILES components/Popup/VolumePopup.qml
@@ -96,6 +98,7 @@ qt_add_qml_module(appeasytouch
     QML_FILES components/SettingPages/About.qml
     QML_FILES components/SettingPages/ToolBar.qml
     QML_FILES components/SettingPages/Functions.qml
+    QML_FILES components/SettingPages/Advanced.qml
     RESOURCES qtquickcontrols2.conf
     RESOURCES app.rc.in
     QML_FILES Splash.qml
