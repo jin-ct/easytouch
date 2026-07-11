@@ -37,6 +37,7 @@ public:
     Q_INVOKABLE bool getIsMute();
     Q_INVOKABLE void setMute(bool mute);
     Q_INVOKABLE bool setAutoStart(bool enable);
+    Q_INVOKABLE void restartApp();
 
     // 工具函数
     Q_INVOKABLE bool isRectContains(const QVariant &rect, const QVariant &point);

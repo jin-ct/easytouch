@@ -64,6 +64,13 @@ FluWindow {
                 navigationView.push(url)
             }
         }
+        FluPaneItem{
+            title: qsTr("重启软件")
+            icon: FluentIcons.UpdateRestore
+            onTap:{
+                Global.funs.restartApp()
+            }
+        }
     }
 
     Flipable {
