@@ -4,7 +4,7 @@ add_library(WMF::WMF INTERFACE IMPORTED)
 
 project(easytouch VERSION 0.1 LANGUAGES CXX)
 
-获取版本号
+# 获取版本号
 execute_process(
     COMMAND git describe --tags --abbrev=0
     OUTPUT_VARIABLE GIT_TAG
