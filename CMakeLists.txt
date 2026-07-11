@@ -17,7 +17,7 @@ endif()
 
 string(REGEX REPLACE "^v" "" GIT_TAG ${GIT_TAG})
 
-string(REPLACE "-dev" "" GIT_TAG ${GIT_TAG})
+string(REPLACE "-beta" "" GIT_TAG ${GIT_TAG})
 
 string(REPLACE "." ";" VERSION_LIST ${GIT_TAG})
 list(GET VERSION_LIST 0 MAJOR)
