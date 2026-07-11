@@ -4,7 +4,7 @@ add_library(WMF::WMF INTERFACE IMPORTED)
 
 project(easytouch VERSION 0.1 LANGUAGES CXX)
 
-# 获取版本号
+获取版本号
 execute_process(
     COMMAND git describe --tags --abbrev=0
     OUTPUT_VARIABLE GIT_TAG
@@ -16,6 +16,8 @@ if(NOT GIT_TAG)
 endif()
 
 string(REGEX REPLACE "^v" "" GIT_TAG ${GIT_TAG})
+
+string(REPLACE "-dev" "" GIT_TAG ${GIT_TAG})
 
 string(REPLACE "." ";" VERSION_LIST ${GIT_TAG})
 list(GET VERSION_LIST 0 MAJOR)
