@@ -14,6 +14,12 @@ FluWindow {
     minimumWidth: 520
     minimumHeight: 200
     launchMode: FluWindowType.SingleTask
+    fitsAppBarWindows: false
+    appBar: FluAppBar {
+        title: "Hot Loader"
+        height: 30
+        z:7
+    }
     FileWatcher{
         id:watcher
         onFileChanged: {
