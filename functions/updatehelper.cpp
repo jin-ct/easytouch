@@ -177,18 +177,15 @@ QString UpdateHelper::updateChannelSuffix() const
     return QStringLiteral("release");
 }
 
-QString UpdateHelper::semverFromChannelTag(const QString &tagName, const QString &channelSuffix) const
+QString UpdateHelper::semverFromTag(const QString &tagName) const
 {
-    const QString suf = QLatin1Char('-') + channelSuffix;
     QString t = tagName.trimmed();
-    if (!t.contains("-"))
-        t.append("-release");
-    if (!t.endsWith(suf, Qt::CaseInsensitive))
-        return QString();
-    QString core = t.left(t.size() - suf.size()).trimmed();
-    if (core.startsWith(QLatin1Char('v'), Qt::CaseInsensitive))
-        core = core.mid(1).trimmed();
-    return core;
+    if (t.contains('-')) {
+        t = t.split('-', Qt::SkipEmptyParts)[0];
+    }
+    if (t.startsWith(QLatin1Char('v'), Qt::CaseInsensitive))
+        t = t.mid(1).trimmed();
+    return t;
 }
 
 int UpdateHelper::compareSemver(const QString &a, const QString &b)
@@ -211,6 +208,35 @@ int UpdateHelper::compareSemver(const QString &a, const QString &b)
     return 0;
 }
 
+int UpdateHelper::compareTag(const QString &a, const QString &b, const QString &curChannel)
+{
+    QString aSemver = semverFromTag(a);
+    QString bSemver = semverFromTag(b);
+    QString aChannel = "release";
+    QString bChannel = "release";
+    if (a.contains('-'))
+        aChannel = a.split('-')[1];
+    if (b.contains('-'))
+        bChannel = b.split('-')[1];
+    int res = compareSemver(aSemver, bSemver);
+    if (curChannel == "release") {
+        if (res > 0 && aChannel.toLower() == "release")
+            return 1;
+        else if (res == 0 && aChannel.toLower() == bChannel.toLower())
+            return 0;
+        else
+            return -1;
+    } else if (curChannel == "beta") {
+        if (res > 0 || (res = 0, aChannel.toLower() == "release"))
+            return 1;
+        else if (res == 0 && aChannel.toLower() == bChannel.toLower())
+            return 0;
+        else
+            return -1;
+    }
+    return -1;
+}
+
 QString UpdateHelper::findWin64AssetUrl(const QJsonObject &release) const
 {
     const QJsonArray assets = release[QStringLiteral("assets")].toArray();
@@ -231,23 +257,20 @@ QString UpdateHelper::findWin64AssetUrl(const QJsonObject &release) const
 void UpdateHelper::finalizeReleasesAndCompare()
 {
     const QString channel = updateChannelSuffix();
-    QString bestSemver;
+    QString bestTag = "";
     QJsonObject bestRelease;
 
     for (const QJsonObject &rel : m_releasesAccumulated) {
         if (rel[QStringLiteral("draft")].toBool())
             continue;
         const QString tagName = rel[QStringLiteral("tag_name")].toString();
-        const QString semver = semverFromChannelTag(tagName, channel);
-        if (semver.isEmpty())
-            continue;
-        if (bestSemver.isEmpty() || compareSemver(semver, bestSemver) > 0) {
-            bestSemver = semver;
+        if (compareTag(tagName, bestTag, channel) > 0) {
+            bestTag = tagName;
             bestRelease = rel;
         }
     }
 
-    if (bestSemver.isEmpty()) {
+    if (bestTag.isEmpty()) {
         emit updateError(QStringLiteral("未找到符合当前更新通道（%1）的发行版").arg(channel));
         emit updateCheckFinished(false, false);
         return;
@@ -260,11 +283,11 @@ void UpdateHelper::finalizeReleasesAndCompare()
         return;
     }
 
-    latestVersion = bestSemver;
+    latestVersion = semverFromTag(bestTag);
     downloadUrl = downloadUrlFound;
 
     const QString currentVersion = getCurrentVersion();
-    const bool needsUpdate = compareVersions(currentVersion, latestVersion);
+    const bool needsUpdate = compareVersions(currentVersion, bestTag, channel);
 
     if (needsUpdate) {
         emit updateAvailable(latestVersion, downloadUrl);
@@ -279,9 +302,10 @@ void UpdateHelper::startDownload(const QString &downloadUrl)
     downloadUpdate(downloadUrl);
 }
 
-bool UpdateHelper::compareVersions(const QString &currentVersion, const QString &latestSemver)
+bool UpdateHelper::compareVersions(const QString &currentVersion, const QString &latestTag, const QString &channel)
 {
-    return compareSemver(latestSemver, currentVersion) > 0;
+    QString currentTag = QString("v%1%2").arg(currentVersion, channel == "release" ? "" : "-beta");
+    return compareTag(currentTag, latestTag, channel) > 0;
 }
 
 void UpdateHelper::downloadUpdate(const QString &downloadUrl)

@@ -40,10 +40,11 @@ private:
     void requestReleasesPage();
     void finalizeReleasesAndCompare();
     QString updateChannelSuffix() const;
-    QString semverFromChannelTag(const QString &tagName, const QString &channelSuffix) const;
+    QString semverFromTag(const QString &tagName) const;
     static int compareSemver(const QString &a, const QString &b);
+    int compareTag(const QString &a, const QString &b, const QString &curChannel);
     QString findWin64AssetUrl(const QJsonObject &release) const;
-    bool compareVersions(const QString &currentVersion, const QString &latestSemver);
+    bool compareVersions(const QString &currentVersion, const QString &latestTag, const QString &channel);
     void downloadUpdate(const QString &downloadUrl);
     void extractZip(const QString &zipPath, const QString &extractPath);
     bool extractUsingShellAPI(const QString &zipPath, const QString &extractPath);
