@@ -20,6 +20,7 @@ ConfigManager::ConfigManager(QObject *parent)
     registerConfig("App.Verson", QCoreApplication::applicationVersion(), settings);
     registerConfig("AutoStart", true, settings);
     registerConfig("AutoUpdate", true, settings);
+    registerConfig("AutoUpdateBehavior", "fullyAuto", settings);
     registerConfig("UpdateChannel", "release", settings);
     registerConfig("ToolBar.Enable", true, settings);
     registerConfig("ToolBar.AutoHideBtns", true, settings);

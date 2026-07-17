@@ -34,7 +34,8 @@ UpdateHelper::UpdateHelper(QObject *parent)
     
     connect(this, &UpdateHelper::updateAvailable, this, [=](const QString &version, const QString &downloadUrl){
         qDebug() << "updateAvailable: " << version << " " << downloadUrl;
-        startDownload(downloadUrl);
+        if (ConfigManager::instance->settings->get("AutoUpdateBehavior").toString() == "fullyAuto")
+            startDownload(downloadUrl);
     });
     connect(this, &UpdateHelper::updateCheckFinished, this, [=](bool hasUpdate){
         this->hasUpdate = hasUpdate;
@@ -42,6 +43,7 @@ UpdateHelper::UpdateHelper(QObject *parent)
     });
     connect(this, &UpdateHelper::updateError, this, [=](const QString &error){
         qDebug() << "updateError: " << error;
+        isDownloadStarted = false;
     });
     connect(this, &UpdateHelper::updateProgress, this, [=](qint64 bytesReceived, qint64 bytesTotal){
         qDebug() << "updateProgress: " << bytesReceived << " / " << bytesTotal;
@@ -284,7 +286,7 @@ void UpdateHelper::finalizeReleasesAndCompare()
     }
 
     latestVersion = semverFromTag(bestTag);
-    downloadUrl = downloadUrlFound;
+    this->downloadUrl = downloadUrlFound;
 
     const QString currentVersion = getCurrentVersion();
     const bool needsUpdate = compareVersions(currentVersion, bestTag, channel);
@@ -302,6 +304,11 @@ void UpdateHelper::startDownload(const QString &downloadUrl)
     downloadUpdate(downloadUrl);
 }
 
+void UpdateHelper::startDownload()
+{
+    startDownload(this->downloadUrl);
+}
+
 bool UpdateHelper::compareVersions(const QString &currentVersion, const QString &latestTag, const QString &channel)
 {
     QString currentTag = QString("v%1%2").arg(currentVersion, channel == "release" ? "" : "-beta");
@@ -310,6 +317,10 @@ bool UpdateHelper::compareVersions(const QString &currentVersion, const QString 
 
 void UpdateHelper::downloadUpdate(const QString &downloadUrl)
 {
+    if (isDownloadStarted)
+        return;
+    isDownloadStarted = true;
+
     this->downloadUrl = downloadUrl;
 
     QString tempDir = getTempDir();

@@ -21,6 +21,7 @@ public:
 
     Q_INVOKABLE void checkForUpdates(const QString &repoOwner, const QString &repoName, bool isRetrying = false);
     Q_INVOKABLE void startDownload(const QString &downloadUrl);
+    Q_INVOKABLE void startDownload();
     Q_INVOKABLE QString getCurrentVersion() const;
 
 signals:
@@ -67,6 +68,7 @@ private:
     QVector<QJsonObject> m_releasesAccumulated;
     bool m_usingGitHubApi{false};
     bool hasUpdate{false};
+    bool isDownloadStarted{false};
 };
 
 #endif // UPDATEHELPER_H

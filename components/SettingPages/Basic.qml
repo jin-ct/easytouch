@@ -42,7 +42,7 @@ FluScrollablePage{
                 }
             }
     }
-    SettingItem {
+    SettingItemExpander {
         title: "自动更新"
         iconSource: FluentIcons.UpArrowShiftKey
         description: "软件启动时自动从远程仓库检查并获取最新发布版"
@@ -56,6 +56,37 @@ FluScrollablePage{
                     console.log("SettingChanged: (autoUpdate)checked=", checked)
                 }
             }
+        contentHeight: autoUpdateSubItem.implicitHeight
+        ColumnLayout {
+            id: autoUpdateSubItem
+            width: parent.width
+            spacing: -1
+            clip: true
+
+            ExpandedItem {
+                title: "当检查到新版本时的行为"
+                controlDelegate:
+                    FluComboBox {
+                        Layout.alignment: Qt.AlignVCenter
+                        textRole: "text"
+                        valueRole: "value"
+                        model: ListModel {
+                            ListElement { text: "自动安装并提醒"; value: "fullyAuto" }
+                            ListElement { text: "仅提醒"; value: "onlyRemind" }
+                            ListElement { text: "静默自动安装"; value: "noNotice" }
+                        }
+                        Component.onCompleted: {
+                            let cur = Config.settings.get("AutoUpdateBehavior")
+                            let map = {"fullyAuto": 0, "onlyRemind": 1, "noNotice": 2}
+                            currentIndex = map[cur]
+                        }
+                        onActivated: {
+                            Config.settings.set("AutoUpdateBehavior", currentValue)
+                            console.log("SettingChanged: (AutoUpdateBehavior)selected=", currentText)
+                        }
+                    }
+            }
+        }
     }
     SettingItemExpander {
         id: checkUpdateItem

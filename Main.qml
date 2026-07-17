@@ -35,19 +35,24 @@ ApplicationWindow {
             if (id === "openUsb") {
                 Global.funs.openDrive()
             }
+            if (id === "update" && Config.settings.get("AutoUpdateBehavior") === "onlyRemind") {
+                Global.updateHelper.startDownload()
+            }
         }
         function onAppQuit() {
             Qt.quit()
         }
         function onStartSettings() {
-            // settingsPage.show()
             FluRouter.navigate("/")
         }
     }
     Connections {
         target: Global.updateHelper
         function onUpdateAvailable(version) {
-            Global.notification.showNotification("update", "有新版本的易触控" + "（" + version + "）", "现在开始更新易触控")
+            let behavior = Config.settings.get("AutoUpdateBehavior");
+            let msg = behavior === "fullyAuto" ? "更新正在进行" : "点击此处开始更新"
+            if (behavior !== "noNotice")
+                Global.notification.showNotification("update", "有新版本的易触控" + "（" + version + "）", msg)
         }
     }
     Connections {
@@ -127,20 +132,6 @@ ApplicationWindow {
             }
         }
     }
-
-    // 设置窗口
-    // Loader {
-    //     id: settingsPage
-    //     function show() {
-    //         source = "views/SettingsPage.qml"
-    //     }
-    //     Connections {
-    //         target: settingsPage.item
-    //         function onVisibleChanged(val) {
-    //             if (!val) settingsPage.source = ""
-    //         }
-    //     }
-    // }
 
     // 批注窗口
     Loader {
