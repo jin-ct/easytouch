@@ -38,6 +38,8 @@ FluScrollablePage{
                 onCheckedChanged: {
                     if (checked !== Config.settings.data.AutoStart)
                         Config.settings.set("AutoStart", checked)
+                }
+                onClicked: {
                     console.log("SettingChanged: (autoStart)checked=", checked)
                 }
             }
@@ -53,6 +55,8 @@ FluScrollablePage{
                 onCheckedChanged: {
                     if (checked !== Config.settings.data.AutoUpdate)
                         Config.settings.set("AutoUpdate", checked)
+                }
+                onClicked: {
                     console.log("SettingChanged: (autoUpdate)checked=", checked)
                 }
             }

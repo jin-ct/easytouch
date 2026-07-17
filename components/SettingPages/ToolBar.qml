@@ -22,6 +22,8 @@ FluScrollablePage{
                 onCheckedChanged: {
                     if (checked !== Config.settings.data.ToolBar.Enable)
                         Config.settings.set("ToolBar.Enable", checked)
+                }
+                onClicked: {
                     console.log("SettingChanged: (ToolBar.Enable)checked=", checked)
                 }
             }
@@ -41,6 +43,8 @@ FluScrollablePage{
                         onCheckedChanged: {
                             if (checked !== Config.settings.data.ToolBar.AutoShowBtns)
                                 Config.settings.set("ToolBar.AutoShowBtns", checked)
+                        }
+                        onClicked: {
                             console.log("SettingChanged: (ToolBar.AutoShowBtns)checked=", checked)
                         }
                     }
@@ -55,6 +59,8 @@ FluScrollablePage{
                         onCheckedChanged: {
                             if (checked !== Config.settings.data.ToolBar.AutoHideBtns)
                                 Config.settings.set("ToolBar.AutoHideBtns", checked)
+                        }
+                        onClicked: {
                             console.log("SettingChanged: (ToolBar.AutoHideBtns)checked=", checked)
                         }
                     }
@@ -69,6 +75,8 @@ FluScrollablePage{
                         onCheckedChanged: {
                             if (checked !== Config.settings.data.ToolBar.ShowWindowOpacityAnimation)
                                 Config.settings.set("ToolBar.ShowWindowOpacityAnimation", checked)
+                        }
+                        onClicked: {
                             console.log("SettingChanged: (ToolBar.ShowWindowOpacityAnimation)checked=", checked)
                         }
                     }
@@ -83,6 +91,8 @@ FluScrollablePage{
                         onCheckedChanged: {
                             if (checked !== Config.settings.data.ToolBar.StayTopEnhanced)
                                 Config.settings.set("ToolBar.StayTopEnhanced", checked)
+                        }
+                        onClicked: {
                             console.log("SettingChanged: (ToolBar.StayTopEnhanced)checked=", checked)
                         }
                     }

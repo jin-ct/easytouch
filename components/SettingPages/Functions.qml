@@ -20,6 +20,8 @@ FluScrollablePage{
                 onCheckedChanged: {
                     if (checked !== Config.settings.data.USBDriveHelper.Enable)
                         Config.settings.set("USBDriveHelper.Enable", checked)
+                }
+                onClicked: {
                     console.log("SettingChanged: (USBDriveHelper.Enable)checked=", checked)
                 }
             }
@@ -35,6 +37,8 @@ FluScrollablePage{
                 onCheckedChanged: {
                     if (checked !== Config.settings.data.LaunchingHelper.Enable)
                         Config.settings.set("LaunchingHelper.Enable", checked)
+                }
+                onClicked: {
                     console.log("SettingChanged: (LaunchingHelper.Enable)checked=", checked)
                 }
             }
@@ -50,6 +54,8 @@ FluScrollablePage{
                 onCheckedChanged: {
                     if (checked !== Config.settings.data.WeChatTouchHelper.Enable)
                         Config.settings.set("WeChatTouchHelper.Enable", checked)
+                }
+                onClicked: {
                     console.log("SettingChanged: (WeChatTouchHelper.Enable)checked=", checked)
                 }
             }
@@ -65,6 +71,8 @@ FluScrollablePage{
                 onCheckedChanged: {
                     if (checked !== Config.settings.data.WindowFocusHelper.Enable)
                         Config.settings.set("WindowFocusHelper.Enable", checked)
+                }
+                onClicked: {
                     console.log("SettingChanged: (WindowFocusHelper.Enable)checked=", checked)
                 }
             }
