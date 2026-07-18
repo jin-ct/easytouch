@@ -376,7 +376,12 @@ LaunchingHelper::~LaunchingHelper()
 
 void LaunchingHelper::disableHelperForItem(const QVariant &exeName)
 {
-    appList[exeName.toString()].enableHelper = false;
+    switchHelperForItem(exeName, false);
+}
+
+void LaunchingHelper::switchHelperForItem(const QVariant &exeName, bool enable)
+{
+    appList[exeName.toString()].enableHelper = enable;
     saveAppList();
 }
 

@@ -26,7 +26,7 @@ FluScrollablePage{
                 }
             }
     }
-    SettingItem {
+    SettingItemExpander {
         title: "软件启动提示助手"
         iconSource: FluentIcons.Stop
         description: "软件启动时显示启动提示"
@@ -42,6 +42,64 @@ FluScrollablePage{
                     console.log("SettingChanged: (LaunchingHelper.Enable)checked=", checked)
                 }
             }
+        contentHeight: launchingHelperSubItem.implicitHeight
+        ColumnLayout {
+            id: launchingHelperSubItem
+            width: parent.width
+            spacing: -1
+            clip: true
+
+            property var appList: Config.launchingHelperCfg.data.Apps
+            property var showList: appList
+
+            FluText {
+                text: qsTr("已监测的进程")
+                font.pixelSize: 12
+                Layout.margins: 10
+                Layout.leftMargin: 22
+            }
+            FluTextBox{
+                placeholderText: qsTr("搜索进程名称")
+                Layout.leftMargin: 54
+                Layout.bottomMargin: 4
+                onTextChanged: {
+                    launchingHelperSubItem.showList = launchingHelperSubItem.appList.filter(function(item) {
+                        return item.exeName.toLowerCase().includes(text)
+                            || item.appName.toLowerCase().includes(text)
+                    })
+                }
+            }
+            Repeater {
+                model: launchingHelperSubItem.showList
+                delegate:
+                    ExpandedItem {
+                        property var itemData: launchingHelperSubItem.showList[index]
+                        title: itemData.appName === "" ? itemData.exeName : itemData.appName
+                        description: itemData.exePath
+                        topPadding: 8
+                        bottomPadding: 8
+                        controlDelegate:
+                            FluToggleSwitch {
+                                Layout.alignment: Qt.AlignVCenter
+                                checked: itemData.enableHelper
+                                onCheckedChanged: {
+                                    var app = Config.launchingHelperCfg.get("Apps[" + index + "]");
+                                    if (checked !== app.enableHelper) {
+                                        Global.launchingHelper.switchHelperForItem(app.exeName, checked)
+                                        console.log("SettingChanged: (launchingHelper.*" + app.exeName + "*.enableHelper)checked=", checked)
+                                    }
+                                }
+                            }
+                    }
+            }
+            FluText {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.margins: 16
+                visible: launchingHelperSubItem.showList.length <= 0
+                text: qsTr("空")
+                textColor: FluTheme.fontTertiaryColor
+            }
+        }
     }
     SettingItem {
         title: "微信触控优化"

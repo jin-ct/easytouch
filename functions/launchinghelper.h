@@ -84,6 +84,7 @@ public:
     ~LaunchingHelper();
 
     Q_INVOKABLE void disableHelperForItem(const QVariant &exeName);
+    Q_INVOKABLE void switchHelperForItem(const QVariant &exeName, bool enable);
 
 signals:
     void loaded();
