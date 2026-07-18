@@ -58,15 +58,37 @@ FluScrollablePage{
                 Layout.margins: 10
                 Layout.leftMargin: 22
             }
-            FluTextBox{
-                placeholderText: qsTr("搜索进程名称")
+            RowLayout {
+                spacing: 12
                 Layout.leftMargin: 54
                 Layout.bottomMargin: 4
-                onTextChanged: {
-                    launchingHelperSubItem.showList = launchingHelperSubItem.appList.filter(function(item) {
-                        return item.exeName.toLowerCase().includes(text)
-                            || item.appName.toLowerCase().includes(text)
-                    })
+                FluTextBox{
+                    placeholderText: qsTr("搜索进程名称")
+                    onTextChanged: {
+                        launchingHelperSubItem.showList = launchingHelperSubItem.appList.filter(function(item) {
+                            return item.exeName.toLowerCase().includes(text)
+                                || item.appName.toLowerCase().includes(text)
+                        })
+                    }
+                }
+                FluFilledButton{
+                    text: qsTr("添加新进程")
+                    onClicked: {
+                        launchingHelperEditDialog.open()
+                    }
+                }
+                FluToggleSwitch {
+                    text: "禁用自动添加"
+                    textRight: false
+                    Layout.alignment: Qt.AlignVCenter
+                    checked: Config.launchingHelperCfg.data.OnlyManualAddition
+                    onCheckedChanged: {
+                        if (checked !== Config.launchingHelperCfg.data.OnlyManualAddition)
+                            Config.launchingHelperCfg.set("OnlyManualAddition", checked)
+                    }
+                    onClicked: {
+                        console.log("SettingChanged: (launchingHelperCfg.OnlyManualAddition)checked=", checked)
+                    }
                 }
             }
             Repeater {
@@ -79,14 +101,28 @@ FluScrollablePage{
                         topPadding: 8
                         bottomPadding: 8
                         controlDelegate:
-                            FluToggleSwitch {
-                                Layout.alignment: Qt.AlignVCenter
-                                checked: itemData.enableHelper
-                                onCheckedChanged: {
-                                    var app = Config.launchingHelperCfg.get("Apps[" + index + "]");
-                                    if (checked !== app.enableHelper) {
-                                        Global.launchingHelper.switchHelperForItem(app.exeName, checked)
-                                        console.log("SettingChanged: (launchingHelper.*" + app.exeName + "*.enableHelper)checked=", checked)
+                            RowLayout {
+                                spacing: 5
+                                FluToggleSwitch {
+                                    Layout.alignment: Qt.AlignVCenter
+                                    checked: itemData.enableHelper
+                                    onCheckedChanged: {
+                                        if (checked !== itemData.enableHelper) {
+                                            Global.launchingHelper.switchHelperForItem(itemData.exeName, checked)
+                                        }
+                                    }
+                                }
+                                FluIconButton{
+                                    iconSource: FluentIcons.Edit
+                                    iconSize: 10
+                                    onClicked: {
+                                        params.exeName = itemData.exeName
+                                        params.appName = itemData.appName
+                                        params.enableHelper = itemData.enableHelper
+                                        params.manualDuration = itemData.manualDuration
+                                        params.exePath = itemData.exePath
+                                        params.isEditMode = true
+                                        launchingHelperEditDialog.open()
                                     }
                                 }
                             }
@@ -134,5 +170,144 @@ FluScrollablePage{
                     console.log("SettingChanged: (WindowFocusHelper.Enable)checked=", checked)
                 }
             }
+    }
+
+    FluContentDialog {
+        id: launchingHelperEditDialog
+        title: params.isEditMode ? qsTr("监测信息") : qsTr("添加进程")
+        property int btns: FluContentDialogType.NegativeButton | FluContentDialogType.PositiveButton
+        buttonFlags: params.isEditMode ? FluContentDialogType.NeutralButton | btns : btns
+        negativeText: qsTr("取消")
+        onNegativeClicked: {
+            if (params.isEditMode)
+                params.reset()
+        }
+        QtObject {
+            id: params
+            property string exeName: ""
+            property string appName: ""
+            property bool enableHelper: true
+            property int manualDuration: 0
+            property string exePath: ""
+            property bool isEditMode: false
+            function reset() {
+                exeName = ""; appName = ""; enableHelper = true; manualDuration = 0; exePath = ""; isEditMode = false;
+            }
+        }
+        contentDelegate: Component {
+            ColumnLayout {
+                RowLayout {
+                    Layout.topMargin: 20
+                    Layout.bottomMargin: 10
+                    Layout.leftMargin: 20
+                    Layout.rightMargin: 20
+                    spacing: 16
+                    FluTextBox{
+                        placeholderText: qsTr("例: app.exe")
+                        Layout.fillWidth: true
+                        Layout.horizontalStretchFactor: 1
+                        text: params.exeName
+                        onTextChanged: {
+                            params.exeName = text
+                        }
+                        FluText {
+                            text: qsTr("进程名称")
+                            anchors.bottom: parent.top
+                            anchors.left: parent.left
+                            anchors.bottomMargin: 2
+                        }
+                    }
+                    FluTextBox{
+                        placeholderText: qsTr("软件名称 (选填)")
+                        Layout.fillWidth: true
+                        Layout.horizontalStretchFactor: 1
+                        text: params.appName
+                        onTextChanged: {
+                            params.appName = text
+                        }
+                        FluText {
+                            text: parent.placeholderText
+                            anchors.bottom: parent.top
+                            anchors.left: parent.left
+                            anchors.bottomMargin: 2
+                        }
+                    }
+                }
+                FluTextBox{
+                    placeholderText: qsTr("选填, 后续可自动识别")
+                    Layout.fillWidth: true
+                    Layout.topMargin: 20
+                    Layout.bottomMargin: 10
+                    Layout.leftMargin: 20
+                    Layout.rightMargin: 20
+                    text: params.exePath
+                    onTextChanged: {
+                        params.exePath = text
+                    }
+                    FluText {
+                        text:  qsTr("进程路径 (选填)")
+                        anchors.bottom: parent.top
+                        anchors.left: parent.left
+                        anchors.bottomMargin: 2
+                    }
+                }
+                RowLayout {
+                    Layout.topMargin: 16
+                    Layout.bottomMargin: 10
+                    Layout.leftMargin: 20
+                    Layout.rightMargin: 20
+                    spacing: 30
+                    FluTextBox {
+                        placeholderText: qsTr("单位: 毫秒(ms)")
+                        inputMethodHints: Qt.ImhDigitsOnly
+                        text: params.manualDuration
+                        onTextChanged: {
+                            params.manualDuration = Number(text)
+                        }
+                        FluText {
+                            text: qsTr("加载时间 (选填)")
+                            anchors.bottom: parent.top
+                            anchors.left: parent.left
+                            anchors.bottomMargin: 2
+                        }
+                    }
+                    FluToggleSwitch {
+                        text: "是否启用"
+                        textRight: false
+                        Layout.alignment: Qt.AlignVCenter
+                        checked: params.enableHelper
+                        onCheckedChanged: {
+                            params.enableHelper = checked
+                        }
+                    }
+                }
+            }
+        }
+        positiveText: qsTr("确定")
+        onPositiveClicked: {
+            Global.launchingHelper.setItem(params.exeName, params.appName, params.enableHelper, params.manualDuration, params.exePath)
+            params.reset()
+        }
+        neutralText: qsTr("删除该项")
+        onNeutralClicked: {
+            launchingHelperDeleteDialog.open()
+        }
+    }
+    FluContentDialog {
+        id: launchingHelperDeleteDialog
+        title: qsTr("删除选项")
+        contentDelegate: Component {
+            FluText {
+                text: qsTr("确定要删除该项进程吗？")
+                topPadding: 4
+                leftPadding: 20
+                rightPadding: 20
+                bottomPadding: 4
+            }
+        }
+        onPositiveClicked: {
+            Global.launchingHelper.deleteItem(params.exeName)
+            console.log("LaunchingHelper:", params.exeName, "deleted")
+        }
     }
 }

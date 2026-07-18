@@ -318,9 +318,14 @@ LaunchingHelper::LaunchingHelper(QObject *parent)
 
         // 处理软件列表数据
         if (appList.find(exeName) == appList.end()) {
+            // 自动添加数据项
+            if (ConfigManager::instance->launchingHelperCfg->get("OnlyManualAddition").toBool())
+                return;
             AppInfoItem info;
             info.exePath = QString::fromStdWString(st.imagePath);
             addAppItem(exeName, info);
+        } else if (appList[exeName].exePath.isEmpty()) {
+            appList[exeName].exePath = QString::fromStdWString(st.imagePath);
         }
         int perDuration = appList[exeName].duration;
         // 判断是否需要显示提示窗口
@@ -334,12 +339,17 @@ LaunchingHelper::LaunchingHelper(QObject *parent)
 
         QPoint cursor = QCursor::pos();
         qsizetype iconId = st.icon_imgIndex;
-        emit processStartedWithInfo(exeName, QString::number(iconId), cursor, perDuration);
+        qsizetype manualDuration = appList[exeName].manualDuration;
+        emit processStartedWithInfo(exeName, QString::number(iconId), cursor, perDuration, manualDuration);
         qDebug() << "软件启动提示 (进程名称:" << exeName << "图标Id:" << iconId << "光标:" << cursor << ")";
     });
     connect(this, &LaunchingHelper::windowShown, this, [=](DWORD pid){
         auto st = monitor->getProcState(pid);
         QString exeName = QString::fromStdWString(st.imagePath).split("\\").last();
+
+        if (appList.find(exeName) == appList.end())
+            return;
+
         QPoint cursor = QCursor::pos();
         QString windowTitle = QString::fromStdWString(st.windowTitle);
 
@@ -385,6 +395,22 @@ void LaunchingHelper::switchHelperForItem(const QVariant &exeName, bool enable)
     saveAppList();
 }
 
+void LaunchingHelper::deleteItem(const QString &exeName)
+{
+    appList.remove(exeName);
+    saveAppList();
+}
+
+void LaunchingHelper::setItem(const QString &exeName, const QString &appName, bool enableHelper, int manualDuration, const QString &exePath)
+{
+    AppInfoItem info;
+    info.appName = appName;
+    info.enableHelper = enableHelper;
+    info.manualDuration = manualDuration;
+    info.exePath = exePath;
+    addAppItem(exeName, info);
+}
+
 void LaunchingHelper::loadAppList()
 {
     ConfigFileManager* cfg = ConfigManager::instance->launchingHelperCfg;
@@ -401,6 +427,7 @@ void LaunchingHelper::loadAppList()
         item.enableHelper = data["enableHelper"].toBool();
         item.appName = data["appName"].toString();
         item.duration = data["duration"].toInt();
+        item.manualDuration = data["manualDuration"].toInt();
         item.isShowWindow = data["isShowWindow"].toBool();
         item.exePath = data["exePath"].toString();
         appList[data["exeName"].toString()] = item;
@@ -420,6 +447,7 @@ void LaunchingHelper::saveAppList()
         item["enableHelper"] = it.value().enableHelper;
         item["appName"] = it.value().appName;
         item["duration"] = it.value().duration;
+        item["manualDuration"] = it.value().manualDuration;
         item["isShowWindow"] = it.value().isShowWindow;
         item["exePath"] = it.value().exePath;
         cfg->add("Apps", item, false);

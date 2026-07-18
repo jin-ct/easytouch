@@ -50,6 +50,7 @@ ConfigManager::ConfigManager(QObject *parent)
     launchingHelperCfg = new ConfigFileManager("data/launchingHelper.json", this);
     handleConfigLoad(launchingHelperCfg);
     registerConfig("Apps", QVariantList(), launchingHelperCfg);
+    registerConfig("OnlyManualAddition", false, launchingHelperCfg);
 
     // 兼容旧配置文件
     connect(this, &ConfigManager::allConfigLoaded, this, [=](){
