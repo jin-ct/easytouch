@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include <QTimer>
 #include <QJSValue>
+#include "Def.h"
 
 ConfigManager* ConfigManager::instance = nullptr;
 
@@ -16,8 +17,10 @@ ConfigManager::ConfigManager(QObject *parent)
     // 常规设置
     settings = new ConfigFileManager("settings.json", this);
     handleConfigLoad(settings);
+    registerConfig("App.Verson", QCoreApplication::applicationVersion(), settings);
     registerConfig("AutoStart", true, settings);
     registerConfig("AutoUpdate", true, settings);
+    registerConfig("AutoUpdateBehavior", "fullyAuto", settings);
     registerConfig("UpdateChannel", "release", settings);
     registerConfig("ToolBar.Enable", true, settings);
     registerConfig("ToolBar.AutoHideBtns", true, settings);
@@ -29,6 +32,7 @@ ConfigManager::ConfigManager(QObject *parent)
     registerConfig("WindowFocusHelper.Enable", false, settings);
     registerConfig("LaunchingHelper.Enable", true, settings);
     registerConfig("Drawpad.SavePath", FileHelper::desktopFolder().toString() + "/屏幕批注", settings);
+    registerConfig("DarkMode", FluThemeType::DarkMode::Light, settings);
 
     // 数据记忆
     memory = new ConfigFileManager("data/memory.json", this);
@@ -46,6 +50,7 @@ ConfigManager::ConfigManager(QObject *parent)
     launchingHelperCfg = new ConfigFileManager("data/launchingHelper.json", this);
     handleConfigLoad(launchingHelperCfg);
     registerConfig("Apps", QVariantList(), launchingHelperCfg);
+    registerConfig("OnlyManualAddition", false, launchingHelperCfg);
 
     // 兼容旧配置文件
     connect(this, &ConfigManager::allConfigLoaded, this, [=](){

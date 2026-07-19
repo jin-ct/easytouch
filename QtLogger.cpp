@@ -64,6 +64,12 @@ void LogWriter::writeToFile(const LogMessage& msg)
     QString logFileName = getLogFileName(msg.timestamp);
     
     QFile file(logFileName);
+
+    // 清理旧文件
+    if (!file.exists()) {
+        cleanupOldFiles();
+    }
+
     if (file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
         QTextStream ts(&file);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -153,7 +159,7 @@ void LogWriter::checkRotation(const QString& fileName)
         } while (QFile::exists(backupName));
         
         file.rename(backupName);
-        
+
         // 清理旧文件
         cleanupOldFiles();
     }

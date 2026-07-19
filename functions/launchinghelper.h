@@ -27,6 +27,7 @@ struct AppInfoItem
     bool enableHelper{true};
     QString appName{""};
     int duration{0};  // 从监测到进程到显示窗口所用时间
+    int manualDuration{0};
     bool isShowWindow{false};
     QString exePath;
 };
@@ -84,13 +85,20 @@ public:
     ~LaunchingHelper();
 
     Q_INVOKABLE void disableHelperForItem(const QVariant &exeName);
+    Q_INVOKABLE void switchHelperForItem(const QVariant &exeName, bool enable);
+    Q_INVOKABLE void deleteItem(const QString &exeName);
+    Q_INVOKABLE void setItem(const QString &exeName,
+                             const QString &appName = "",
+                             bool enableHelper = true,
+                             int manualDuration = 0,
+                             const QString &exePath = "");
 
 signals:
     void loaded();
     void windowShown(DWORD pid);
     void processStarted(DWORD pid);
     void windowShownWithInfo(QVariant windowTile, QVariant exeName, QVariant exeIconId, QVariant cursorPos);
-    void processStartedWithInfo(QVariant exeName, QVariant exeIconId, QVariant cursorPos, int duration = 0);
+    void processStartedWithInfo(QVariant exeName, QVariant exeIconId, QVariant cursorPos, int duration = 0, int manualDuration = 0);
 
 private:
     void loadAppList();

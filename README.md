@@ -67,6 +67,11 @@
   - 构建项目的Qt版本不低于Qt6, 推荐开发时使用Qt6.8.3
   - 程序主入口为main.cpp, 加载UI时先加载Splash.qml，等配置文件读取完毕后再加载Main.qml
 
+## 项目依赖
+
+  - [Qt](https://qt-project.org)
+  - [FluentUI](https://github.com/zhuzichu520/FluentUI)
+
 ## Star History
 
 <a href="https://www.star-history.com/?repos=jin-ct%2Feasytouch&type=date&legend=top-left">

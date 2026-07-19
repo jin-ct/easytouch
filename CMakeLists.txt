@@ -17,6 +17,8 @@ endif()
 
 string(REGEX REPLACE "^v" "" GIT_TAG ${GIT_TAG})
 
+string(REPLACE "-beta" "" GIT_TAG ${GIT_TAG})
+
 string(REPLACE "." ";" VERSION_LIST ${GIT_TAG})
 list(GET VERSION_LIST 0 MAJOR)
 list(GET VERSION_LIST 1 MINOR)
@@ -35,6 +37,9 @@ set(CMAKE_EXE_LINKER_FLAGS "-static -s")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_AUTORCC ON)
+
+set(FLUENTUI_BUILD_EXAMPLES OFF)
+set(FLUENTUI_BUILD_STATIC_LIB ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick)
 find_package(Qt6 REQUIRED COMPONENTS Concurrent)
@@ -57,6 +62,7 @@ qt_add_qml_module(appeasytouch
     SOURCES globalmanager.h globalmanager.cpp
     SOURCES configmanager.h configmanager.cpp
     SOURCES QtLogger.cpp QtLogger.h
+    SOURCES stdafx.h
     SOURCES functions/fullscreenwatcher.h functions/fullscreenwatcher.cpp
     SOURCES functions/notificationhelper.h functions/notificationhelper.cpp
     SOURCES functions/whiteboarditem.h functions/whiteboarditem.cpp
@@ -69,12 +75,15 @@ qt_add_qml_module(appeasytouch
     SOURCES functions/mousehook.h functions/mousehook.cpp
     SOURCES functions/configfilemanager.h functions/configfilemanager.cpp
     SOURCES functions/launchinghelper.h functions/launchinghelper.cpp
+    SOURCES functions/CircularReveal.h functions/CircularReveal.cpp
+    SOURCES functions/FileWatcher.h functions/FileWatcher.cpp
     QML_FILES Main.qml
     QML_FILES views/ToolWindows.qml
     QML_FILES views/SettingsPage.qml
     QML_FILES views/Whileboard.qml
     QML_FILES views/RandomGenerator.qml
     QML_FILES views/SplashWindow.qml
+    QML_FILES views/HotloadWindow.qml
     QML_FILES components/ToolWindowContent.qml
     QML_FILES components/WindowTitleBar.qml
     QML_FILES components/Popup/VolumePopup.qml
@@ -82,14 +91,16 @@ qt_add_qml_module(appeasytouch
     QML_FILES components/Popup/PenPopup.qml
     QML_FILES components/Popup/EraserPopup.qml
     QML_FILES components/Popup/ScrMoveSaveList.qml
-    QML_FILES components/Card/SettingsButtonCard.qml
-    QML_FILES components/Card/SettingsCard.qml
-    QML_FILES components/Card/SettingsComboCard.qml
-    QML_FILES components/Card/SettingsSliderCard.qml
-    QML_FILES components/Card/SettingsSwitchCard.qml
-    QML_FILES components/Card/SettingsTextFieldCard.qml
     QML_FILES components/Dialog/ScrMoveSaveDialog.qml
     QML_FILES components/Dialog/MessageBoxDialog.qml
+    QML_FILES components/SettingItems/SettingItem.qml
+    QML_FILES components/SettingItems/SettingItemExpander.qml
+    QML_FILES components/SettingItems/ExpandedItem.qml
+    QML_FILES components/SettingPages/Basic.qml
+    QML_FILES components/SettingPages/About.qml
+    QML_FILES components/SettingPages/ToolBar.qml
+    QML_FILES components/SettingPages/Functions.qml
+    QML_FILES components/SettingPages/Advanced.qml
     RESOURCES qtquickcontrols2.conf
     RESOURCES app.rc.in
     QML_FILES Splash.qml
@@ -109,6 +120,7 @@ set_target_properties(appeasytouch PROPERTIES
 
 target_link_libraries(appeasytouch
     PRIVATE Qt6::Quick
+    fluentuiplugin
 )
 target_link_libraries(appeasytouch PRIVATE Qt6::Core)
 target_link_libraries(appeasytouch PRIVATE Qt6::Concurrent)
@@ -129,4 +141,10 @@ install(TARGETS appeasytouch
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+add_subdirectory(3rdparty/FluentUI)
+
+target_include_directories(appeasytouch PRIVATE
+    3rdparty/FluentUI/src
 )

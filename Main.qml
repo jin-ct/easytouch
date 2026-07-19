@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtCore
+import FluentUI
 import Functions 1.0
 import "./components"
 import "./components/Popup"
@@ -34,18 +35,24 @@ ApplicationWindow {
             if (id === "openUsb") {
                 Global.funs.openDrive()
             }
+            if (id === "update" && Config.settings.get("AutoUpdateBehavior") === "onlyRemind") {
+                Global.updateHelper.startDownload()
+            }
         }
         function onAppQuit() {
             Qt.quit()
         }
         function onStartSettings() {
-            settingsPage.show()
+            FluRouter.navigate("/")
         }
     }
     Connections {
         target: Global.updateHelper
         function onUpdateAvailable(version) {
-            Global.notification.showNotification("update", "有新版本的易触控" + "（" + version + "）", "现在开始更新易触控")
+            let behavior = Config.settings.get("AutoUpdateBehavior");
+            let msg = behavior === "fullyAuto" ? "更新正在进行" : "点击此处开始更新"
+            if (behavior !== "noNotice")
+                Global.notification.showNotification("update", "有新版本的易触控" + "（" + version + "）", msg)
         }
     }
     Connections {
@@ -82,6 +89,18 @@ ApplicationWindow {
             }
         }
     }
+    Connections {
+        target: Config.settings
+        function onConfigChanged(path, value) {
+            if (!Config.settings.readReady)
+                return
+            switch(path) {
+            case "AutoStart":
+                Global.funs.setAutoStart(value)
+                break;
+            }
+        }
+    }
 
     // 窗口创建完成
     Component.onCompleted: {
@@ -94,16 +113,22 @@ ApplicationWindow {
 
     // =============== 窗口 ===============
 
-    // 设置窗口
-    Loader {
-        id: settingsPage
-        function show() {
-            source = "views/SettingsPage.qml"
+    FluLauncher {
+        id: fluUI
+        Connections{
+            target: FluTheme
+            function onDarkModeChanged(){
+                Config.settings.set("DarkMode", FluTheme.darkMode)
+            }
         }
-        Connections {
-            target: settingsPage.item
-            function onVisibleChanged(val) {
-                if (!val) settingsPage.source = ""
+        Component.onCompleted: {
+            FluApp.init(fluUI)
+            FluApp.windowIcon = "qrc:/icon/icon.svg"
+            FluTheme.darkMode = Config.settings.get("DarkMode")
+            FluTheme.animationEnabled = true
+            FluRouter.routes = {
+                "/": "qrc:/qt/qml/easytouch/views/SettingsPage.qml",
+                "/hotload": "qrc:/qt/qml/easytouch/views/HotloadWindow.qml"
             }
         }
     }

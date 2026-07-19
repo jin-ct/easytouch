@@ -105,36 +105,37 @@ NotificationHelper::NotificationHelper(QObject *parent)
     d->menu->addAction(quitAction);
 
     d->tray->setContextMenu(nullptr);
-    connect(d->tray, &QSystemTrayIcon::activated, this, [d](QSystemTrayIcon::ActivationReason reason) {
-        if (reason != QSystemTrayIcon::Context)
-            return;
+    connect(d->tray, &QSystemTrayIcon::activated, this, [=](QSystemTrayIcon::ActivationReason reason) {
+        if (reason == QSystemTrayIcon::Context) {
+            d->menu->adjustSize();
+            const QSize menuSize = d->menu->sizeHint();
+            const QRect iconRect = d->tray->geometry();
+            const QPoint cur = QCursor::pos();
 
-        d->menu->adjustSize();
-        const QSize menuSize = d->menu->sizeHint();
-        const QRect iconRect = d->tray->geometry();
-        const QPoint cur = QCursor::pos();
+            const int touchThreshSq = kTouchOrLostCursorDistPx * kTouchOrLostCursorDistPx;
+            const bool cursorNearIcon = iconRect.isValid() && distSquaredPointToRect(cur, iconRect) <= touchThreshSq;
 
-        const int touchThreshSq = kTouchOrLostCursorDistPx * kTouchOrLostCursorDistPx;
-        const bool cursorNearIcon = iconRect.isValid() && distSquaredPointToRect(cur, iconRect) <= touchThreshSq;
+            // 触控时光标常未落在图标上，将光标移到图标中心作为近似触点
+            QPoint anchor = cur;
+            if (!cursorNearIcon && iconRect.isValid()) {
+                QCursor::setPos(iconRect.center());
+                anchor = QCursor::pos();
+            }
 
-        // 触控时光标常未落在图标上，将光标移到图标中心作为近似触点
-        QPoint anchor = cur;
-        if (!cursorNearIcon && iconRect.isValid()) {
-            QCursor::setPos(iconRect.center());
-            anchor = QCursor::pos();
+            QScreen *screen = QGuiApplication::screenAt(anchor);
+            if (!screen)
+                screen = QGuiApplication::screenAt(iconRect.center());
+            if (!screen)
+                screen = QGuiApplication::primaryScreen();
+            const QRect avail = screen ? screen->availableGeometry() : QRect();
+
+            if (screen && avail.isValid())
+                d->menu->popup(menuPosFromCursor(anchor, menuSize, avail));
+            else
+                d->menu->popup(cur);
+        } else if (reason == QSystemTrayIcon::Trigger) {
+            emit startSettings();
         }
-
-        QScreen *screen = QGuiApplication::screenAt(anchor);
-        if (!screen)
-            screen = QGuiApplication::screenAt(iconRect.center());
-        if (!screen)
-            screen = QGuiApplication::primaryScreen();
-        const QRect avail = screen ? screen->availableGeometry() : QRect();
-
-        if (screen && avail.isValid())
-            d->menu->popup(menuPosFromCursor(anchor, menuSize, avail));
-        else
-            d->menu->popup(cur);
     });
 
     d->tray->show();
