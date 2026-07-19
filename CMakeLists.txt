@@ -105,6 +105,7 @@ qt_add_qml_module(appeasytouch
     RESOURCES app.rc.in
     QML_FILES Splash.qml
     SOURCES functions/qmlimageprovider.h functions/qmlimageprovider.cpp
+    SOURCES functions/WindowMonitor.h functions/WindowMonitor.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

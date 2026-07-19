@@ -4,6 +4,7 @@
 #include <QString>
 #include <cmath>
 #include <windowsx.h>
+#include "WindowMonitor.h"
 
 const wchar_t *WeChatHelper::s_overlayClassName = L"WeChatHelperOverlay";
 
@@ -56,39 +57,15 @@ WeChatHelper::~WeChatHelper()
 
 bool WeChatHelper::isWeixinForeground()
 {
-    HWND fg = GetForegroundWindow();
-    if (!fg) return false;
-
-    DWORD pid = 0;
-    GetWindowThreadProcessId(fg, &pid);
-    if (!pid) return false;
-
-    HANDLE hProc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
-    if (!hProc) return false;
-
-    wchar_t path[MAX_PATH];
-    DWORD size = MAX_PATH;
-    bool ok = false;
-
-    wchar_t title[256] = {};
-
-    if (QueryFullProcessImageNameW(hProc, 0, path, &size) && GetWindowText(fg, title, 256)) {
-        QString exe = QString::fromWCharArray(path).toLower();
-        QString m_title = QString::fromWCharArray(title);
-        ok = (exe.endsWith("\\weixin.exe") || exe.endsWith("\\wechat.exe")) &&
-             (m_title.contains("微信") || m_title.contains("设置"));
-    }
-
-    CloseHandle(hProc);
-    return ok;
+    WindowInfo win = WindowMonitor::instance()->getTopWindow();
+    bool isExeNameMatch = win.exeName.toLower() == "weixin.exe";
+    bool isStyleMatch = win.style & WS_MAXIMIZEBOX;
+    return isExeNameMatch && isStyleMatch;
 }
 
 HWND WeChatHelper::getWeChatHwnd()
 {
-    HWND fg = GetForegroundWindow();
-    if (!fg) return nullptr;
-    if (!isWeixinForeground()) return nullptr;
-    return fg;
+    return WindowMonitor::instance()->getTopWindow().hwnd;
 }
 
 bool WeChatHelper::getWeChatClientRectInScreen(RECT *outRect)

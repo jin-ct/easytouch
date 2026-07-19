@@ -13,12 +13,14 @@
 #include "functions/wechathelper.h"
 #include "functions/windowfocushelper.h"
 #include "functions/screenmovement.h"
-#include "functions/mousehook.h"
 #include "functions/configfilemanager.h"
 #include "functions/launchinghelper.h"
 #include "functions/qmlimageprovider.h"
 #include "functions/CircularReveal.h"
 #include "functions/FileWatcher.h"
+
+#include "functions/mousehook.h"
+#include "functions/WindowMonitor.h"
 
 #include "globalmanager.h"
 #include "configmanager.h"
@@ -28,6 +30,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    // 日志初始化
     LOG_INIT(LogConfig());
 
     // 防止重复启动
@@ -39,12 +42,9 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // 在主线程初始化MouseHook并启动/停止线程
-    MouseHook::instance()->start();
-    QObject::connect(&app, &QApplication::aboutToQuit, MouseHook::instance(), &MouseHook::stop);
-
     QQmlApplicationEngine engine;
 
+    // Qml类型注册
     qmlRegisterType<Functions>("Functions", 1, 0, "Functions");
     qmlRegisterType<FullscreenWatcher>("Functions", 1, 0, "FullscreenWatcher");
     qmlRegisterType<NotificationHelper>("Functions", 1, 0, "NotificationHelper");
@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<CircularReveal>("Functions", 1, 0, "CircularReveal");
     qmlRegisterType<FileWatcher>("Functions", 1, 0, "FileWatcher");
 
+    // Qml单例注册及初始化
     qmlRegisterSingletonType<GlobalManager>(
         "Functions", 1, 0, "Global",
         [](QQmlEngine *engine, QJSEngine *) -> QObject* {
@@ -80,8 +81,18 @@ int main(int argc, char *argv[])
         }
     );
 
+    // 监测线程（单例）初始化
+    // 鼠标钩子
+    MouseHook::instance()->start();
+    QObject::connect(&app, &QApplication::aboutToQuit, MouseHook::instance(), &MouseHook::stop);
+    // 顶层窗口监测器
+    WindowMonitor::instance()->start();
+    QObject::connect(&app, &QApplication::aboutToQuit, WindowMonitor::instance(), &WindowMonitor::stop);
+
+    // Qml图像 Provider
     engine.addImageProvider(QLatin1String("MImage"), QmlImageProvider::instance());
 
+    // 暴露程序目录至Qml
     engine.rootContext()->setContextProperty("appDir", qApp->applicationDirPath());
 
     QObject::connect(
