@@ -34,7 +34,7 @@ UpdateHelper::UpdateHelper(QObject *parent)
     
     connect(this, &UpdateHelper::updateAvailable, this, [=](const QString &version, const QString &downloadUrl){
         qDebug() << "updateAvailable: " << version << " " << downloadUrl;
-        if (ConfigManager::instance->settings->get("AutoUpdateBehavior").toString() == "fullyAuto")
+        if (ConfigManager::instance->settings->get("AutoUpdateBehavior").toString() != "onlyRemind")
             startDownload(downloadUrl);
     });
     connect(this, &UpdateHelper::updateCheckFinished, this, [=](bool hasUpdate){
@@ -312,7 +312,7 @@ void UpdateHelper::startDownload()
 bool UpdateHelper::compareVersions(const QString &currentVersion, const QString &latestTag, const QString &channel)
 {
     QString currentTag = QString("v%1%2").arg(currentVersion, channel == "release" ? "" : "-beta");
-    return compareTag(currentTag, latestTag, channel) > 0;
+    return compareTag(latestTag, currentTag, channel) > 0;
 }
 
 void UpdateHelper::downloadUpdate(const QString &downloadUrl)

@@ -307,7 +307,11 @@ FluScrollablePage{
         }
         onPositiveClicked: {
             Global.launchingHelper.deleteItem(params.exeName)
+            params.reset()
             console.log("LaunchingHelper:", params.exeName, "deleted")
+        }
+        onNegativeClicked: {
+            params.reset()
         }
     }
 }
