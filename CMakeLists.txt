@@ -93,6 +93,7 @@ qt_add_qml_module(appeasytouch
     QML_FILES qml/components/Popup/PenPopup.qml
     QML_FILES qml/components/Popup/EraserPopup.qml
     QML_FILES qml/components/Popup/ScrMoveSaveList.qml
+    QML_FILES qml/components/Popup/SystemTrayMenu.qml
     QML_FILES qml/components/Dialog/ScrMoveSaveDialog.qml
     QML_FILES qml/components/Dialog/MessageBoxDialog.qml
     QML_FILES qml/components/SettingItems/SettingItem.qml

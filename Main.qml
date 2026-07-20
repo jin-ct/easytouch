@@ -39,11 +39,8 @@ ApplicationWindow {
                 Global.updateHelper.startDownload()
             }
         }
-        function onAppQuit() {
-            Qt.quit()
-        }
-        function onStartSettings() {
-            FluRouter.navigate("/")
+        function onShowContentMenu(anchor) {
+            systemTrayMenu.popup(anchor)
         }
     }
     Connections {
@@ -131,6 +128,11 @@ ApplicationWindow {
                 "/hotload": "qrc:/qt/qml/easytouch/qml/views/HotloadWindow.qml"
             }
         }
+    }
+
+    // 系统托盘图标菜单
+    SystemTrayMenu {
+        id: systemTrayMenu
     }
 
     // 批注窗口

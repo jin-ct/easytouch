@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QString>
+#include <QMenu>
+#include <QPoint>
 
 class NotificationHelper : public QObject
 {
@@ -11,12 +13,13 @@ public:
     explicit NotificationHelper(QObject *parent = nullptr);
     ~NotificationHelper();
 
-    Q_INVOKABLE void showNotification(const QString &id, const QString &title, const QString &message);
+    Q_INVOKABLE void showNotification(const QString &id, const QString &title, const QString &message, int millisecondsTimeoutHint = 5000);
 
 signals:
     void notificationClicked(const QString &id);
-    void appQuit();
-    void startSettings();
+    void showContentMenu(QPoint anchor);
+
+private:
 };
 
 #endif // NOTIFICATIONHELPER_H
