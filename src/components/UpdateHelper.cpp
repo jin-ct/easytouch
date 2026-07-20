@@ -229,7 +229,7 @@ int UpdateHelper::compareTag(const QString &a, const QString &b, const QString &
         else
             return -1;
     } else if (curChannel == "beta") {
-        if (res > 0 || (res = 0, aChannel.toLower() == "release"))
+        if (res > 0)
             return 1;
         else if (res == 0 && aChannel.toLower() == bChannel.toLower())
             return 0;
