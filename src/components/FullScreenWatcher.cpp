@@ -1,4 +1,4 @@
-#include "fullscreenwatcher.h"
+#include "FullScreenWatcher.h"
 #include <QDebug>
 
 bool isFullscreenWindow(HWND hwnd) {

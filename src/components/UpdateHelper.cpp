@@ -1,4 +1,4 @@
-#include "updatehelper.h"
+#include "UpdateHelper.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -18,7 +18,7 @@
 #include <Shlwapi.h>
 #include <comdef.h>
 #include <comutil.h>
-#include "../configmanager.h"
+#include "../ConfigManager.h"
 
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "comsuppw.lib")
@@ -422,8 +422,7 @@ void UpdateHelper::extractZip(const QString &zipPath, const QString &extractPath
 
     // 使用 PowerShell Expand-Archive 命令解压（更可靠）
     QString powershellCmd = QString("powershell.exe -Command \"Expand-Archive -Path '%1' -DestinationPath '%2' -Force\"")
-                            .arg(absZipPath.replace("'", "''"))
-                            .arg(absExtractPath.replace("'", "''"));
+                            .arg(absZipPath.replace("'", "''"), absExtractPath.replace("'", "''"));
 
     QProcess extractProcess;
     extractProcess.start(powershellCmd);

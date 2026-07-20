@@ -1,4 +1,4 @@
-#include "windowfocushelper.h"
+#include "WindowFocusHelper.h"
 #include <QDebug>
 
 #ifndef HSHELL_WINDOWCREATED

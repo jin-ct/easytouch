@@ -1,4 +1,4 @@
-#include "whiteboarditem.h"
+#include "WhiteBoardItem.h"
 
 #include <QPainter>
 #include <QPainterPath>

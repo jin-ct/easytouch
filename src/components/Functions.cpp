@@ -3,7 +3,7 @@
  * @note 用于设置窗口或监听信号，以及实现基本功能（如关闭窗口、系统音量等）
  */
 
-#include "functions.h"
+#include "Functions.h"
 #include <QDesktopServices>
 #include <QUrl>
 #include <QFile>

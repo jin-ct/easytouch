@@ -4,27 +4,27 @@
 #include <Windows.h>
 #include <QQmlContext>
 
-#include "functions/functions.h"
-#include "functions/fullscreenwatcher.h"
-#include "functions/notificationhelper.h"
-#include "functions/whiteboarditem.h"
-#include "functions/updatehelper.h"
-#include "functions/filehelper.h"
-#include "functions/wechathelper.h"
-#include "functions/windowfocushelper.h"
-#include "functions/screenmovement.h"
-#include "functions/configfilemanager.h"
-#include "functions/launchinghelper.h"
-#include "functions/qmlimageprovider.h"
-#include "functions/CircularReveal.h"
-#include "functions/FileWatcher.h"
+#include "src/components/Functions.h"
+#include "src/components/FullScreenWatcher.h"
+#include "src/components/NotificationHelper.h"
+#include "src/components/UpdateHelper.h"
+#include "src/components/FileHelper.h"
+#include "src/components/ConfigFileManager.h"
+#include "src/components/QmlImageProvider.h"
+#include "src/components/CircularReveal.h"
+#include "src/components/FileWatcher.h"
+#include "src/components/MouseHook.h"
+#include "src/components/WindowMonitor.h"
 
-#include "functions/mousehook.h"
-#include "functions/WindowMonitor.h"
+#include "src/functions/WhiteBoardItem.h"
+#include "src/functions/WeChatHelper.h"
+#include "src/functions/WindowFocusHelper.h"
+#include "src/functions/ScreenMovement.h"
+#include "src/functions/LaunchingHelper.h"
 
-#include "globalmanager.h"
-#include "configmanager.h"
-#include "QtLogger.h"
+#include "src/GlobalManager.h"
+#include "src/ConfigManager.h"
+#include "src/QtLogger.h"
 
 int main(int argc, char *argv[])
 {
@@ -48,18 +48,19 @@ int main(int argc, char *argv[])
     qmlRegisterType<Functions>("Functions", 1, 0, "Functions");
     qmlRegisterType<FullscreenWatcher>("Functions", 1, 0, "FullscreenWatcher");
     qmlRegisterType<NotificationHelper>("Functions", 1, 0, "NotificationHelper");
-    qmlRegisterType<WhiteboardItem>("Functions", 1, 0, "WhiteboardItem");
     qmlRegisterType<UpdateHelper>("Functions", 1, 0, "UpdateHelper");
     qmlRegisterType<FileHelper>("Functions", 1, 0, "FileHelper");
-    qmlRegisterType<WeChatHelper>("Functions", 1, 0, "WeChatHelper");
-    qmlRegisterType<WindowFocusHelper>("Functions", 1, 0, "WindowFocusHelper");
-    qmlRegisterType<ScreenMovement>("Functions", 1, 0, "ScreenMovement");
     qmlRegisterType<MouseHook>("Functions", 1, 0, "MouseHook");
     qmlRegisterType<QmlImageProvider>("Functions", 1, 0, "QmlImageProvider");
     qmlRegisterType<ConfigFileManager>("Functions", 1, 0, "ConfigFileManager");
-    qmlRegisterType<LaunchingHelper>("Functions", 1, 0, "LaunchingHelper");
     qmlRegisterType<CircularReveal>("Functions", 1, 0, "CircularReveal");
     qmlRegisterType<FileWatcher>("Functions", 1, 0, "FileWatcher");
+
+    qmlRegisterType<WhiteboardItem>("Functions", 1, 0, "WhiteboardItem");
+    qmlRegisterType<WeChatHelper>("Functions", 1, 0, "WeChatHelper");
+    qmlRegisterType<WindowFocusHelper>("Functions", 1, 0, "WindowFocusHelper");
+    qmlRegisterType<ScreenMovement>("Functions", 1, 0, "ScreenMovement");
+    qmlRegisterType<LaunchingHelper>("Functions", 1, 0, "LaunchingHelper");
 
     // Qml单例注册及初始化
     qmlRegisterSingletonType<GlobalManager>(

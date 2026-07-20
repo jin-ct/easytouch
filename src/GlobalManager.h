@@ -3,16 +3,15 @@
 
 #include <QObject>
 
-#include "functions/functions.h"
-#include "functions/filehelper.h"
-#include "functions/notificationhelper.h"
-#include "functions/updatehelper.h"
-#include "functions/mousehook.h"
-#include "functions/qmlimageprovider.h"
-#include "functions/wechathelper.h"
-#include "functions/windowfocushelper.h"
-#include "functions/launchinghelper.h"
-#include "functions/qmlimageprovider.h"
+#include "components/Functions.h"
+#include "components/Filehelper.h"
+#include "components/NotificationHelper.h"
+#include "components/UpdateHelper.h"
+#include "components/MouseHook.h"
+#include "components/QmlImageProvider.h"
+#include "functions/WeChatHelper.h"
+#include "functions/WindowFocusHelper.h"
+#include "functions/LaunchingHelper.h"
 
 class GlobalManager : public QObject
 {

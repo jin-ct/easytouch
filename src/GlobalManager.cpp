@@ -1,5 +1,5 @@
-#include "globalmanager.h"
-#include "configmanager.h"
+#include "GlobalManager.h"
+#include "ConfigManager.h"
 
 GlobalManager* GlobalManager::instance = nullptr;
 

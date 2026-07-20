@@ -1,4 +1,4 @@
-#include "filehelper.h"
+#include "FileHelper.h"
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QDateTime>

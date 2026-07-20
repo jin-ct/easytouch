@@ -3,9 +3,9 @@ import QtQuick.Controls
 import QtCore
 import FluentUI
 import Functions 1.0
-import "./components"
-import "./components/Popup"
-import "./views"
+import "./qml/components"
+import "./qml/components/Popup"
+import "./qml/views"
 
 ApplicationWindow {
     visible: true
@@ -82,7 +82,7 @@ ApplicationWindow {
             console.log("LaunchingHelper已加载")
         }
         function onProcessStartedWithInfo(exeName, exeIconId, cursorPos, duration) {
-            var splashWindow = Qt.createComponent("views/SplashWindow.qml");
+            var splashWindow = Qt.createComponent("qml/views/SplashWindow.qml");
             if (splashWindow.status === Component.Ready) {
                 var obj = splashWindow.createObject(null, { exeName: exeName, exeIconId: exeIconId, cursorPos: cursorPos,  duration: duration});
                 obj.destroy(15000)  // 最长显示15s
@@ -127,8 +127,8 @@ ApplicationWindow {
             FluTheme.darkMode = Config.settings.get("DarkMode")
             FluTheme.animationEnabled = true
             FluRouter.routes = {
-                "/": "qrc:/qt/qml/easytouch/views/SettingsPage.qml",
-                "/hotload": "qrc:/qt/qml/easytouch/views/HotloadWindow.qml"
+                "/": "qrc:/qt/qml/easytouch/qml/views/SettingsPage.qml",
+                "/hotload": "qrc:/qt/qml/easytouch/qml/views/HotloadWindow.qml"
             }
         }
     }
@@ -137,7 +137,7 @@ ApplicationWindow {
     Loader {
         id: whileboard
         function show() {
-            source = "views/Whileboard.qml"
+            source = "qml/views/Whileboard.qml"
         }
         function close() {
             source = ""
@@ -157,7 +157,7 @@ ApplicationWindow {
     Loader {
         id: randomGenerator
         function show() {
-            source = "views/RandomGenerator.qml"
+            source = "qml/views/RandomGenerator.qml"
         }
         Connections {
             target: randomGenerator.item
@@ -170,7 +170,7 @@ ApplicationWindow {
     // 工具栏窗口
     Loader {
         id: toolWindows
-        source: Config.settings.data.ToolBar.Enable ? "views/ToolWindows.qml" : ""
+        source: Config.settings.data.ToolBar.Enable ? "qml/views/ToolWindows.qml" : ""
     }
 
     // =============== 窗口（结束） ===============
@@ -184,7 +184,7 @@ ApplicationWindow {
        timer.restart();
     }
     function showMessageBox(title, message, okBtnClickedCb = () =>{} , cancelBtnClickedCb = () =>{}) {
-        const comp = Qt.createComponent("components/Dialog/MessageBoxDialog.qml")
+        const comp = Qt.createComponent("qml/components/Dialog/MessageBoxDialog.qml")
         if (comp.status === Component.Ready) {
             const dlg = comp.createObject()
             dlg.title = title

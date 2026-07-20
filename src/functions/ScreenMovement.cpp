@@ -1,4 +1,4 @@
-#include "screenmovement.h"
+#include "ScreenMovement.h"
 
 #include <QWidget>
 #include <QApplication>
@@ -707,4 +707,4 @@ void ScreenMovement::stopAll()
     }
 }
 
-#include "screenmovement.moc"
+#include "ScreenMovement.moc"

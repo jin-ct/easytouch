@@ -1,4 +1,4 @@
-#include "launchinghelper.h"
+#include "LaunchingHelper.h"
 #include <QDebug>
 #include <QMutexLocker>
 #include <QFileInfo>
@@ -8,8 +8,8 @@
 #include <initguid.h>
 #include <commoncontrols.h>
 #include <QCursor>
-#include "qmlimageprovider.h"
-#include "../configmanager.h"
+#include "../components/QmlImageProvider.h"
+#include "../ConfigManager.h"
 
 static const int kPollingIntervalMs = 20;
 

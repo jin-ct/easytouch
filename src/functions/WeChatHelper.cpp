@@ -1,10 +1,10 @@
-#include "wechathelper.h"
+#include "WechatHelper.h"
 #include <QGuiApplication>
 #include <QScreen>
 #include <QString>
 #include <cmath>
 #include <windowsx.h>
-#include "WindowMonitor.h"
+#include "../components/WindowMonitor.h"
 
 const wchar_t *WeChatHelper::s_overlayClassName = L"WeChatHelperOverlay";
 
@@ -390,7 +390,7 @@ LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
             int x = pi.ptPixelLocationRaw.x;
             int y = pi.ptPixelLocationRaw.y;
-            int dx = x - self->m_lastX;
+            // int dx = x - self->m_lastX;
             int dy = y - self->m_lastY;
             int totalDx = x - self->m_touchStartX;
             int totalDy = y - self->m_touchStartY;

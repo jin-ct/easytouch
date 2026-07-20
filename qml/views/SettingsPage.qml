@@ -28,7 +28,7 @@ FluWindow {
         FluPaneItem{
             title: qsTr("基本设置")
             icon: FluentIcons.Settings
-            url: "qrc:/qt/qml/easytouch/components/SettingPages/Basic.qml"
+            url: "qrc:/qt/qml/easytouch/qml/components/SettingPages/Basic.qml"
             onTap:{
                 navigationView.push(url)
             }
@@ -36,7 +36,7 @@ FluWindow {
         FluPaneItem{
             title: qsTr("工具栏")
             icon: FluentIcons.HolePunchLandscapeRight
-            url: "qrc:/qt/qml/easytouch/components/SettingPages/ToolBar.qml"
+            url: "qrc:/qt/qml/easytouch/qml/components/SettingPages/ToolBar.qml"
             onTap:{
                 navigationView.push(url)
             }
@@ -44,7 +44,7 @@ FluWindow {
         FluPaneItem{
             title: qsTr("触控优化功能")
             icon: FluentIcons.ViewAll
-            url: "qrc:/qt/qml/easytouch/components/SettingPages/Functions.qml"
+            url: "qrc:/qt/qml/easytouch/qml/components/SettingPages/Functions.qml"
             onTap:{
                 navigationView.push(url)
             }
@@ -52,7 +52,7 @@ FluWindow {
         FluPaneItem{
             title: qsTr("高级")
             icon: FluentIcons.Code
-            url: "qrc:/qt/qml/easytouch/components/SettingPages/Advanced.qml"
+            url: "qrc:/qt/qml/easytouch/qml/components/SettingPages/Advanced.qml"
             onTap:{
                 navigationView.push(url)
             }
@@ -67,7 +67,7 @@ FluWindow {
         FluPaneItem{
             title: qsTr("关于")
             icon: FluentIcons.Info
-            url: "qrc:/qt/qml/easytouch/components/SettingPages/About.qml"
+            url: "qrc:/qt/qml/easytouch/qml/components/SettingPages/About.qml"
             onTap:{
                 navigationView.push(url)
             }

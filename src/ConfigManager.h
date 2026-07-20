@@ -2,7 +2,7 @@
 #define CONFIGMANAGER_H
 
 #include <QObject>
-#include "functions/configfilemanager.h"
+#include "components/ConfigFileManager.h"
 
 class ConfigManager : public QObject
 {

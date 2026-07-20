@@ -1,5 +1,5 @@
-#include "configmanager.h"
-#include "functions/filehelper.h"
+#include "ConfigManager.h"
+#include "components/FileHelper.h"
 #include <QApplication>
 #include <QSettings>
 #include <QFileInfo>

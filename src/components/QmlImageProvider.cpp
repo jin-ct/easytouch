@@ -1,4 +1,4 @@
-#include "qmlimageprovider.h"
+#include "QmlImageProvider.h"
 #include <QApplication>
 #include <QDebug>
 

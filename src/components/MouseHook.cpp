@@ -1,4 +1,4 @@
-#include "mousehook.h"
+#include "MouseHook.h"
 #include <QDebug>
 #include <QCursor>
 #include <QMutexLocker>
