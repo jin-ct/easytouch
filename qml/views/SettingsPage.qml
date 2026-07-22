@@ -50,6 +50,14 @@ FluWindow {
             }
         }
         FluPaneItem{
+            title: qsTr("触控优化")
+            icon: FluentIcons.Touch
+            url: "qrc:/qt/qml/easytouch/qml/components/SettingPages/TouchPromote.qml"
+            onTap:{
+                navigationView.push(url)
+            }
+        }
+        FluPaneItem{
             title: qsTr("工具栏")
             icon: FluentIcons.HolePunchLandscapeRight
             url: "qrc:/qt/qml/easytouch/qml/components/SettingPages/ToolBar.qml"
@@ -58,7 +66,7 @@ FluWindow {
             }
         }
         FluPaneItem{
-            title: qsTr("触控优化功能")
+            title: qsTr("辅助功能")
             icon: FluentIcons.ViewAll
             url: "qrc:/qt/qml/easytouch/qml/components/SettingPages/Functions.qml"
             onTap:{

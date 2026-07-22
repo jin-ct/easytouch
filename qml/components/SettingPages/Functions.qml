@@ -64,6 +64,7 @@ FluScrollablePage{
                 Layout.bottomMargin: 4
                 FluTextBox{
                     placeholderText: qsTr("搜索进程名称")
+                    iconSource: FluentIcons.Search
                     onTextChanged: {
                         launchingHelperSubItem.showList = launchingHelperSubItem.appList.filter(function(item) {
                             return item.exeName.toLowerCase().includes(text)

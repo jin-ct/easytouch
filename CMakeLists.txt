@@ -104,6 +104,8 @@ qt_add_qml_module(appeasytouch
     QML_FILES qml/components/SettingPages/ToolBar.qml
     QML_FILES qml/components/SettingPages/Functions.qml
     QML_FILES qml/components/SettingPages/Advanced.qml
+    QML_FILES qml/components/SettingPages/TouchPromote.qml
+    QML_FILES qml/components/Control/MDropDownButton.qml
     RESOURCES qtquickcontrols2.conf
     RESOURCES app.rc.in
     QML_FILES Splash.qml
