@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import FluentUI
 import Functions 1.0
-import "../SettingItems"
+import "../Control"
 
 FluScrollablePage{
     id: root

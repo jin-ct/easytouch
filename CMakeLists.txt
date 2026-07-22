@@ -96,16 +96,17 @@ qt_add_qml_module(appeasytouch
     QML_FILES qml/components/Popup/SystemTrayMenu.qml
     QML_FILES qml/components/Dialog/ScrMoveSaveDialog.qml
     QML_FILES qml/components/Dialog/MessageBoxDialog.qml
-    QML_FILES qml/components/SettingItems/SettingItem.qml
-    QML_FILES qml/components/SettingItems/SettingItemExpander.qml
-    QML_FILES qml/components/SettingItems/ExpandedItem.qml
+    QML_FILES qml/components/Control/SettingItem.qml
+    QML_FILES qml/components/Control/SettingItemExpander.qml
+    QML_FILES qml/components/Control/ExpandedItem.qml
+    QML_FILES qml/components/Control/MDropDownButton.qml
     QML_FILES qml/components/SettingPages/Basic.qml
     QML_FILES qml/components/SettingPages/About.qml
     QML_FILES qml/components/SettingPages/ToolBar.qml
     QML_FILES qml/components/SettingPages/Functions.qml
     QML_FILES qml/components/SettingPages/Advanced.qml
     QML_FILES qml/components/SettingPages/TouchPromote.qml
-    QML_FILES qml/components/Control/MDropDownButton.qml
+    QML_FILES qml/components/SettingPages/Components/WindowStyleSelectItem.qml
     RESOURCES qtquickcontrols2.conf
     RESOURCES app.rc.in
     QML_FILES Splash.qml
