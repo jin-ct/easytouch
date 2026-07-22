@@ -26,20 +26,38 @@
 #include "src/ConfigManager.h"
 #include "src/QtLogger.h"
 
+#ifdef WIN32
+#  include "src/app_dmp.h"
+#endif
+
 int main(int argc, char *argv[])
 {
+#ifdef WIN32
+    ::SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
+    qputenv("QT_QPA_PLATFORM", "windows:darkmode=2");
+#endif
+
     QApplication app(argc, argv);
 
     // 日志初始化
     LOG_INIT(LogConfig());
 
     // 防止重复启动
-    HANDLE hMutex = CreateMutex(nullptr, TRUE, (LPCWSTR)qApp->applicationName().toStdWString().c_str());
-    if (GetLastError() == ERROR_ALREADY_EXISTS) {
-        qWarning() << "An instance of the application is already running.";
-        CloseHandle(hMutex);
-        hMutex = NULL;
-        return 1;
+    HANDLE hMutex = NULL;
+    int tryCount = 0;
+    while(true) {
+        hMutex = CreateMutex(nullptr, TRUE, (LPCWSTR)qApp->applicationName().toStdWString().c_str());
+        if (GetLastError() == ERROR_ALREADY_EXISTS) {
+            qWarning() << "An instance of the application is already running.";
+            CloseHandle(hMutex);
+            hMutex = NULL;
+            QThread::sleep(1000);
+        } else {
+            break;
+        }
+        tryCount++;
+        if (tryCount > 2)
+            return 1;
     }
 
     QQmlApplicationEngine engine;

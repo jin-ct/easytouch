@@ -62,6 +62,7 @@ qt_add_qml_module(appeasytouch
     SOURCES src/GlobalManager.h src/GlobalManager.cpp
     SOURCES src/ConfigManager.h src/ConfigManager.cpp
     SOURCES src/QtLogger.h src/QtLogger.cpp
+    SOURCES src/app_dmp.h
     SOURCES stdafx.h
     SOURCES src/components/Functions.h src/components/Functions.cpp
     SOURCES src/components/ConfigFileManager.h src/components/ConfigFileManager.cpp
@@ -86,6 +87,7 @@ qt_add_qml_module(appeasytouch
     QML_FILES qml/views/RandomGenerator.qml
     QML_FILES qml/views/SplashWindow.qml
     QML_FILES qml/views/HotloadWindow.qml
+    QML_FILES qml/views/CrashWindow.qml
     QML_FILES qml/components/ToolWindowContent.qml
     QML_FILES qml/components/WindowTitleBar.qml
     QML_FILES qml/components/Popup/VolumePopup.qml
@@ -152,4 +154,10 @@ add_subdirectory(3rdparty/FluentUI)
 
 target_include_directories(appeasytouch PRIVATE
     3rdparty/FluentUI/src
+)
+
+#Release也支持日志打印代码位置
+target_compile_definitions(appeasytouch
+    PRIVATE
+    QT_MESSAGELOGCONTEXT
 )

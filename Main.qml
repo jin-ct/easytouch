@@ -110,26 +110,6 @@ ApplicationWindow {
 
     // =============== 窗口 ===============
 
-    FluLauncher {
-        id: fluUI
-        Connections{
-            target: FluTheme
-            function onDarkModeChanged(){
-                Config.settings.set("DarkMode", FluTheme.darkMode)
-            }
-        }
-        Component.onCompleted: {
-            FluApp.init(fluUI)
-            FluApp.windowIcon = "qrc:/icon/icon.svg"
-            FluTheme.darkMode = Config.settings.get("DarkMode")
-            FluTheme.animationEnabled = true
-            FluRouter.routes = {
-                "/": "qrc:/qt/qml/easytouch/qml/views/SettingsPage.qml",
-                "/hotload": "qrc:/qt/qml/easytouch/qml/views/HotloadWindow.qml"
-            }
-        }
-    }
-
     // 系统托盘图标菜单
     SystemTrayMenu {
         id: systemTrayMenu

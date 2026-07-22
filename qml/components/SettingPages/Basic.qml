@@ -155,6 +155,26 @@ FluScrollablePage{
         }
     }
     SettingItem {
+        title: qsTr("奔溃后操作")
+        iconSource: FluentIcons.Bug
+        description: qsTr("程序崩溃后执行的操作")
+        controlDelegate:
+            FluComboBox {
+                Layout.alignment: Qt.AlignVCenter
+                textRole: "text"
+                valueRole: "value"
+                currentIndex: Config.settings.get("CrashedOperation") === "report" ? 0 : 1
+                model: ListModel {
+                    ListElement { text: "弹窗报告"; value: "report" }
+                    ListElement { text: "关闭程序"; value: "closeApp" }
+                }
+                onActivated: {
+                    Config.settings.set("CrashedOperation", currentValue)
+                    console.log("SettingChanged: (CrashedOperation)selected=", currentText)
+                }
+            }
+    }
+    SettingItem {
         title: "屏幕批注保存位置"
         iconSource: FluentIcons.SIPUndock
         description: Config.settings.data.Drawpad.SavePath // 当前位置

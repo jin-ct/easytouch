@@ -22,6 +22,7 @@ ConfigManager::ConfigManager(QObject *parent)
     registerConfig("AutoUpdate", true, settings);
     registerConfig("AutoUpdateBehavior", "fullyAuto", settings);
     registerConfig("UpdateChannel", "release", settings);
+    registerConfig("CrashedOperation", "report", settings);
     registerConfig("ToolBar.Enable", true, settings);
     registerConfig("ToolBar.AutoHideBtns", true, settings);
     registerConfig("ToolBar.AutoShowBtns", true, settings);

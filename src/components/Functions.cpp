@@ -317,7 +317,6 @@ void Functions::restartApp()
 {
     QString cmd = QString("ping 127.0.0.1 -n 3 >nul && start %1")
                       .arg(QDir::toNativeSeparators(qApp->applicationFilePath()));
-    qDebug() << cmd;
     QProcess::startDetached("cmd.exe", {"/C", cmd});
     qApp->quit();
 }
