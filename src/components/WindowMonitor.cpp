@@ -36,40 +36,42 @@ void WindowMonitor::run()
 
 void WindowMonitor::UpdateTopWindow()
 {
-    QMutexLocker locker(&mutex);
-    const HWND top = FindTopActivatableWindow();
-    if (top == topWindow.hwnd) {
-        return;
+    {
+        QMutexLocker locker(&mutex);
+        const HWND top = FindTopActivatableWindow();
+        if (top == topWindow.hwnd) {
+            return;
+        }
+
+        if (!top) {
+            return;
+        }
+
+        wchar_t title[512] = {};
+        wchar_t className[256] = {};
+        GetWindowTextW(top, title, static_cast<int>(std::size(title)));
+        GetClassNameW(top, className, static_cast<int>(std::size(className)));
+
+        DWORD pid = 0;
+        GetWindowThreadProcessId(top, &pid);
+        const std::wstring exePath = GetExePath(pid);
+        const std::wstring exeName = GetExeName(exePath);
+
+        RECT rc = {};
+        GetWindowRect(top, &rc);
+
+        const LONG style = GetWindowLongW(top, GWL_STYLE);
+        const LONG exStyle = GetWindowLongW(top, GWL_EXSTYLE);
+
+        topWindow.hwnd = top;
+        topWindow.title = QString::fromStdWString(title);
+        topWindow.exeName = QString::fromStdWString(exeName);
+        topWindow.exePath = QString::fromStdWString(exePath);
+        topWindow.size = QRect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
+        topWindow.className = className;
+        topWindow.style = style;
+        topWindow.exStyle = exStyle;
     }
-
-    if (!top) {
-        return;
-    }
-
-    wchar_t title[512] = {};
-    wchar_t className[256] = {};
-    GetWindowTextW(top, title, static_cast<int>(std::size(title)));
-    GetClassNameW(top, className, static_cast<int>(std::size(className)));
-
-    DWORD pid = 0;
-    GetWindowThreadProcessId(top, &pid);
-    const std::wstring exePath = GetExePath(pid);
-    const std::wstring exeName = GetExeName(exePath);
-
-    RECT rc = {};
-    GetWindowRect(top, &rc);
-
-    const LONG style = GetWindowLongW(top, GWL_STYLE);
-    const LONG exStyle = GetWindowLongW(top, GWL_EXSTYLE);
-
-    topWindow.hwnd = top;
-    topWindow.title = QString::fromStdWString(title);
-    topWindow.exeName = QString::fromStdWString(exeName);
-    topWindow.exePath = QString::fromStdWString(exePath);
-    topWindow.size = QRect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
-    topWindow.className = className;
-    topWindow.style = style;
-    topWindow.exStyle = exStyle;
     emit topWindowChanged(topWindow);
 }
 
