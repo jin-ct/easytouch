@@ -14,6 +14,7 @@ Window {
     property string exeName: ""
     property string exeIconId: ""
     property int duration: 0
+    property int manualDuration: 0
     property point cursorPos: Qt.point(0, 0)
     property point cursorPosDefault: Qt.point(Screen.width/2, Screen.height*3/4)
 
@@ -187,10 +188,24 @@ Window {
 
             Text {
                 text: "该软件启动较慢，请耐心等待"
-                visible:  win.duration > 6000  // 大于 6s 认为启动较慢 (若未记录启动时间则 duration <= 0, 不影响判断)
+                // 大于 6s 认为启动较慢 (若未记录启动时间则 duration <= 0, 不影响判断)
+                visible:  win.manualDuration === 0 ? win.duration > 6000 : win.manualDuration > 6000
                 font.pixelSize: 13
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: "#FF7F27"
+            }
+        }
+
+        Timer {
+            id: autoDestroyedTimer
+            interval: win.manualDuration
+            onTriggered: {
+                floatingTips.opacity = 0;
+                main.opacity = 0;
+            }
+            Component.onCompleted: {
+                if (win.manualDuration !== 0)
+                    autoDestroyedTimer.start()
             }
         }
 
