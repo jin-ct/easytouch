@@ -4,6 +4,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QJSValue>
+#include <QMutexLocker>
 
 static const QString configDir = "config";
 static const int kDebouncerInterval = 100;
@@ -14,6 +15,7 @@ ConfigFileManager::ConfigFileManager(QObject *parent)
     // 消抖触发文件保存
     connect(&writeFileDebouncer, &QTimer::timeout, this, [this](){
         writeFileDebouncer.stop();
+        QMutexLocker locker(&mutex);
         writeJsonFile(config.toJsonObject(), this->fileName);
     });
 }
@@ -24,23 +26,29 @@ ConfigFileManager::ConfigFileManager(const QString &fileName, QObject *parent)
     // 消抖触发文件保存
     connect(&writeFileDebouncer, &QTimer::timeout, this, [this](){
         writeFileDebouncer.stop();
+        QMutexLocker locker(&mutex);
         writeJsonFile(config.toJsonObject(), this->fileName);
     });
 }
 
 QVariant ConfigFileManager::readConfigFile()
 {
-    config = readJsonFile(fileName).toVariantMap();
-    readReady = true;
+    {
+        QMutexLocker locker(&mutex);
+        config = readJsonFile(fileName).toVariantMap();
+        isReadReady = true;
+    }
     QTimer::singleShot(0, this, [this](){
         emit fileRead();
         emit configChanged();
     });
+    QMutexLocker locker(&mutex);
     return config;
 }
 
 bool ConfigFileManager::writeConfigFile()
 {
+    QMutexLocker locker(&mutex);
     return writeJsonFile(config.toJsonObject(), fileName);
 }
 
@@ -51,19 +59,29 @@ void ConfigFileManager::writeConfigFileDebounced()
 
 void ConfigFileManager::setFileName(const QString &fileName)
 {
+    QMutexLocker locker(&mutex);
     this->fileName = fileName;
 }
 
 QVariant ConfigFileManager::getConfigObject()
 {
+    QMutexLocker locker(&mutex);
     return config;
+}
+
+bool ConfigFileManager::readReady()
+{
+    QMutexLocker locker(&mutex);
+    return isReadReady;
 }
 
 QVariant ConfigFileManager::get(const QString &path)
 {
     QStringList keys = path.split('.');
 
+    QMutexLocker locker(&mutex);
     QVariant cur = config;
+    locker.unlock();
 
     for (const auto &k : keys)
     {
@@ -188,7 +206,10 @@ bool ConfigFileManager::set(const QString &path, const QVariant &val, bool isSyn
         return map;
     };
 
-    config = write(config, 0).toMap();
+    {
+        QMutexLocker locker(&mutex);
+        config = write(config, 0).toMap();
+    }
     emit configChanged(path, val);
     if (isSync)
         writeConfigFile();
@@ -221,7 +242,10 @@ bool ConfigFileManager::remove(const QString &path, bool isSync)
 
     QStringList keys = path.split('.');
 
+    QMutexLocker locker(&mutex);
     QVariant cur = config;
+    locker.unlock();
+
     int l_index = -1;
     QString l_name = "";
 

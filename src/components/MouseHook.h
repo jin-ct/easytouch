@@ -22,9 +22,10 @@ public:
     Q_INVOKABLE void addIgnoreAreas(const QVariant &rect, QVariant idStr);
     Q_INVOKABLE void removeIgnoreAreas(QVariant idStr);
 
+    Q_INVOKABLE bool getHasMouseEvent();
+
     static LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam);
 
-    bool hasMouseEvent = false;
 
 public slots:
     void onMouse(QEvent::Type eventType);
@@ -49,6 +50,7 @@ private:
     QMutex mutex;
     QMap<QString, QRect> ignoreAreas;
     QTimer recordTimer;
+    bool hasMouseEvent = false;
 };
 
 #endif // MOUSEHOOK_H

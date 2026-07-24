@@ -18,7 +18,7 @@ GlobalManager::GlobalManager(QObject *parent)
 
 void GlobalManager::handleConfigChanged()
 {
-    if (!ConfigManager::instance->settings->readReady)
+    if (!ConfigManager::instance->settings->readReady())
         return;
     switchFun(weChatHelper, ConfigManager::instance->settings->get("WeChatTouchHelper.Enable").toBool());
     switchFun(windowFocusHelper, ConfigManager::instance->settings->get("WindowFocusHelper.Enable").toBool());

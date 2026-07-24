@@ -42,6 +42,12 @@ void MouseHook::removeIgnoreAreas(QVariant idStr)
     ignoreAreas.remove(idStr.toString());
 }
 
+bool MouseHook::getHasMouseEvent()
+{
+    QMutexLocker locker(&mutex);
+    return hasMouseEvent;
+}
+
 LRESULT MouseHook::LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode == HC_ACTION) {
@@ -129,6 +135,7 @@ bool MouseHook::isRectContains(const QRect &rect, const QPoint &point)
 
 void MouseHook::setHasMouseEvent()
 {
+    QMutexLocker locker(&mutex);
     hasMouseEvent = true;
     recordTimer.start(kHasMouseEventKeepDuration);
 }

@@ -31,7 +31,7 @@ Window {
 
     Component.onCompleted: {
         // 若未检测到鼠标事件则将弹出点调至默认点
-        if (!Global.mouseHook.hasMouseEvent) {
+        if (!Global.mouseHook.getHasMouseEvent()) {
             main.x = (cursorPosDefault.x - main.width/2)
             main.y = (cursorPosDefault.x - main.width/2)
         }

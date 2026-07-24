@@ -197,27 +197,15 @@ FluScrollablePage{
                 Layout.topMargin: 32
                 Layout.bottomMargin: 16
 
-                FluFrame {
-                    implicitHeight: 120
+                TouchPromoteRuleList {
+                    title: qsTr("触摸事件")
                     Layout.fillWidth: true
                     Layout.preferredWidth: 200
-                    FluText {
-                        text: qsTr("触摸事件")
-                        anchors.bottom: parent.top
-                        anchors.left: parent.left
-                        anchors.bottomMargin: 2
-                    }
                 }
-                FluFrame {
-                    implicitHeight: 120
+                TouchPromoteRuleList {
+                    title: qsTr("动作")
                     Layout.fillWidth: true
                     Layout.preferredWidth: 200
-                    FluText {
-                        text: qsTr("动作")
-                        anchors.bottom: parent.top
-                        anchors.left: parent.left
-                        anchors.bottomMargin: 2
-                    }
                 }
             }
         }

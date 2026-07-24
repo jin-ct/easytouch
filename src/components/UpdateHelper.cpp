@@ -172,7 +172,7 @@ void UpdateHelper::onReleasesListReceived()
 QString UpdateHelper::updateChannelSuffix() const
 {
     QString ch = QStringLiteral("release");
-    if (ConfigManager::instance && ConfigManager::instance->settings && ConfigManager::instance->settings->readReady)
+    if (ConfigManager::instance && ConfigManager::instance->settings && ConfigManager::instance->settings->readReady())
         ch = ConfigManager::instance->settings->get(QStringLiteral("UpdateChannel")).toString().toLower().trimmed();
     if (ch == QStringLiteral("beta"))
         return QStringLiteral("beta");
@@ -636,7 +636,7 @@ void UpdateHelper::executeUpdate()
     QString scriptPath = QDir(tempDir).filePath("update.bat");
 
     // 保存版本信息
-    if (ConfigManager::instance && ConfigManager::instance->settings && ConfigManager::instance->settings->readReady) {
+    if (ConfigManager::instance && ConfigManager::instance->settings && ConfigManager::instance->settings->readReady()) {
         QString newVerson = QString("%1-%2").arg(latestVersion, updateChannelSuffix());
         ConfigManager::instance->settings->set("App.Verson", newVerson);
     }

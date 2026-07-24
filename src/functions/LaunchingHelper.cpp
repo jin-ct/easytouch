@@ -82,29 +82,35 @@ void WINAPI LaunchingMonitor::WinEventCallback(
     GetWindowThreadProcessId(hwnd, &pid);
     if (!pid) return;
 
-    QMutexLocker locker(&LaunchingMonitor::instance->m_mutex);
-    auto it = LaunchingMonitor::instance->g_procs.find(pid);
-    if (it == LaunchingMonitor::instance->g_procs.end()) return;
-    if (it->second.windowShownSignaled) return;
+    int icon_imgIndex = 0;
 
-    // 如果启动时没拿到路径，这里补一次
-    if (it->second.imagePath.empty() || it->second.imagePath == L"[Unknown]") {
-        std::wstring p = GetProcessImagePathRetryW(pid);
-        if (!p.empty()) it->second.imagePath = p;
-        it->second.icon_imgIndex = QmlImageProvider::instance()->addImg(LaunchingMonitor::instance->getExeIcon(p));
+    {
+        QMutexLocker locker(&LaunchingMonitor::instance->m_mutex);
+        auto it = LaunchingMonitor::instance->g_procs.find(pid);
+        if (it == LaunchingMonitor::instance->g_procs.end()) return;
+        if (it->second.windowShownSignaled) return;
+
+        // 如果启动时没拿到路径，这里补一次
+        if (it->second.imagePath.empty() || it->second.imagePath == L"[Unknown]") {
+            std::wstring p = GetProcessImagePathRetryW(pid);
+            if (!p.empty()) it->second.imagePath = p;
+            it->second.icon_imgIndex = QmlImageProvider::instance()->addImg(LaunchingMonitor::instance->getExeIcon(p));
+        }
+
+        // 设置窗口标题
+        wchar_t title[256] = {};
+        GetWindowText(hwnd, title, 256);
+        it->second.windowTitle = title;
+        it->second.windowShownSignaled = true;
+
+        icon_imgIndex = it->second.icon_imgIndex;
     }
 
-    // 设置窗口标题
-    wchar_t title[256] = {};
-    GetWindowText(hwnd, title, 256);
-    it->second.windowTitle = title;
-
-    it->second.windowShownSignaled = true;
     emit LaunchingMonitor::instance->windowShown(pid);
     QTimer::singleShot(1000, LaunchingMonitor::instance, [=](){  // 1秒后删除该项数据
         QMutexLocker locker(&LaunchingMonitor::instance->m_mutex);
         LaunchingMonitor::instance->g_procs.erase(pid);
-        QmlImageProvider::instance()->removeImg(it->second.icon_imgIndex);
+        QmlImageProvider::instance()->removeImg(icon_imgIndex);
     });
 }
 
@@ -240,12 +246,15 @@ void LaunchingMonitor::SignalProcessStarted(DWORD pid, DWORD parentPid) {
             st.startedSignaled = true;
             st.windowShownSignaled = false;
             st.windowTitle = L"";
+            int icon_imgIndex = st.icon_imgIndex;
+            locker.unlock();
+
             emit processStarted(pid);
 
             QTimer::singleShot(60000, this, [=](){  // 数据最多保留 60s
                 QMutexLocker locker(&LaunchingMonitor::instance->m_mutex);
                 LaunchingMonitor::instance->g_procs.erase(pid);
-                QmlImageProvider::instance()->removeImg(st.icon_imgIndex);
+                QmlImageProvider::instance()->removeImg(icon_imgIndex);
             });
         }
         return;
@@ -262,12 +271,15 @@ void LaunchingMonitor::SignalProcessStarted(DWORD pid, DWORD parentPid) {
     st.windowTitle = L"";
     st.icon_imgIndex = QmlImageProvider::instance()->addImg(LaunchingMonitor::instance->getExeIcon(path));
 
+    int icon_imgIndex = st.icon_imgIndex;
+    locker.unlock();
+
     emit processStarted(pid);
 
     QTimer::singleShot(60000, this, [=](){  // 数据最多保留 60s
         QMutexLocker locker(&LaunchingMonitor::instance->m_mutex);
         LaunchingMonitor::instance->g_procs.erase(pid);
-        QmlImageProvider::instance()->removeImg(st.icon_imgIndex);
+        QmlImageProvider::instance()->removeImg(icon_imgIndex);
     });
 }
 
@@ -414,7 +426,7 @@ void LaunchingHelper::setItem(const QString &exeName, const QString &appName, bo
 void LaunchingHelper::loadAppList()
 {
     ConfigFileManager* cfg = ConfigManager::instance->launchingHelperCfg;
-    if (!cfg->readReady)
+    if (!cfg->readReady())
         return;
 
     QVariantList list = cfg->get("Apps").toList();

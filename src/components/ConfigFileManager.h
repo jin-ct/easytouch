@@ -6,11 +6,12 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QTimer>
+#include <QMutex>
 
 class ConfigFileManager : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool readReady MEMBER readReady NOTIFY fileRead)
+    Q_PROPERTY(bool readReady READ readReady NOTIFY fileRead)
     Q_PROPERTY(QVariant data MEMBER config NOTIFY configChanged)
 public:
     explicit ConfigFileManager(QObject *parent = nullptr);
@@ -21,6 +22,8 @@ public:
     Q_INVOKABLE void writeConfigFileDebounced();
     void setFileName(const QString &fileName);
     QVariant getConfigObject();
+
+    Q_INVOKABLE bool readReady();
 
     /**
      * @brief get 获取配置的子字段
@@ -61,8 +64,6 @@ public:
      */
     Q_INVOKABLE bool clearList(const QString &path, bool isSync = true);
 
-    bool readReady = false;
-
 signals:
     void configChanged(const QVariant &path = "", const QVariant value = QVariant());
     void fileRead();
@@ -74,6 +75,8 @@ private:
     QString fileName{""};
     QVariant config{};
     QTimer writeFileDebouncer;
+    QMutex mutex;
+    bool isReadReady{false};
 };
 
 #endif // CONFIGFILEMANAGER_H

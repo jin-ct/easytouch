@@ -2,6 +2,7 @@
 #define CONFIGMANAGER_H
 
 #include <QObject>
+#include <QMutex>
 #include "components/ConfigFileManager.h"
 
 class ConfigManager : public QObject
@@ -33,6 +34,7 @@ private:
     void handleConfigLoad(ConfigFileManager* mgr);
     void compatibleOldConfigFile();
     int ConfigLoadedCount{0};
+    QMutex mutex;
 };
 
 #endif // CONFIGMANAGER_H

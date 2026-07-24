@@ -5,6 +5,7 @@
 #include <QMap>
 #include <QImage>
 #include <QPixmap>
+#include <QMutex>
 
 class QmlImageProvider : public QQuickImageProvider
 {
@@ -20,10 +21,10 @@ public:
     void removeImg(qsizetype index);
     Q_INVOKABLE void removeImgQml(QVariant index);
 
-    QMap<qsizetype, QImage> imgs{};
-
 private:
     static QmlImageProvider* m_instance;
+    QMap<qsizetype, QImage> imgs{};
+    QMutex mutex;
 };
 
 #endif // QMLIMAGEPROVIDER_H
