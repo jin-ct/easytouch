@@ -12,7 +12,7 @@ class ConfigFileManager : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool readReady READ readReady NOTIFY fileRead)
-    Q_PROPERTY(QVariant data MEMBER config NOTIFY configChanged)
+    Q_PROPERTY(QVariant data READ getConfigObject NOTIFY configChanged)
 public:
     explicit ConfigFileManager(QObject *parent = nullptr);
     explicit ConfigFileManager(const QString &fileName, QObject *parent = nullptr);

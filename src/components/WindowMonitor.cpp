@@ -1,6 +1,7 @@
 #include "WindowMonitor.h"
 #include <QDebug>
 #include <QMutexLocker>
+#include <QTimer>
 
 Q_GLOBAL_STATIC(WindowMonitor, windowMonitorInstance)
 
@@ -21,7 +22,7 @@ void WindowMonitor::stop()
     qDebug() << "WindowMonitor线程退出";
 }
 
-const WindowInfo &WindowMonitor::getTopWindow()
+WindowInfo WindowMonitor::getTopWindow()
 {
     QMutexLocker locker(&mutex);
     return topWindow;
@@ -36,33 +37,37 @@ void WindowMonitor::run()
 
 void WindowMonitor::UpdateTopWindow()
 {
+    const HWND top = FindTopActivatableWindow();
+
     {
         QMutexLocker locker(&mutex);
-        const HWND top = FindTopActivatableWindow();
         if (top == topWindow.hwnd) {
             return;
         }
+    }
 
-        if (!top) {
-            return;
-        }
+    if (!top) {
+        return;
+    }
 
-        wchar_t title[512] = {};
-        wchar_t className[256] = {};
-        GetWindowTextW(top, title, static_cast<int>(std::size(title)));
-        GetClassNameW(top, className, static_cast<int>(std::size(className)));
+    wchar_t title[512] = {};
+    wchar_t className[256] = {};
+    GetWindowTextW(top, title, static_cast<int>(std::size(title)));
+    GetClassNameW(top, className, static_cast<int>(std::size(className)));
 
-        DWORD pid = 0;
-        GetWindowThreadProcessId(top, &pid);
-        const std::wstring exePath = GetExePath(pid);
-        const std::wstring exeName = GetExeName(exePath);
+    DWORD pid = 0;
+    GetWindowThreadProcessId(top, &pid);
+    const std::wstring exePath = GetExePath(pid);
+    const std::wstring exeName = GetExeName(exePath);
 
-        RECT rc = {};
-        GetWindowRect(top, &rc);
+    RECT rc = {};
+    GetWindowRect(top, &rc);
 
-        const LONG style = GetWindowLongW(top, GWL_STYLE);
-        const LONG exStyle = GetWindowLongW(top, GWL_EXSTYLE);
+    const LONG style = GetWindowLongW(top, GWL_STYLE);
+    const LONG exStyle = GetWindowLongW(top, GWL_EXSTYLE);
 
+    {
+        QMutexLocker locker(&mutex);
         topWindow.hwnd = top;
         topWindow.title = QString::fromStdWString(title);
         topWindow.exeName = QString::fromStdWString(exeName);

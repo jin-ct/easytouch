@@ -40,9 +40,7 @@ WeChatHelper::WeChatHelper(QObject *parent)
 
     createOverlay();
 
-    m_foregroundCheckTimer.setInterval(150);
-    QObject::connect(&m_foregroundCheckTimer, &QTimer::timeout, this, &WeChatHelper::updateOverlayVisibility);
-    m_foregroundCheckTimer.start();
+    QObject::connect(WindowMonitor::instance(), &WindowMonitor::topWindowChanged, this, &WeChatHelper::updateOverlayVisibility);
 
     QObject::connect(&m_updateHoleTimer, &QTimer::timeout, this, [this](){overlayUpdateHole();});
     QObject::connect(&m_holeSideTimer, &QTimer::timeout, this, &WeChatHelper::overlayUpdateHoleSide);
@@ -51,7 +49,6 @@ WeChatHelper::WeChatHelper(QObject *parent)
 
 WeChatHelper::~WeChatHelper()
 {
-    m_foregroundCheckTimer.stop();
     destroyOverlay();
 }
 

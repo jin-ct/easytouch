@@ -32,7 +32,7 @@ configure_file(
     ${CMAKE_BINARY_DIR}/app.rc
 )
 
-set(CMAKE_EXE_LINKER_FLAGS "-static -s")
+# set(CMAKE_EXE_LINKER_FLAGS "-static -s")
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 

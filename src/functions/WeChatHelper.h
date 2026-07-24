@@ -30,7 +30,6 @@ private:
     // 覆盖层
     static const wchar_t *s_overlayClassName;
     HWND m_overlay = nullptr;
-    QTimer m_foregroundCheckTimer;
     bool m_overlayVisible = false;
     RECT m_lastOverlayRect = {};
     bool m_mouseLeftDown = false;

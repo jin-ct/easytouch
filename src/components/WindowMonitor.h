@@ -28,10 +28,10 @@ public:
     static WindowMonitor* instance();
     void stop();
 
-    const WindowInfo& getTopWindow();
+    WindowInfo getTopWindow();
 
 signals:
-    void topWindowChanged(const WindowInfo &window);
+    void topWindowChanged(WindowInfo window);
 
 protected:
     void run() override;
