@@ -326,6 +326,7 @@ void WeChatHelper::sendWheelViaMouseInput(int delta)
     }
 
     // 移动系统光标到目标位置，让 SendInput 生成的 WM_MOUSEWHEEL 以该点为落脚
+    updateHole(m_overlay, targetPt);
     SetCursorPos(targetPt.x, targetPt.y);
 
     INPUT input = {};
@@ -334,7 +335,7 @@ void WeChatHelper::sendWheelViaMouseInput(int delta)
     input.mi.mouseData = delta;
     input.mi.dwExtraInfo = GetMessageExtraInfo();
 
-    SendInput(1, &input, sizeof(INPUT));
+    SendInput(1, &input, sizeof(INPUT));qDebug() << delta << targetPt.x << targetPt.y;
 }
 
 LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
