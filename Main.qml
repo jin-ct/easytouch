@@ -40,7 +40,7 @@ ApplicationWindow {
             }
         }
         function onShowContentMenu(anchor) {
-            systemTrayMenu.popup(anchor)
+            systemTrayMenu.popupTop(anchor.x - windows.x, anchor.y - windows.y)
         }
     }
     Connections {

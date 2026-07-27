@@ -7,6 +7,14 @@ FluMenu {
     id: menu
     popupType: Popup.Window
     spacing: 2
+    property point pos: Qt.point(0, 0)
+    function popupTop(x, y) {
+        pos = Qt.point(x, y)
+        menu.popup(x, y - menu.height)
+    }
+    onImplicitHeightChanged: {
+        menu.y = pos.y - menu.implicitHeight
+    }
     FluMenuItem {
         text: "设置"
         iconSource: FluentIcons.Settings
