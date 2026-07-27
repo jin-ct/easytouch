@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import Qt5Compat.GraphicalEffects
 import Functions 1.0
+import FluentUI
 
 Window {
     id: win
@@ -121,69 +122,10 @@ Window {
                 color: "#363636"
             }
 
-            Rectangle {
-                id: loading
+            FluProgressBar {
                 width: 320
-                height: 8
-                radius: height / 2
-                color: "#CDDEEB"
-                clip: true
-
-                layer.enabled: true
-                layer.effect: OpacityMask {
-                    maskSource: Rectangle {
-                        width: loading.width
-                        height: loading.height
-                        radius: loading.radius
-                    }
-                }
-
-                // 背景微光
-                Rectangle {
-                    anchors.fill: parent
-                    radius: parent.radius
-                    color: "#B9C7E3"
-                    opacity: 0.8
-                }
-
-                // 流动条
-                Rectangle {
-                    id: bar
-
-                    width: parent.width * 0.35
-                    height: parent.height
-                    radius: parent.radius
-
-                    gradient: Gradient {
-                        GradientStop { position: 0.0; color: "#0080FF00" }
-                        GradientStop { position: 0.2; color: "#3EA6FF" }
-                        GradientStop { position: 0.5; color: "#7CC7FF" }
-                        GradientStop { position: 0.8; color: "#3EA6FF" }
-                        GradientStop { position: 1.0; color: "#0080FF00" }
-                    }
-
-                    layer.enabled: true
-
-                    // 发光
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: parent.radius
-                        color: "#5EA9EB"
-                        opacity: 0.25
-                        scale: 1.8
-                        z: -1
-                    }
-
-                    NumberAnimation on x {
-                        from: -bar.width
-                        to: loading.width
-
-                        duration: 800
-                        loops: Animation.Infinite
-
-                        easing.type: Easing.InOutQuad
-                    }
-                }
+                duration: 880
+                indeterminate: true
             }
 
             Text {

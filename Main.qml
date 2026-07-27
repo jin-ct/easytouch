@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtCore
 import FluentUI
 import Functions 1.0
+import "./qml/connections"
 import "./qml/components"
 import "./qml/components/Popup"
 import "./qml/views"
@@ -14,6 +15,28 @@ ApplicationWindow {
     flags:  Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
 
     // cpp通信
+    Connect_Notification {
+        onShowContentMenu: function(anchor){
+            systemTrayMenu.popupTop(anchor.x - windows.x, anchor.y - windows.y)
+        }
+    }
+    Connect_UpdateHelper {}
+    Connections {
+        enabled: Global.weChatHelper
+        target: Global.weChatHelper
+        function onLoaded() {
+            console.log("WeChatHelper已加载")
+        }
+    }
+    Connect_FocusHelper {
+        onNewWindowCreated: {
+            // 新窗口出现时更新工具栏窗口置顶
+            if (toolWindows.status === Loader.Ready) {
+                toolWindows.item.updateWindows()
+            }
+        }
+    }
+    Connect_LaunchingHelper {}
     Connections {
         target: Global.funs
         function onUsbInserted() {
@@ -27,65 +50,6 @@ ApplicationWindow {
             if (toolWindows.status === Loader.Ready)
                 toolWindows.item.hideUsbBtn()
             console.log("usbRemoved")
-        }
-    }
-    Connections {
-        target: Global.notification
-        function onNotificationClicked(id) {
-            if (id === "openUsb") {
-                Global.funs.openDrive()
-            }
-            if (id === "update" && Config.settings.get("AutoUpdateBehavior") === "onlyRemind") {
-                Global.updateHelper.startDownload()
-            }
-        }
-        function onShowContentMenu(anchor) {
-            systemTrayMenu.popupTop(anchor.x - windows.x, anchor.y - windows.y)
-        }
-    }
-    Connections {
-        target: Global.updateHelper
-        function onUpdateAvailable(version) {
-            let behavior = Config.settings.get("AutoUpdateBehavior");
-            let msg = behavior === "fullyAuto" ? "更新正在进行" : "点击此处开始更新"
-            if (behavior !== "noNotice")
-                Global.notification.showNotification("update", "有新版本的易触控" + "（" + version + "）", msg)
-        }
-    }
-    Connections {
-        enabled: Global.weChatHelper
-        target: Global.weChatHelper
-        function onLoaded() {
-            console.log("WeChatHelper已加载")
-        }
-    }
-    Connections {
-        enabled: Global.windowFocusHelper
-        target: Global.windowFocusHelper
-        // 新窗口出现时更新工具栏窗口置顶
-        function onNewWindowCreated() {
-            if (toolWindows.status === Loader.Ready) {
-                toolWindows.item.updateWindows()
-            }
-        }
-        function onStarted() {
-            console.log("WindowFocusHelper已加载")
-        }
-    }
-    Connections {
-        enabled: Global.launchingHelper
-        target: Global.launchingHelper
-        function onLoaded() {
-            console.log("LaunchingHelper已加载")
-        }
-        function onProcessStartedWithInfo(exeName, exeIconId, cursorPos, duration, manualDuration) {
-            var splashWindow = Qt.createComponent("qml/views/SplashWindow.qml");
-            if (splashWindow.status === Component.Ready) {
-                var obj = splashWindow.createObject(null, {
-                    exeName: exeName, exeIconId: exeIconId, cursorPos: cursorPos,  duration: duration, manualDuration: manualDuration
-                });
-                obj.destroy(15000)  // 最长显示15s
-            }
         }
     }
     Connections {
@@ -110,7 +74,7 @@ ApplicationWindow {
         console.log("windowsCompleted")
     }
 
-    // =============== 窗口 ===============
+    // =================== 窗口 ===================
 
     // 系统托盘图标菜单
     SystemTrayMenu {
@@ -157,32 +121,5 @@ ApplicationWindow {
         source: Config.settings.data.ToolBar.Enable ? "qml/views/ToolWindows.qml" : ""
     }
 
-    // =============== 窗口（结束） ===============
-
-    // 工具函数
-    Timer {id: timer}
-    function setTimeout(cb, delayTime) {
-       timer.interval = delayTime;
-       timer.repeat = false;
-       timer.triggered.connect(cb);
-       timer.restart();
-    }
-    function showMessageBox(title, message, okBtnClickedCb = () =>{} , cancelBtnClickedCb = () =>{}) {
-        const comp = Qt.createComponent("qml/components/Dialog/MessageBoxDialog.qml")
-        if (comp.status === Component.Ready) {
-            const dlg = comp.createObject()
-            dlg.title = title
-            dlg.message = message
-            dlg.okBtnClicked.connect(() => {
-                okBtnClickedCb()
-            })
-            dlg.cancelBtnClicked.connect(() => {
-                cancelBtnClickedCb()
-            })
-            dlg.visibleChanged.connect((visible) => {
-                if (!visible)
-                    dlg.destroy()
-            })
-        }
-    }
+    // =================== 窗口（结束） ===================
 }

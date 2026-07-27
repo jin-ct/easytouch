@@ -81,6 +81,10 @@ qt_add_qml_module(appeasytouch
     SOURCES src/functions/ScreenMovement.h src/functions/ScreenMovement.cpp
     SOURCES src/functions/LaunchingHelper.h src/functions/LaunchingHelper.cpp
     QML_FILES Main.qml
+    QML_FILES qml/connections/Connect_Notification.qml
+    QML_FILES qml/connections/Connect_UpdateHelper.qml
+    QML_FILES qml/connections/Connect_FocusHelper.qml
+    QML_FILES qml/connections/Connect_LaunchingHelper.qml
     QML_FILES qml/views/ToolWindows.qml
     QML_FILES qml/views/SettingsPage.qml
     QML_FILES qml/views/Whileboard.qml
@@ -110,6 +114,7 @@ qt_add_qml_module(appeasytouch
     QML_FILES qml/components/SettingPages/TouchPromote.qml
     QML_FILES qml/components/SettingPages/Components/WindowStyleSelectItem.qml
     QML_FILES qml/components/SettingPages/Components/TouchPromoteRuleList.qml
+    QML_FILES qml/components/SettingPages/Components/TouchPromoteRuleEditor.qml
     RESOURCES qtquickcontrols2.conf
     RESOURCES app.rc.in
     QML_FILES Splash.qml
