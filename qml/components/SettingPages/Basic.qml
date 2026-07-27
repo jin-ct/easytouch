@@ -155,7 +155,7 @@ FluScrollablePage{
         }
     }
     SettingItem {
-        title: qsTr("奔溃后操作")
+        title: qsTr("崩溃后操作")
         iconSource: FluentIcons.Bug
         description: qsTr("程序崩溃后执行的操作")
         controlDelegate:
