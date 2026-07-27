@@ -18,6 +18,9 @@ Window {
     property int manualDuration: 0
     property point cursorPos: Qt.point(0, 0)
     property point cursorPosDefault: Qt.point(Screen.width/2, Screen.height*3/4)
+    property bool multipleStart: false
+
+    signal aboutDestroyed()
 
     Connections {
         enabled: Global.launchingHelper
@@ -25,6 +28,7 @@ Window {
 
         function onWindowShownWithInfo(windowTile, exeName, exeIcon, cursorPos) {
             if (exeName === win.exeName) {
+                aboutDestroyed()
                 floatingTips.opacity = 0;
                 main.opacity = 0;
             }
@@ -40,6 +44,8 @@ Window {
         mainAnimationScale.start()
         mainAnimationX.start()
         mainAnimationY.start()
+        win.flags = win.flags | Qt.WindowStaysOnTopHint
+        win.flags = win.flags & ~Qt.WindowStaysOnTopHint
     }
 
     Rectangle {
@@ -83,6 +89,22 @@ Window {
                         anchors.fill: parent
                         onClicked: {
                             Global.launchingHelper.disableHelperForItem(win.exeName)
+                            aboutDestroyed()
+                            floatingTips.opacity = 0;
+                            main.opacity = 0;
+                        }
+                    }
+                }
+
+                Text {
+                    text: "关闭"
+                    color: closeBtn.pressed ? "#337ecc" : "#409EFF"
+                    font.pixelSize: 11
+                    MouseArea {
+                        id: closeBtn
+                        anchors.fill: parent
+                        onClicked: {
+                            aboutDestroyed()
                             floatingTips.opacity = 0;
                             main.opacity = 0;
                         }
@@ -129,9 +151,16 @@ Window {
             }
 
             Text {
-                text: "该软件启动较慢，请耐心等待"
+                text: qsTr("该软件启动较慢，请耐心等待")
                 // 大于 6s 认为启动较慢 (若未记录启动时间则 duration <= 0, 不影响判断)
                 visible:  win.manualDuration === 0 ? win.duration > 6000 : win.manualDuration > 6000
+                font.pixelSize: 13
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "#FF7F27"
+            }
+            Text {
+                text: qsTr("请勿重复启动")
+                visible: multipleStart
                 font.pixelSize: 13
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: "#FF7F27"
@@ -140,14 +169,14 @@ Window {
 
         Timer {
             id: autoDestroyedTimer
-            interval: win.manualDuration
+            interval: win.manualDuration === 0 ? 15000 : win.manualDuration
             onTriggered: {
+                aboutDestroyed()
                 floatingTips.opacity = 0;
                 main.opacity = 0;
             }
             Component.onCompleted: {
-                if (win.manualDuration !== 0)
-                    autoDestroyedTimer.start()
+                autoDestroyedTimer.start()
             }
         }
 
@@ -156,7 +185,7 @@ Window {
                 duration: 160
                 onFinished: {
                     if (opacity === 0)
-                        win.destroyed()
+                        win.destroy()
                 }
             }
         }

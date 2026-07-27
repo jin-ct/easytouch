@@ -7,11 +7,28 @@
 #include <shlobj.h>
 #include <initguid.h>
 #include <commoncontrols.h>
+#include <winternl.h>
 #include <QCursor>
 #include "../components/QmlImageProvider.h"
 #include "../ConfigManager.h"
 
-static const int kPollingIntervalMs = 20;
+#ifndef STATUS_INFO_LENGTH_MISMATCH
+#define STATUS_INFO_LENGTH_MISMATCH ((NTSTATUS)0xC0000004L)
+#endif
+
+using NtQuerySystemInformation_t =
+    NTSTATUS (NTAPI*)(
+        SYSTEM_INFORMATION_CLASS,
+        PVOID,
+        ULONG,
+        PULONG);
+
+static NtQuerySystemInformation_t pNtQuerySystemInformation =
+    reinterpret_cast<NtQuerySystemInformation_t>(
+        GetProcAddress(GetModuleHandleW(L"ntdll.dll"),
+                       "NtQuerySystemInformation"));
+
+static const int kPollingIntervalMs = 100;
 
 static const std::unordered_set<std::wstring> g_shellParentExeNames = {
     L"explorer.exe",
@@ -176,23 +193,69 @@ bool LaunchingMonitor::IsTopLevelMainWindowCandidate(HWND hwnd) {
     return true;
 }
 
+bool LaunchingMonitor::QueryProcesses(std::unordered_map<DWORD, DWORD> &result)
+{
+    if (!pNtQuerySystemInformation)
+        return false;
+
+    result.clear();
+
+    ULONG size = 1 << 20;     // 1MB 起步
+
+    std::vector<BYTE> buffer(size);
+
+    NTSTATUS status;
+
+    while (true)
+    {
+        status = pNtQuerySystemInformation(
+            SystemProcessInformation,
+            buffer.data(),
+            static_cast<ULONG>(buffer.size()),
+            &size);
+
+        if (status == STATUS_INFO_LENGTH_MISMATCH)
+        {
+            buffer.resize(size + 64 * 1024);
+            continue;
+        }
+
+        break;
+    }
+
+    if (!NT_SUCCESS(status))
+        return false;
+
+    auto* spi =
+        reinterpret_cast<SYSTEM_PROCESS_INFORMATION*>(buffer.data());
+
+    while (true)
+    {
+        DWORD pid =
+            static_cast<DWORD>(
+                reinterpret_cast<ULONG_PTR>(spi->UniqueProcessId));
+
+        DWORD parent =
+            static_cast<DWORD>(
+                reinterpret_cast<ULONG_PTR>(spi->InheritedFromUniqueProcessId));
+
+        result.emplace(pid, parent);
+
+        if (spi->NextEntryOffset == 0)
+            break;
+
+        spi = reinterpret_cast<SYSTEM_PROCESS_INFORMATION*>(
+            reinterpret_cast<BYTE*>(spi) + spi->NextEntryOffset);
+    }
+
+    return true;
+}
+
 void LaunchingMonitor::startMonitoring() {
     known.reserve(8192);
 
     // 启动时先做一次快照建表
-    {
-        HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-        if (snap != INVALID_HANDLE_VALUE) {
-            PROCESSENTRY32W pe{};
-            pe.dwSize = sizeof(pe);
-            if (Process32FirstW(snap, &pe)) {
-                do {
-                    known.emplace(pe.th32ProcessID, pe.th32ParentProcessID);
-                } while (Process32NextW(snap, &pe));
-            }
-            CloseHandle(snap);
-        }
-    }
+    QueryProcesses(known);
 
     pollingTimer = new QTimer(this);
     connect(pollingTimer, &QTimer::timeout, this, [=]{
@@ -207,24 +270,32 @@ void LaunchingMonitor::startMonitoring() {
         std::unordered_map<DWORD, DWORD> current; // pid -> parentPid
         current.reserve(8192);
 
-        if (Process32FirstW(snap, &pe)) {
-            do {
-                current.emplace(pe.th32ProcessID, pe.th32ParentProcessID);
-                if (known.find(pe.th32ProcessID) == known.end()) {
-                    auto it = known.find(pe.th32ParentProcessID);
-                    (void)it;
-                    std::wstring parentPath = GetProcessImagePathRetryW(pe.th32ParentProcessID, 60);
-                    std::wstring parentExe = ToLowerW(BaseNameW(parentPath));
-                    if (g_shellParentExeNames.find(parentExe) == g_shellParentExeNames.end()) {
-                        continue;
-                    }
+        if (!QueryProcesses(current))
+            return;
 
-                    SignalProcessStarted(pe.th32ProcessID, pe.th32ParentProcessID);
+        for (const auto& [pid, parentPid] : current)
+        {
+            if (known.find(pid) == known.end())
+            {
+                std::wstring parentExe;
+                if (parentCache.find(parentPid) == parentCache.end()) {
+                    std::wstring parentPath = GetProcessImagePathRetryW(parentPid, 60);
+                    parentExe = ToLowerW(BaseNameW(parentPath));
+                    parentCache[parentPid] = parentExe;
+                } else {
+                    parentExe = parentCache[parentPid];
                 }
-            } while (Process32NextW(snap, &pe));
+
+                if (g_shellParentExeNames.find(parentExe)
+                    == g_shellParentExeNames.end())
+                {
+                    continue;
+                }
+
+                SignalProcessStarted(pid, parentPid);
+            }
         }
 
-        CloseHandle(snap);
         known.swap(current);
     });
     pollingTimer->start(kPollingIntervalMs);

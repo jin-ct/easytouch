@@ -58,6 +58,7 @@ public:
     static std::wstring GetProcessImagePathW(DWORD pid);
     static std::wstring GetProcessImagePathRetryW(DWORD pid, DWORD maxWaitMs = 200);
     static bool IsTopLevelMainWindowCandidate(HWND hwnd);
+    static bool QueryProcesses(std::unordered_map<DWORD, DWORD>& result);
 
     static LaunchingMonitor* instance;
 
@@ -74,6 +75,7 @@ private:
     std::unordered_map<DWORD, ProcState> g_procs{};
     HWINEVENTHOOK g_winEventHook{nullptr};
     std::unordered_map<DWORD, DWORD> known{}; // pid -> parentPid
+    std::unordered_map<DWORD, std::wstring> parentCache{};
     QTimer* pollingTimer{};
 };
 
