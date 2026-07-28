@@ -18,7 +18,7 @@ ConfigManager::ConfigManager(QObject *parent)
     settings = new ConfigFileManager("settings.json", this);
     handleConfigLoad(settings);
     registerConfig("App.Verson", QCoreApplication::applicationVersion(), settings);
-    registerConfig("AutoStart", true, settings);
+    registerConfig("AutoStart", false, settings);
     registerConfig("AutoUpdate", true, settings);
     registerConfig("AutoUpdateBehavior", "fullyAuto", settings);
     registerConfig("UpdateChannel", "release", settings);

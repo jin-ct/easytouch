@@ -28,7 +28,7 @@ static NtQuerySystemInformation_t pNtQuerySystemInformation =
         GetProcAddress(GetModuleHandleW(L"ntdll.dll"),
                        "NtQuerySystemInformation"));
 
-static const int kPollingIntervalMs = 100;
+static const int kPollingIntervalMs = 150;
 
 static const std::unordered_set<std::wstring> g_shellParentExeNames = {
     L"explorer.exe",
