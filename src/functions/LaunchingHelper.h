@@ -77,6 +77,8 @@ private:
     std::unordered_map<DWORD, DWORD> known{}; // pid -> parentPid
     std::unordered_map<DWORD, std::wstring> parentCache{};
     QTimer* pollingTimer{};
+    int pollingIntervalMs = 700;
+    int pollingFastIntervalMs = 100;
 };
 
 class LaunchingHelper : public QObject

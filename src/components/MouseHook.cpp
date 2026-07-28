@@ -3,7 +3,7 @@
 #include <QCursor>
 #include <QMutexLocker>
 
-static const int kHasMouseEventKeepDuration = 250;
+static const int kHasMouseEventKeepDuration = 800;
 
 Q_GLOBAL_STATIC(MouseHook, mouseHookInstance)
 

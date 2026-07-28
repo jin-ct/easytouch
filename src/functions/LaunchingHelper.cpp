@@ -10,6 +10,7 @@
 #include <winternl.h>
 #include <QCursor>
 #include "../components/QmlImageProvider.h"
+#include "../components/MouseHook.h"
 #include "../ConfigManager.h"
 
 #ifndef STATUS_INFO_LENGTH_MISMATCH
@@ -27,8 +28,6 @@ static NtQuerySystemInformation_t pNtQuerySystemInformation =
     reinterpret_cast<NtQuerySystemInformation_t>(
         GetProcAddress(GetModuleHandleW(L"ntdll.dll"),
                        "NtQuerySystemInformation"));
-
-static const int kPollingIntervalMs = 150;
 
 static const std::unordered_set<std::wstring> g_shellParentExeNames = {
     L"explorer.exe",
@@ -63,6 +62,12 @@ void LaunchingMonitor::process()
     }
     // 轮询监听进程启动
     startMonitoring();
+    connect(MouseHook::instance(), &MouseHook::mousePressedUnfiltered, this, [this](){
+        pollingTimer->start(pollingFastIntervalMs);
+        QTimer::singleShot(500, this, [this](){
+            pollingTimer->start(pollingIntervalMs);
+        });
+    }, Qt::QueuedConnection);
 }
 
 ProcState LaunchingMonitor::getProcState(DWORD pid)
@@ -298,7 +303,7 @@ void LaunchingMonitor::startMonitoring() {
 
         known.swap(current);
     });
-    pollingTimer->start(kPollingIntervalMs);
+    pollingTimer->start(pollingIntervalMs);
 }
 
 void LaunchingMonitor::SignalProcessStarted(DWORD pid, DWORD parentPid) {
