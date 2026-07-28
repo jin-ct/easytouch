@@ -80,6 +80,7 @@ private:
     QTimer* pollingTimer{};
     int pollingIntervalMs = 700;
     int pollingFastIntervalMs = 100;
+    bool isRecentlySetFast = false;
 };
 
 class LaunchingHelper : public QObject

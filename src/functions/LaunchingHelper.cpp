@@ -17,6 +17,7 @@
 #define STATUS_INFO_LENGTH_MISMATCH ((NTSTATUS)0xC0000004L)
 #endif
 
+// 动态加载 ntdll.dll
 using NtQuerySystemInformation_t =
     NTSTATUS (NTAPI*)(
         SYSTEM_INFORMATION_CLASS,
@@ -29,6 +30,7 @@ static NtQuerySystemInformation_t pNtQuerySystemInformation =
         GetProcAddress(GetModuleHandleW(L"ntdll.dll"),
                        "NtQuerySystemInformation"));
 
+// 进程 ParentExe 白名单
 static const std::unordered_set<std::wstring> g_shellParentExeNames = {
     L"explorer.exe",
     L"startmenuexperiencehost.exe",
@@ -71,9 +73,13 @@ void LaunchingMonitor::process()
     // 轮询监听进程启动
     startMonitoring();
     connect(MouseHook::instance(), &MouseHook::mousePressedUnfiltered, this, [this](){
-        pollingTimer->start(pollingFastIntervalMs);
+        if (!isRecentlySetFast) {
+            pollingTimer->start(pollingFastIntervalMs);
+            isRecentlySetFast = true;
+        }
         QTimer::singleShot(500, this, [this](){
             pollingTimer->start(pollingIntervalMs);
+            isRecentlySetFast = false;
         });
     }, Qt::QueuedConnection);
 }
