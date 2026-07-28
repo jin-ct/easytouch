@@ -7,15 +7,45 @@ static const int kHasMouseEventKeepDuration = 800;
 
 Q_GLOBAL_STATIC(MouseHook, mouseHookInstance)
 
-HHOOK MouseHook::g_mouseHook = nullptr;
+MouseHookWorker* MouseHookWorker::instance = nullptr;
+HHOOK MouseHookWorker::g_mouseHook = nullptr;
 
 MouseHook::MouseHook()
 {
+    worker = new MouseHookWorker;
+    worker->moveToThread(&workerThread);
+    connect(worker, &MouseHookWorker::mousePressedUnfiltered, this, &MouseHook::mousePressedUnfiltered);
+    connect(worker, &MouseHookWorker::mousePressed, this, &MouseHook::mousePressed);
+    connect(worker, &MouseHookWorker::mouseMoved, this, &MouseHook::mouseMoved);
+    connect(worker, &MouseHookWorker::installed, this, &MouseHook::installed);
+    connect(worker, &MouseHookWorker::uninstalled, this, &MouseHook::uninstalled);
+    connect(&workerThread, &QThread::started, worker, &MouseHookWorker::process, Qt::QueuedConnection);
+    workerThread.start();
+}
+
+MouseHook::~MouseHook()
+{
+    workerThread.quit();
+    workerThread.wait();
+    if (worker) {
+        worker->deleteLater();
+        worker = nullptr;
+    }
+    qDebug() << "MouseHook线程退出";
+}
+
+void MouseHookWorker::process()
+{
     qDebug() << "MouseHook线程启动";
+    instance = this;
     // 恢复 hasMouseEvent 变量
-    connect(&recordTimer, &QTimer::timeout, this, [this](){
+    recordTimer = new QTimer(this);
+    connect(recordTimer, &QTimer::timeout, this, [this](){
+        QMutexLocker locker(&mutex);
         hasMouseEvent = false;
+        recordTimer->stop();
     });
+    installHook();
 }
 
 MouseHook *MouseHook::instance()
@@ -23,61 +53,48 @@ MouseHook *MouseHook::instance()
     return mouseHookInstance();
 }
 
-void MouseHook::stop()
-{
-    quit();
-    wait();
-    qDebug() << "MouseHook线程退出";
-}
-
 void MouseHook::addIgnoreAreas(const QVariant &rect, QVariant idStr)
 {
-    QMutexLocker locker(&mutex);
-    ignoreAreas.insert(idStr.toString(), rect.toRect());
+    worker->addIgnoreAreas(rect.toRect(), idStr.toString());
 }
 
 void MouseHook::removeIgnoreAreas(QVariant idStr)
 {
-    QMutexLocker locker(&mutex);
-    ignoreAreas.remove(idStr.toString());
+    worker->removeIgnoreAreas(idStr.toString());
 }
 
 bool MouseHook::getHasMouseEvent()
+{
+    return worker->getHasMouseEvent();
+}
+
+MouseHookWorker::MouseHookWorker()
+{}
+
+MouseHookWorker::~MouseHookWorker()
+{
+    uninstallHook();
+}
+
+void MouseHookWorker::addIgnoreAreas(const QRect &rect, QString idStr)
+{
+    QMutexLocker locker(&mutex);
+    ignoreAreas.insert(idStr, rect);
+}
+
+void MouseHookWorker::removeIgnoreAreas(QString idStr)
+{
+    QMutexLocker locker(&mutex);
+    ignoreAreas.remove(idStr);
+}
+
+bool MouseHookWorker::getHasMouseEvent()
 {
     QMutexLocker locker(&mutex);
     return hasMouseEvent;
 }
 
-LRESULT MouseHook::LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
-{
-    if (nCode == HC_ACTION) {
-        const MSLLHOOKSTRUCT* info = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-        switch (wParam) {
-        case WM_LBUTTONDOWN:
-            if (MouseHook::instance())
-                QMetaObject::invokeMethod(
-                    MouseHook::instance(),
-                    "onMouse",
-                    Qt::QueuedConnection,
-                    QEvent::MouseButtonPress
-                    );
-            break;
-        case WM_MOUSEMOVE:
-            if (MouseHook::instance())
-                QMetaObject::invokeMethod(
-                    MouseHook::instance(),
-                    "onMouse",
-                    Qt::QueuedConnection,
-                    QEvent::MouseMove
-                    );
-            break;
-        }
-    }
-
-    return CallNextHookEx(MouseHook::g_mouseHook, nCode, wParam, lParam);
-}
-
-void MouseHook::onMouse(QEvent::Type eventType)
+void MouseHookWorker::onMouse(QEvent::Type eventType)
 {
     setHasMouseEvent();
     QPoint pos = QCursor::pos();
@@ -97,14 +114,7 @@ void MouseHook::onMouse(QEvent::Type eventType)
     }
 }
 
-void MouseHook::run()
-{
-    installHook();
-    exec();
-    uninstallHook();
-}
-
-void MouseHook::installHook()
+void MouseHookWorker::installHook()
 {
     if (g_mouseHook) {
         return;
@@ -119,7 +129,7 @@ void MouseHook::installHook()
     qDebug() << "WindowsMouseHookInstalled";
 }
 
-void MouseHook::uninstallHook()
+void MouseHookWorker::uninstallHook()
 {
     UnhookWindowsHookEx(g_mouseHook);
     g_mouseHook = nullptr;
@@ -128,14 +138,43 @@ void MouseHook::uninstallHook()
     qDebug() << "WindowsMouseHookUninstalled";
 }
 
-bool MouseHook::isRectContains(const QRect &rect, const QPoint &point)
+bool MouseHookWorker::isRectContains(const QRect &rect, const QPoint &point)
 {
     return rect.contains(point);
 }
 
-void MouseHook::setHasMouseEvent()
+void MouseHookWorker::setHasMouseEvent()
 {
     QMutexLocker locker(&mutex);
     hasMouseEvent = true;
-    recordTimer.start(kHasMouseEventKeepDuration);
+    recordTimer->start(kHasMouseEventKeepDuration);
+}
+
+LRESULT MouseHookWorker::LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    if (nCode == HC_ACTION) {
+        const MSLLHOOKSTRUCT* info = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
+        switch (wParam) {
+        case WM_LBUTTONDOWN:
+            if (MouseHookWorker::instance)
+                QMetaObject::invokeMethod(
+                    MouseHookWorker::instance,
+                    "onMouse",
+                    Qt::QueuedConnection,
+                    QEvent::MouseButtonPress
+                    );
+            break;
+        case WM_MOUSEMOVE:
+            if (MouseHookWorker::instance)
+                QMetaObject::invokeMethod(
+                    MouseHookWorker::instance,
+                    "onMouse",
+                    Qt::QueuedConnection,
+                    QEvent::MouseMove
+                    );
+            break;
+        }
+    }
+
+    return CallNextHookEx(MouseHookWorker::g_mouseHook, nCode, wParam, lParam);
 }

@@ -1,9 +1,11 @@
 #ifndef WINDOWMONITOR_H
 #define WINDOWMONITOR_H
 
+#include <QObject>
 #include <QThread>
 #include <QRect>
 #include <QMutex>
+#include <QTimer>
 #include <dwmapi.h>
 #include <psapi.h>
 #include <cstdio>
@@ -20,24 +22,25 @@ struct WindowInfo {
     LONG exStyle{};
 };
 
-class WindowMonitor : public QThread
+class WindowMonitorWorker : public QObject
 {
     Q_OBJECT
 public:
-    WindowMonitor();
-    static WindowMonitor* instance();
-    void stop();
+    WindowMonitorWorker();
+    ~WindowMonitorWorker();
+    void process();
 
     WindowInfo getTopWindow();
+
+    static WindowMonitorWorker* instance;
+
+public slots:
+    void UpdateTopWindow();
 
 signals:
     void topWindowChanged(WindowInfo window);
 
-protected:
-    void run() override;
-
 private:
-    void UpdateTopWindow();
     bool IsActivatableAppWindow(HWND hwnd);
     HWND FindTopActivatableWindow();
     bool IsWindowCloaked(HWND hwnd);
@@ -54,6 +57,26 @@ private:
 
     QMutex mutex;
     WindowInfo topWindow{};
+    QTimer* pollingTimer{};
+};
+
+class WindowMonitor : public QObject
+{
+    Q_OBJECT
+public:
+    WindowMonitor();
+    ~WindowMonitor();
+    static WindowMonitor* instance();
+
+    WindowInfo getTopWindow();
+
+signals:
+    void topWindowChanged(WindowInfo window);
+
+private:
+    QThread workerThread{};
+    WindowMonitorWorker* worker{};
+    QMutex mutex;
 };
 
 #endif // WINDOWMONITOR_H

@@ -39,7 +39,15 @@ static const std::unordered_set<std::wstring> g_shellParentExeNames = {
 
 LaunchingMonitor* LaunchingMonitor::instance = nullptr;
 
-LaunchingMonitor::LaunchingMonitor(QObject *parent) {
+LaunchingMonitor::LaunchingMonitor() {
+}
+
+LaunchingMonitor::~LaunchingMonitor()
+{
+    if (g_winEventHook) {
+        UnhookWinEvent(g_winEventHook);
+        g_winEventHook = nullptr;
+    }
 }
 
 void LaunchingMonitor::process()

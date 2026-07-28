@@ -5,9 +5,28 @@
 
 Q_GLOBAL_STATIC(WindowMonitor, windowMonitorInstance)
 
+static const int kPollingIntervalMs = 150;
+
+WindowMonitorWorker* WindowMonitorWorker::instance = nullptr;
+
 WindowMonitor::WindowMonitor()
 {
-    qDebug() << "WindowMonitor线程启动";
+    worker = new WindowMonitorWorker;
+    worker->moveToThread(&workerThread);
+    connect(worker, &WindowMonitorWorker::topWindowChanged, this, &WindowMonitor::topWindowChanged);
+    connect(&workerThread, &QThread::started, worker, &WindowMonitorWorker::process, Qt::QueuedConnection);
+    workerThread.start();
+}
+
+WindowMonitor::~WindowMonitor()
+{
+    workerThread.quit();
+    workerThread.wait();
+    if (worker) {
+        worker->deleteLater();
+        worker = nullptr;
+    }
+    qDebug() << "WindowMonitor线程退出";
 }
 
 WindowMonitor *WindowMonitor::instance()
@@ -15,39 +34,49 @@ WindowMonitor *WindowMonitor::instance()
     return windowMonitorInstance();
 }
 
-void WindowMonitor::stop()
+WindowInfo WindowMonitor::getTopWindow()
 {
-    quit();
-    wait();
-    qDebug() << "WindowMonitor线程退出";
+    return worker->getTopWindow();
 }
 
-WindowInfo WindowMonitor::getTopWindow()
+WindowMonitorWorker::WindowMonitorWorker()
+{
+}
+
+WindowMonitorWorker::~WindowMonitorWorker()
+{
+    UninstallHooks();
+}
+
+void WindowMonitorWorker::process()
+{
+    qDebug() << "WindowMonitor线程启动";
+    instance = this;
+    InstallHooks();
+    pollingTimer = new QTimer(this);
+    connect(pollingTimer, &QTimer::timeout, this, &WindowMonitorWorker::UpdateTopWindow, Qt::QueuedConnection);
+    pollingTimer->start(kPollingIntervalMs);
+}
+
+WindowInfo WindowMonitorWorker::getTopWindow()
 {
     QMutexLocker locker(&mutex);
     return topWindow;
 }
 
-void WindowMonitor::run()
-{
-    InstallHooks();
-    exec();
-    UninstallHooks();
-}
-
-void WindowMonitor::UpdateTopWindow()
+void WindowMonitorWorker::UpdateTopWindow()
 {
     const HWND top = FindTopActivatableWindow();
+
+    if (!top) {
+        return;
+    }
 
     {
         QMutexLocker locker(&mutex);
         if (top == topWindow.hwnd) {
             return;
         }
-    }
-
-    if (!top) {
-        return;
     }
 
     wchar_t title[512] = {};
@@ -80,7 +109,7 @@ void WindowMonitor::UpdateTopWindow()
     emit topWindowChanged(topWindow);
 }
 
-bool WindowMonitor::IsActivatableAppWindow(HWND hwnd)
+bool WindowMonitorWorker::IsActivatableAppWindow(HWND hwnd)
 {
     if (!IsWindow(hwnd) || !IsWindowVisible(hwnd)) {
         return false;
@@ -138,7 +167,7 @@ bool WindowMonitor::IsActivatableAppWindow(HWND hwnd)
     return true;
 }
 
-HWND WindowMonitor::FindTopActivatableWindow()
+HWND WindowMonitorWorker::FindTopActivatableWindow()
 {
     HWND hwnd = GetTopWindow(nullptr);
     while (hwnd != nullptr) {
@@ -150,14 +179,14 @@ HWND WindowMonitor::FindTopActivatableWindow()
     return nullptr;
 }
 
-bool WindowMonitor::IsWindowCloaked(HWND hwnd)
+bool WindowMonitorWorker::IsWindowCloaked(HWND hwnd)
 {
     BOOL cloaked = FALSE;
     const HRESULT hr = DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked));
     return SUCCEEDED(hr) && cloaked;
 }
 
-std::wstring WindowMonitor::GetExePath(DWORD pid)
+std::wstring WindowMonitorWorker::GetExePath(DWORD pid)
 {
     HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ, FALSE, pid);
     if (!process) {
@@ -178,13 +207,13 @@ std::wstring WindowMonitor::GetExePath(DWORD pid)
     return std::wstring(path);
 }
 
-std::wstring WindowMonitor::GetExeName(std::wstring exePath)
+std::wstring WindowMonitorWorker::GetExeName(std::wstring exePath)
 {
     const wchar_t* base = wcsrchr(exePath.c_str(), L'\\');
     return base ? (base + 1) : exePath.c_str();
 }
 
-bool WindowMonitor::InstallHooks()
+bool WindowMonitorWorker::InstallHooks()
 {
     constexpr DWORD events[] = {
         EVENT_SYSTEM_FOREGROUND,
@@ -208,7 +237,7 @@ bool WindowMonitor::InstallHooks()
     return true;
 }
 
-void WindowMonitor::UninstallHooks()
+void WindowMonitorWorker::UninstallHooks()
 {
     for (HWINEVENTHOOK& hook : g_hooks) {
         if (hook) {
@@ -218,7 +247,13 @@ void WindowMonitor::UninstallHooks()
     }
 }
 
-void WindowMonitor::WinEventProc(HWINEVENTHOOK, DWORD, HWND, LONG, LONG, DWORD, DWORD)
+void WindowMonitorWorker::WinEventProc(HWINEVENTHOOK, DWORD, HWND, LONG, LONG, DWORD, DWORD)
 {
-    WindowMonitor::instance()->UpdateTopWindow();
+    if (WindowMonitorWorker::instance) {
+        QMetaObject::invokeMethod(
+            WindowMonitorWorker::instance,
+            "UpdateTopWindow",
+            Qt::QueuedConnection
+            );
+    }
 }

@@ -36,7 +36,8 @@ class LaunchingMonitor : public QObject
 {
     Q_OBJECT
 public:
-    explicit LaunchingMonitor(QObject *parent = nullptr);
+    LaunchingMonitor();
+    ~LaunchingMonitor();
     void process();
 
     ProcState getProcState(DWORD pid = 0);

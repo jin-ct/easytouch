@@ -102,11 +102,9 @@ int main(int argc, char *argv[])
 
     // 监测线程（单例）初始化
     // 鼠标钩子
-    MouseHook::instance()->start();
-    QObject::connect(&app, &QApplication::aboutToQuit, MouseHook::instance(), &MouseHook::stop);
+    MouseHook::instance();
     // 顶层窗口监测器
-    WindowMonitor::instance()->start();
-    QObject::connect(&app, &QApplication::aboutToQuit, WindowMonitor::instance(), &WindowMonitor::stop);
+    WindowMonitor::instance();
 
     // Qml图像 Provider
     engine.addImageProvider(QLatin1String("MImage"), QmlImageProvider::instance());
