@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -15,15 +18,17 @@ jobs:
       - name: Download Assets
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           mkdir assets
 
           gh release download \
-            "${{ github.event.release.tag_name }}" \
+            "$RELEASE_TAG" \
             -D assets
         
       - name: Create Gitee Release
-        uses: nicennnnnnnlee/action-gitee-release@master
+        # 固定到具体提交，避免第三方 Action 分支被篡改后窃取 GITEE_TOKEN
+        uses: nicennnnnnnlee/action-gitee-release@44b412edade0c837fb0ad7d73f4674ec07c8b722
         with:
           gitee_action: create_release
           gitee_owner: jin-ct
@@ -35,7 +40,7 @@ jobs:
           gitee_release_body: ${{ github.event.release.body }}
 
       - name: Upload Assets
-        uses: nicennnnnnnlee/action-gitee-release@master
+        uses: nicennnnnnnlee/action-gitee-release@44b412edade0c837fb0ad7d73f4674ec07c8b722
         with:
           gitee_action: upload_asset
           gitee_owner: jin-ct

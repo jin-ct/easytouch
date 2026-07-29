@@ -4,7 +4,9 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QProcess>
+#include <QProcessEnvironment>
 #include <QStandardPaths>
+#include <QUrl>
 #include <QDebug>
 #include <QTimer>
 #include <QTextStream>
@@ -86,7 +88,9 @@ void UpdateHelper::requestReleasesPage()
     QString baseHost = m_usingGitHubApi ? QStringLiteral("https://api.github.com")
                                         : QStringLiteral("https://gitee.com/api/v5");
     QString apiUrl = QStringLiteral("%1/repos/%2/%3/releases?page=%4&per_page=%5")
-                         .arg(baseHost, repoOwner, repoName)
+                         .arg(baseHost,
+                              QString::fromLatin1(QUrl::toPercentEncoding(repoOwner)),
+                              QString::fromLatin1(QUrl::toPercentEncoding(repoName)))
                          .arg(m_releasesListPage)
                          .arg(m_releaseListPerPage);
 
@@ -95,19 +99,15 @@ void UpdateHelper::requestReleasesPage()
     request.setRawHeader("Accept", "application/vnd.github.v3+json");
 
     QSslConfiguration sslConfig = request.sslConfiguration();
-    sslConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
+    sslConfig.setPeerVerifyMode(QSslSocket::VerifyPeer);
     request.setSslConfiguration(sslConfig);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                         QNetworkRequest::NoLessSafeRedirectPolicy);
 
     currentReply = networkManager->get(request);
     connect(currentReply, &QNetworkReply::finished, this, &UpdateHelper::onReleasesListReceived);
     connect(currentReply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::errorOccurred),
             this, &UpdateHelper::onDownloadError);
-    connect(currentReply, &QNetworkReply::sslErrors, this, [this](const QList<QSslError> &errors) {
-        Q_UNUSED(errors);
-        if (currentReply) {
-            currentReply->ignoreSslErrors();
-        }
-    });
 }
 
 void UpdateHelper::onReleasesListReceived()
@@ -315,10 +315,38 @@ bool UpdateHelper::compareVersions(const QString &currentVersion, const QString 
     return compareTag(latestTag, currentTag, channel) > 0;
 }
 
+bool UpdateHelper::isTrustedUpdateUrl(const QUrl &url)
+{
+    if (!url.isValid())
+        return false;
+    if (url.scheme().compare(QStringLiteral("https"), Qt::CaseInsensitive) != 0)
+        return false;
+
+    static const QStringList trustedHosts = {
+        QStringLiteral("github.com"),
+        QStringLiteral("api.github.com"),
+        QStringLiteral("codeload.github.com"),
+        QStringLiteral("objects.githubusercontent.com"),
+        QStringLiteral("release-assets.githubusercontent.com"),
+        QStringLiteral("gitee.com"),
+        QStringLiteral("release-assets.gitee.com"),
+    };
+
+    const QString host = url.host().toLower();
+    return trustedHosts.contains(host);
+}
+
 void UpdateHelper::downloadUpdate(const QString &downloadUrl)
 {
     if (isDownloadStarted)
         return;
+
+    const QUrl url(downloadUrl);
+    if (!isTrustedUpdateUrl(url)) {
+        emit updateError(QStringLiteral("更新包地址不可信，已取消下载: %1").arg(downloadUrl));
+        return;
+    }
+
     isDownloadStarted = true;
 
     this->downloadUrl = downloadUrl;
@@ -331,26 +359,20 @@ void UpdateHelper::downloadUpdate(const QString &downloadUrl)
 
     zipFilePath = QDir(tempDir).filePath("update.zip");
 
-    QNetworkRequest request(downloadUrl);
+    QNetworkRequest request(url);
     request.setRawHeader("User-Agent", "EasyTouch-Updater/1.0");
 
-    // 配置 SSL，忽略证书错误（用于更新下载）
     QSslConfiguration sslConfig = request.sslConfiguration();
-    sslConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
+    sslConfig.setPeerVerifyMode(QSslSocket::VerifyPeer);
     request.setSslConfiguration(sslConfig);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                         QNetworkRequest::NoLessSafeRedirectPolicy);
 
     currentReply = networkManager->get(request);
     connect(currentReply, &QNetworkReply::downloadProgress, this, &UpdateHelper::onDownloadProgress);
     connect(currentReply, &QNetworkReply::finished, this, &UpdateHelper::onDownloadFinished);
     connect(currentReply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::errorOccurred),
             this, &UpdateHelper::onDownloadError);
-    // 忽略 SSL 错误
-    connect(currentReply, &QNetworkReply::sslErrors, this, [this](const QList<QSslError> &errors) {
-        Q_UNUSED(errors);
-        if (currentReply) {
-            currentReply->ignoreSslErrors();
-        }
-    });
 }
 
 void UpdateHelper::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
@@ -406,6 +428,53 @@ void UpdateHelper::onDownloadError(QNetworkReply::NetworkError error)
     }
 }
 
+QStringList UpdateHelper::listZipEntries(const QString &absZipPath, bool *ok)
+{
+    QProcess listProcess;
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert(QStringLiteral("ET_UPDATE_ZIP"), absZipPath);
+    listProcess.setProcessEnvironment(env);
+
+    // 路径通过环境变量传递，避免拼接进命令行造成命令注入
+    listProcess.start(QStringLiteral("powershell.exe"),
+                      {QStringLiteral("-NoProfile"),
+                       QStringLiteral("-NonInteractive"),
+                       QStringLiteral("-Command"),
+                       QStringLiteral("Add-Type -AssemblyName System.IO.Compression.FileSystem; "
+                                      "$zip = [System.IO.Compression.ZipFile]::OpenRead($env:ET_UPDATE_ZIP); "
+                                      "try { $zip.Entries | ForEach-Object { $_.FullName } } "
+                                      "finally { $zip.Dispose() }")});
+
+    if (!listProcess.waitForFinished(30000) || listProcess.exitCode() != 0) {
+        if (ok)
+            *ok = false;
+        return {};
+    }
+
+    if (ok)
+        *ok = true;
+    return QString::fromLocal8Bit(listProcess.readAllStandardOutput())
+        .split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+}
+
+bool UpdateHelper::zipEntriesAreSafe(const QStringList &entries)
+{
+    // 防止 Zip Slip：拒绝绝对路径、盘符以及包含 ".." 的条目
+    for (const QString &rawEntry : entries) {
+        const QString entry = rawEntry.trimmed();
+        if (entry.isEmpty())
+            continue;
+
+        QString normalized = entry;
+        normalized.replace(QLatin1Char('\\'), QLatin1Char('/'));
+        if (normalized.startsWith(QLatin1Char('/')) || normalized.contains(QLatin1Char(':')))
+            return false;
+        if (normalized.split(QLatin1Char('/'), Qt::SkipEmptyParts).contains(QStringLiteral("..")))
+            return false;
+    }
+    return true;
+}
+
 void UpdateHelper::extractZip(const QString &zipPath, const QString &extractPath)
 {
     QDir dir;
@@ -420,13 +489,33 @@ void UpdateHelper::extractZip(const QString &zipPath, const QString &extractPath
     qDebug() << "解压 ZIP 文件:" << absZipPath;
     qDebug() << "解压到目录:" << absExtractPath;
 
-    // 使用 PowerShell Expand-Archive 命令解压（更可靠）
-    QString powershellCmd = QString("powershell.exe -Command \"Expand-Archive -Path '%1' -DestinationPath '%2' -Force\"")
-                            .arg(absZipPath.replace("'", "''"))
-                            .arg(absExtractPath.replace("'", "''"));
+    bool listOk = false;
+    const QStringList entries = listZipEntries(absZipPath, &listOk);
+    if (!listOk) {
+        emit updateError(QStringLiteral("无法校验更新包内容，已取消更新"));
+        QFile::remove(absZipPath);
+        return;
+    }
+    if (!zipEntriesAreSafe(entries)) {
+        emit updateError(QStringLiteral("更新包包含非法路径，已取消更新"));
+        QFile::remove(absZipPath);
+        return;
+    }
 
+    // 使用 PowerShell Expand-Archive 命令解压（更可靠）
+    // 路径通过环境变量传递，避免拼接进命令行造成命令注入
     QProcess extractProcess;
-    extractProcess.start(powershellCmd);
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert(QStringLiteral("ET_UPDATE_ZIP"), absZipPath);
+    env.insert(QStringLiteral("ET_UPDATE_DEST"), absExtractPath);
+    extractProcess.setProcessEnvironment(env);
+
+    extractProcess.start(QStringLiteral("powershell.exe"),
+                         {QStringLiteral("-NoProfile"),
+                          QStringLiteral("-NonInteractive"),
+                          QStringLiteral("-Command"),
+                          QStringLiteral("Expand-Archive -LiteralPath $env:ET_UPDATE_ZIP "
+                                         "-DestinationPath $env:ET_UPDATE_DEST -Force")});
     extractProcess.waitForFinished(30000); // 等待最多30秒
 
     if (extractProcess.exitCode() != 0) {
