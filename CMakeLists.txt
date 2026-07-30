@@ -106,6 +106,7 @@ qt_add_qml_module(appeasytouch
     QML_FILES qml/components/Control/SettingItemExpander.qml
     QML_FILES qml/components/Control/ExpandedItem.qml
     QML_FILES qml/components/Control/MDropDownButton.qml
+    QML_FILES qml/components/Control/ShowMoreItem.qml
     QML_FILES qml/components/SettingPages/Basic.qml
     QML_FILES qml/components/SettingPages/About.qml
     QML_FILES qml/components/SettingPages/ToolBar.qml

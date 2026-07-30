@@ -181,12 +181,18 @@ FluScrollablePage{
                             visible: parent.hovered
                             text: qsTr("删除")
                         }
+                        onClicked: {
+                            deleteDialog.open()
+                        }
                     }
                     FluButton {
                         text: qsTr("选择窗口")
                     }
                     FluFilledButton {
                         text: qsTr("编辑规则")
+                        onClicked: {
+                            ruleEditor.open(FluSheetType.Right)
+                        }
                     }
                 }
             }
@@ -198,16 +204,44 @@ FluScrollablePage{
                 Layout.bottomMargin: 16
 
                 TouchPromoteRuleList {
+                    id: list_touchEvent
                     title: qsTr("触摸事件")
+                    model: [{id: 1, text: "上下滑动"}, {id: 2, text: "双指缩放"}, {id: 3, text: "双指点击"}, {id: 4, text: "双指点击"}, {id: 5, text: "双指点击"}]
                     Layout.fillWidth: true
                     Layout.preferredWidth: 200
+                    selected: 1
+                    onSelectedChanged: {
+                        list_touchAction.title = selected === 0 ? qsTr("执行动作") : qsTr("执行动作 (事件") + selected + ")"
+                    }
                 }
                 TouchPromoteRuleList {
-                    title: qsTr("动作")
+                    id: list_touchAction
+                    title: qsTr("执行动作")
+                    model: [{id: 1, text: "模拟键盘 A"}, {id: 2, text: "鼠标滚轮"}]
+                    enableSelect: false
                     Layout.fillWidth: true
                     Layout.preferredWidth: 200
                 }
             }
         }
+    }
+    FluContentDialog {
+        id: deleteDialog
+        title: qsTr("删除")
+        contentDelegate: Component {
+            FluText {
+                text: qsTr("确定要删除该项吗？")
+                topPadding: 4
+                leftPadding: 20
+                rightPadding: 20
+                bottomPadding: 4
+            }
+        }
+        onPositiveClicked: {
+            console.log("TouchPromote: rule deleted")
+        }
+    }
+    TouchPromoteRuleEditor {
+        id: ruleEditor
     }
 }
