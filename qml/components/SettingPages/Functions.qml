@@ -261,6 +261,7 @@ FluScrollablePage{
                     FluTextBox {
                         placeholderText: qsTr("单位: 毫秒(ms)")
                         inputMethodHints: Qt.ImhDigitsOnly
+                        validator: IntValidator { bottom: 0; top: 99999 }
                         text: params.manualDuration
                         onTextChanged: {
                             params.manualDuration = Number(text)
