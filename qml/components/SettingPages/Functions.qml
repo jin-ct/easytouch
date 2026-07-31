@@ -286,9 +286,14 @@ FluScrollablePage{
             }
         }
         positiveText: qsTr("确定")
-        onPositiveClicked: {
+        onPositiveClickListener: function() {
+            if (params.exeName === "") {
+                showWarning(qsTr("请输入进程名称"))
+                return
+            }
             Global.launchingHelper.setItem(params.exeName, params.appName, params.enableHelper, params.manualDuration, params.exePath)
             params.reset()
+            launchingHelperDeleteDialog.close()
         }
         neutralText: qsTr("删除该项")
         onNeutralClicked: {
