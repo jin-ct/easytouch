@@ -59,52 +59,62 @@ qt_add_qml_module(appeasytouch
     URI easytouch
     VERSION 1.0
     RESOURCES res.qrc
-    SOURCES globalmanager.h globalmanager.cpp
-    SOURCES configmanager.h configmanager.cpp
-    SOURCES QtLogger.cpp QtLogger.h
+    SOURCES src/GlobalManager.h src/GlobalManager.cpp
+    SOURCES src/ConfigManager.h src/ConfigManager.cpp
+    SOURCES src/QtLogger.h src/QtLogger.cpp
+    SOURCES src/app_dmp.h
     SOURCES stdafx.h
-    SOURCES functions/fullscreenwatcher.h functions/fullscreenwatcher.cpp
-    SOURCES functions/notificationhelper.h functions/notificationhelper.cpp
-    SOURCES functions/whiteboarditem.h functions/whiteboarditem.cpp
-    SOURCES functions/functions.cpp functions/functions.h
-    SOURCES functions/updatehelper.h functions/updatehelper.cpp
-    SOURCES functions/filehelper.h functions/filehelper.cpp
-    SOURCES functions/wechathelper.h functions/wechathelper.cpp
-    SOURCES functions/windowfocushelper.h functions/windowfocushelper.cpp
-    SOURCES functions/screenmovement.h functions/screenmovement.cpp
-    SOURCES functions/mousehook.h functions/mousehook.cpp
-    SOURCES functions/configfilemanager.h functions/configfilemanager.cpp
-    SOURCES functions/launchinghelper.h functions/launchinghelper.cpp
-    SOURCES functions/CircularReveal.h functions/CircularReveal.cpp
-    SOURCES functions/FileWatcher.h functions/FileWatcher.cpp
+    SOURCES src/components/Functions.h src/components/Functions.cpp
+    SOURCES src/components/ConfigFileManager.h src/components/ConfigFileManager.cpp
+    SOURCES src/components/UpdateHelper.h src/components/UpdateHelper.cpp
+    SOURCES src/components/FullScreenWatcher.h src/components/FullScreenWatcher.cpp
+    SOURCES src/components/NotificationHelper.h src/components/NotificationHelper.cpp
+    SOURCES src/components/FileHelper.h src/components/FileHelper.cpp
+    SOURCES src/components/MouseHook.h src/components/MouseHook.cpp
+    SOURCES src/components/QmlImageProvider.h src/components/QmlImageProvider.cpp
+    SOURCES src/components/CircularReveal.h src/components/CircularReveal.cpp
+    SOURCES src/components/FileWatcher.h src/components/FileWatcher.cpp
+    SOURCES src/components/WindowMonitor.h src/components/WindowMonitor.cpp
+    SOURCES src/functions/WhiteBoardItem.h src/functions/WhiteBoardItem.cpp
+    SOURCES src/functions/WeChatHelper.h src/functions/WeChatHelper.cpp
+    SOURCES src/functions/WindowFocusHelper.h src/functions/WindowFocusHelper.cpp
+    SOURCES src/functions/ScreenMovement.h src/functions/ScreenMovement.cpp
+    SOURCES src/functions/LaunchingHelper.h src/functions/LaunchingHelper.cpp
     QML_FILES Main.qml
-    QML_FILES views/ToolWindows.qml
-    QML_FILES views/SettingsPage.qml
-    QML_FILES views/Whileboard.qml
-    QML_FILES views/RandomGenerator.qml
-    QML_FILES views/SplashWindow.qml
-    QML_FILES views/HotloadWindow.qml
-    QML_FILES components/ToolWindowContent.qml
-    QML_FILES components/WindowTitleBar.qml
-    QML_FILES components/Popup/VolumePopup.qml
-    QML_FILES components/Popup/PopupWindow.qml
-    QML_FILES components/Popup/PenPopup.qml
-    QML_FILES components/Popup/EraserPopup.qml
-    QML_FILES components/Popup/ScrMoveSaveList.qml
-    QML_FILES components/Dialog/ScrMoveSaveDialog.qml
-    QML_FILES components/Dialog/MessageBoxDialog.qml
-    QML_FILES components/SettingItems/SettingItem.qml
-    QML_FILES components/SettingItems/SettingItemExpander.qml
-    QML_FILES components/SettingItems/ExpandedItem.qml
-    QML_FILES components/SettingPages/Basic.qml
-    QML_FILES components/SettingPages/About.qml
-    QML_FILES components/SettingPages/ToolBar.qml
-    QML_FILES components/SettingPages/Functions.qml
-    QML_FILES components/SettingPages/Advanced.qml
+    QML_FILES qml/connections/Connect_Notification.qml
+    QML_FILES qml/connections/Connect_UpdateHelper.qml
+    QML_FILES qml/connections/Connect_FocusHelper.qml
+    QML_FILES qml/connections/Connect_LaunchingHelper.qml
+    QML_FILES qml/views/ToolWindows.qml
+    QML_FILES qml/views/SettingsPage.qml
+    QML_FILES qml/views/Whileboard.qml
+    QML_FILES qml/views/RandomGenerator.qml
+    QML_FILES qml/views/SplashWindow.qml
+    QML_FILES qml/views/HotloadWindow.qml
+    QML_FILES qml/views/CrashWindow.qml
+    QML_FILES qml/components/ToolWindowContent.qml
+    QML_FILES qml/components/WindowTitleBar.qml
+    QML_FILES qml/components/Popup/VolumePopup.qml
+    QML_FILES qml/components/Popup/PopupWindow.qml
+    QML_FILES qml/components/Popup/PenPopup.qml
+    QML_FILES qml/components/Popup/EraserPopup.qml
+    QML_FILES qml/components/Popup/ScrMoveSaveList.qml
+    QML_FILES qml/components/Popup/SystemTrayMenu.qml
+    QML_FILES qml/components/Dialog/ScrMoveSaveDialog.qml
+    QML_FILES qml/components/Dialog/MessageBoxDialog.qml
+    QML_FILES qml/components/Control/SettingItem.qml
+    QML_FILES qml/components/Control/SettingItemExpander.qml
+    QML_FILES qml/components/Control/ExpandedItem.qml
+    QML_FILES qml/components/Control/MDropDownButton.qml
+    QML_FILES qml/components/Control/ShowMoreItem.qml
+    QML_FILES qml/components/SettingPages/Basic.qml
+    QML_FILES qml/components/SettingPages/About.qml
+    QML_FILES qml/components/SettingPages/ToolBar.qml
+    QML_FILES qml/components/SettingPages/Functions.qml
+    QML_FILES qml/components/SettingPages/Advanced.qml
     RESOURCES qtquickcontrols2.conf
     RESOURCES app.rc.in
     QML_FILES Splash.qml
-    SOURCES functions/qmlimageprovider.h functions/qmlimageprovider.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -147,4 +157,10 @@ add_subdirectory(3rdparty/FluentUI)
 
 target_include_directories(appeasytouch PRIVATE
     3rdparty/FluentUI/src
+)
+
+#Release也支持日志打印代码位置
+target_compile_definitions(appeasytouch
+    PRIVATE
+    QT_MESSAGELOGCONTEXT
 )

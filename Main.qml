@@ -3,9 +3,10 @@ import QtQuick.Controls
 import QtCore
 import FluentUI
 import Functions 1.0
-import "./components"
-import "./components/Popup"
-import "./views"
+import "./qml/connections"
+import "./qml/components"
+import "./qml/components/Popup"
+import "./qml/views"
 
 ApplicationWindow {
     visible: true
@@ -14,6 +15,28 @@ ApplicationWindow {
     flags:  Qt.Window | Qt.WindowDoesNotAcceptFocus | Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint
 
     // cpp通信
+    Connect_Notification {
+        onShowContentMenu: function(anchor){
+            systemTrayMenu.popupTop(anchor.x - windows.x, anchor.y - windows.y)
+        }
+    }
+    Connect_UpdateHelper {}
+    Connections {
+        enabled: Global.weChatHelper
+        target: Global.weChatHelper
+        function onLoaded() {
+            console.log("WeChatHelper已加载")
+        }
+    }
+    Connect_FocusHelper {
+        onNewWindowCreated: {
+            // 新窗口出现时更新工具栏窗口置顶
+            if (toolWindows.status === Loader.Ready) {
+                toolWindows.item.updateWindows()
+            }
+        }
+    }
+    Connect_LaunchingHelper {}
     Connections {
         target: Global.funs
         function onUsbInserted() {
@@ -27,66 +50,6 @@ ApplicationWindow {
             if (toolWindows.status === Loader.Ready)
                 toolWindows.item.hideUsbBtn()
             console.log("usbRemoved")
-        }
-    }
-    Connections {
-        target: Global.notification
-        function onNotificationClicked(id) {
-            if (id === "openUsb") {
-                Global.funs.openDrive()
-            }
-            if (id === "update" && Config.settings.get("AutoUpdateBehavior") === "onlyRemind") {
-                Global.updateHelper.startDownload()
-            }
-        }
-        function onAppQuit() {
-            Qt.quit()
-        }
-        function onStartSettings() {
-            FluRouter.navigate("/")
-        }
-    }
-    Connections {
-        target: Global.updateHelper
-        function onUpdateAvailable(version) {
-            let behavior = Config.settings.get("AutoUpdateBehavior");
-            let msg = behavior === "fullyAuto" ? "更新正在进行" : "点击此处开始更新"
-            if (behavior !== "noNotice")
-                Global.notification.showNotification("update", "有新版本的易触控" + "（" + version + "）", msg)
-        }
-    }
-    Connections {
-        enabled: Global.weChatHelper
-        target: Global.weChatHelper
-        function onLoaded() {
-            console.log("WeChatHelper已加载")
-        }
-    }
-    Connections {
-        enabled: Global.windowFocusHelper
-        target: Global.windowFocusHelper
-        // 新窗口出现时更新工具栏窗口置顶
-        function onNewWindowCreated() {
-            if (toolWindows.status === Loader.Ready) {
-                toolWindows.item.updateWindows()
-            }
-        }
-        function onStarted() {
-            console.log("WindowFocusHelper已加载")
-        }
-    }
-    Connections {
-        enabled: Global.launchingHelper
-        target: Global.launchingHelper
-        function onLoaded() {
-            console.log("LaunchingHelper已加载")
-        }
-        function onProcessStartedWithInfo(exeName, exeIconId, cursorPos, duration) {
-            var splashWindow = Qt.createComponent("views/SplashWindow.qml");
-            if (splashWindow.status === Component.Ready) {
-                var obj = splashWindow.createObject(null, { exeName: exeName, exeIconId: exeIconId, cursorPos: cursorPos,  duration: duration});
-                obj.destroy(15000)  // 最长显示15s
-            }
         }
     }
     Connections {
@@ -111,33 +74,18 @@ ApplicationWindow {
         console.log("windowsCompleted")
     }
 
-    // =============== 窗口 ===============
+    // =================== 窗口 ===================
 
-    FluLauncher {
-        id: fluUI
-        Connections{
-            target: FluTheme
-            function onDarkModeChanged(){
-                Config.settings.set("DarkMode", FluTheme.darkMode)
-            }
-        }
-        Component.onCompleted: {
-            FluApp.init(fluUI)
-            FluApp.windowIcon = "qrc:/icon/icon.svg"
-            FluTheme.darkMode = Config.settings.get("DarkMode")
-            FluTheme.animationEnabled = true
-            FluRouter.routes = {
-                "/": "qrc:/qt/qml/easytouch/views/SettingsPage.qml",
-                "/hotload": "qrc:/qt/qml/easytouch/views/HotloadWindow.qml"
-            }
-        }
+    // 系统托盘图标菜单
+    SystemTrayMenu {
+        id: systemTrayMenu
     }
 
     // 批注窗口
     Loader {
         id: whileboard
         function show() {
-            source = "views/Whileboard.qml"
+            source = "qml/views/Whileboard.qml"
         }
         function close() {
             source = ""
@@ -157,7 +105,7 @@ ApplicationWindow {
     Loader {
         id: randomGenerator
         function show() {
-            source = "views/RandomGenerator.qml"
+            source = "qml/views/RandomGenerator.qml"
         }
         Connections {
             target: randomGenerator.item
@@ -170,35 +118,8 @@ ApplicationWindow {
     // 工具栏窗口
     Loader {
         id: toolWindows
-        source: Config.settings.data.ToolBar.Enable ? "views/ToolWindows.qml" : ""
+        source: Config.settings.data.ToolBar.Enable ? "qml/views/ToolWindows.qml" : ""
     }
 
-    // =============== 窗口（结束） ===============
-
-    // 工具函数
-    Timer {id: timer}
-    function setTimeout(cb, delayTime) {
-       timer.interval = delayTime;
-       timer.repeat = false;
-       timer.triggered.connect(cb);
-       timer.restart();
-    }
-    function showMessageBox(title, message, okBtnClickedCb = () =>{} , cancelBtnClickedCb = () =>{}) {
-        const comp = Qt.createComponent("components/Dialog/MessageBoxDialog.qml")
-        if (comp.status === Component.Ready) {
-            const dlg = comp.createObject()
-            dlg.title = title
-            dlg.message = message
-            dlg.okBtnClicked.connect(() => {
-                okBtnClickedCb()
-            })
-            dlg.cancelBtnClicked.connect(() => {
-                cancelBtnClickedCb()
-            })
-            dlg.visibleChanged.connect((visible) => {
-                if (!visible)
-                    dlg.destroy()
-            })
-        }
-    }
+    // =================== 窗口（结束） ===================
 }
