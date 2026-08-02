@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
+#include <QUrl>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QJsonDocument>
@@ -47,6 +49,9 @@ private:
     QString findWin64AssetUrl(const QJsonObject &release) const;
     bool compareVersions(const QString &currentVersion, const QString &latestTag, const QString &channel);
     void downloadUpdate(const QString &downloadUrl);
+    static bool isTrustedUpdateUrl(const QUrl &url);
+    static QStringList listZipEntries(const QString &absZipPath, bool *ok);
+    static bool zipEntriesAreSafe(const QStringList &entries);
     void extractZip(const QString &zipPath, const QString &extractPath);
     bool extractUsingShellAPI(const QString &zipPath, const QString &extractPath);
     void createUpdateScript(const QString &extractPath);

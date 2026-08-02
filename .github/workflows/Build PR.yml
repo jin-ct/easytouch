@@ -9,7 +9,7 @@ on:
       - reopened
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   QT_URL: https://github.com/yuanpeirong/buildQt/releases/download/Qt6.8.3_rev0/Qt_6.8.3-static-Release_mingw1310_64.7z
@@ -29,6 +29,7 @@ jobs:
       uses: actions/checkout@v5
       with:
         fetch-depth: 0
+        submodules: recursive
 
     ####################################################################
     # Version
