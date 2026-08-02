@@ -335,7 +335,7 @@ void WeChatHelper::sendWheelViaMouseInput(int delta)
     input.mi.mouseData = delta;
     input.mi.dwExtraInfo = GetMessageExtraInfo();
 
-    SendInput(1, &input, sizeof(INPUT));qDebug() << delta << targetPt.x << targetPt.y;
+    SendInput(1, &input, sizeof(INPUT));
 }
 
 LRESULT CALLBACK WeChatHelper::overlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

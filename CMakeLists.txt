@@ -112,10 +112,6 @@ qt_add_qml_module(appeasytouch
     QML_FILES qml/components/SettingPages/ToolBar.qml
     QML_FILES qml/components/SettingPages/Functions.qml
     QML_FILES qml/components/SettingPages/Advanced.qml
-    QML_FILES qml/components/SettingPages/TouchPromote.qml
-    QML_FILES qml/components/SettingPages/Components/WindowStyleSelectItem.qml
-    QML_FILES qml/components/SettingPages/Components/TouchPromoteRuleList.qml
-    QML_FILES qml/components/SettingPages/Components/TouchPromoteRuleEditor.qml
     RESOURCES qtquickcontrols2.conf
     RESOURCES app.rc.in
     QML_FILES Splash.qml

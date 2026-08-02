@@ -49,14 +49,14 @@ FluWindow {
                 navigationView.push(url)
             }
         }
-        FluPaneItem{
-            title: qsTr("触控优化")
-            icon: FluentIcons.Touch
-            url: "qrc:/qt/qml/easytouch/qml/components/SettingPages/TouchPromote.qml"
-            onTap:{
-                navigationView.push(url)
-            }
-        }
+        // FluPaneItem{
+        //     title: qsTr("触控优化")
+        //     icon: FluentIcons.Touch
+        //     url: "qrc:/qt/qml/easytouch/qml/components/SettingPages/TouchPromote.qml"
+        //     onTap:{
+        //         navigationView.push(url)
+        //     }
+        // }
         FluPaneItem{
             title: qsTr("工具栏")
             icon: FluentIcons.HolePunchLandscapeRight
