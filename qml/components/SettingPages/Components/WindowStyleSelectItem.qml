@@ -16,7 +16,7 @@ MDropDownButton {
         verticalAlignment: Text.AlignVCenter
     }
     anchors.fill: parent
-    menu.width: Math.max(200, root.width)
+    menu.width: Math.max(180, root.width)
     menu.height: 240
     menuContentItem: Item {
         RowLayout {

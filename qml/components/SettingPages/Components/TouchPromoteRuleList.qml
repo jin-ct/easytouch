@@ -11,6 +11,8 @@ FluFrame {
     color: FluTheme.frameColor
     property string title: ""
     property var model: []
+    property string idRole: "id"
+    property string textRole: "text"
     property bool enableSelect: true
     property int selected: 0
     signal editClicked(int id)
@@ -36,8 +38,9 @@ FluFrame {
         topMargin: 8
         delegate: Rectangle {
             id: item
-            required property int id
-            required property string text
+            required property int index
+            property int id: root.model[index][root.idRole]
+            property string text: root.model[index][root.textRole]
             radius: 6
             color: FluTheme.frameActiveColor
             border.color: FluTheme.dividerColor
